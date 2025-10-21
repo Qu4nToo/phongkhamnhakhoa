@@ -1,0 +1,60 @@
+# =========================
+# Node.js
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# =========================
+# Environment variables
+# =========================
+.env
+
+# =========================
+# Logs
+# =========================
+logs
+*.log
+logs/*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# =========================
+# Build output
+# =========================
+dist/
+build/
+.tmp/
+temp/
+
+# =========================
+# IDE / Editor folders
+# =========================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Miscellaneous
+# =========================
+coverage/
+bower_components/
+typings/
+.cache/
+.next/
+out/
+*.tgz
