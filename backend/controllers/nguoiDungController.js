@@ -40,6 +40,10 @@ const NguoiDungController = {
       if (MatKhau.length < 6) {
         return res.status(400).json({ message: "Mật khẩu phải có ít nhất 6 ký tự!" });
       }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(Email)) {
+        return res.status(400).json({ message: "Email không hợp lệ!" });
+      }
 
       const result = await NguoiDung.create({ HoTen, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu });
       return res.status(201).json({ message: "Thêm người dùng thành công!", data: result });
@@ -64,6 +68,10 @@ const NguoiDungController = {
 
       if (MatKhau && MatKhau.length < 6) {
         return res.status(400).json({ message: "Mật khẩu phải có ít nhất 6 ký tự!" });
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(Email)) {
+        return res.status(400).json({ message: "Email không hợp lệ!" });
       }
 
       const result = await NguoiDung.update(id, { HoTen, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu });
