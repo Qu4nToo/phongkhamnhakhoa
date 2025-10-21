@@ -27,8 +27,8 @@ const NguoiDungController = {
 
   createNguoiDung: async (req, res) => {
     try {
-      const { HoTen, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu } = req.body;
-      if (!HoTen || !NgaySinh || !SDT || !MatKhau || !DiaChi || !MaChucVu) {
+      const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu } = req.body;
+      if (!HoTen || !Email || !NgaySinh || !SDT || !MatKhau || !DiaChi || !MaChucVu) {
         return res.status(400).json({ message: "Tất cả các trường đều là bắt buộc!" });
       }
 
@@ -52,9 +52,9 @@ const NguoiDungController = {
   updateNguoiDung: async (req, res) => {
     try {
       const { id } = req.params;
-      const { HoTen, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu } = req.body;
-      if (!HoTen || !NgaySinh || !SDT || !MatKhau || !DiaChi || !MaChucVu) {
-         return res.status(400).json({ message: "Tất cả các trường đều là bắt buộc!" });
+      const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu } = req.body;
+      if (!HoTen || !Email || !NgaySinh || !SDT || !MatKhau || !DiaChi || !MaChucVu) {
+        return res.status(400).json({ message: "Tất cả các trường đều là bắt buộc!" });
       }
 
       const phoneRegex = /^(0\d{9})$/;
