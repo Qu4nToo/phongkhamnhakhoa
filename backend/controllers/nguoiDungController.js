@@ -25,6 +25,20 @@ const NguoiDungController = {
     }
   },
 
+  getNguoiDungByEmail: async (req, res) => {
+    try {
+      const { email } = req.params;
+      const nguoiDung = await NguoiDung.getByEmail(email);
+      if (!nguoiDung) {
+        return res.status(404).json({ message: "Không tìm thấy người dùng" });
+      }
+      res.status(200).json(nguoiDung);
+    } catch (error) {
+      console.error("Lỗi khi lấy người dùng:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
   createNguoiDung: async (req, res) => {
     try {
       const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu } = req.body;

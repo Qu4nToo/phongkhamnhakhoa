@@ -6,6 +6,8 @@ router.get('/get', khachHangController.getAllKhachHang);
 
 router.get('/get/:id', khachHangController.getKhachHangById);
 
+router.get('/getByEmail/:email', khachHangController.getKhachHangByEmail);
+
 router.post('/create', khachHangController.createKhachHang);
 
 router.put('/update/:id', khachHangController.updateKhachHang);

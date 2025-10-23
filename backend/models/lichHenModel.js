@@ -3,7 +3,7 @@ const db = require('../config/server');
 module.exports = {
     getAlls: async () => {
         try {
-            const sql = 'SELECT * FROM lichhen';
+            const sql = 'SELECT lh.*, kh.HoTen AS TenKhachHang, bs.HoTen AS TenBacSi FROM lichhen lh join khachhang kh on lh.MaKhachHang = kh.MaKhachHang join bacsi bs on lh.MaBacSi = bs.MaBacSi';
             const [rows] = await db.query(sql);
             return rows;
         } catch (err) {
@@ -21,6 +21,39 @@ module.exports = {
             throw new Error('Database query failed');
         }
     },
+
+    getByBacSiId: async (id) => {
+        try {
+            const sql = 'SELECT * FROM lichhen WHERE MaBacSi = ?';
+            const [row] = await db.query(sql, [id]);
+            return row[0];
+        } catch (error) {
+            console.error('Query Error:', error.message);
+            throw new Error('Database query failed');
+        }
+    },
+
+    getByKhachHangId: async (id) => {
+        try {
+            const sql = `
+            SELECT lh.*, 
+                   kh.HoTen AS TenKhachHang, 
+                   bs.HoTen AS TenBacSi, 
+                   bs.SoDienThoai as SDT 
+            FROM lichhen lh 
+            JOIN khachhang kh ON lh.MaKhachHang = kh.MaKhachHang 
+            JOIN bacsi bs ON lh.MaBacSi = bs.MaBacSi 
+            WHERE lh.MaKhachHang = ?
+        `;
+            const [rows] = await db.query(sql, [id]);
+            return rows; // Trả về tất cả lịch hẹn
+        } catch (error) {
+            console.error('Query Error:', error.message);
+            throw new Error('Database query failed');
+        }
+    },
+
+
     create: async (data) => {
         try {
             const sql = 'INSERT INTO lichhen SET ?';

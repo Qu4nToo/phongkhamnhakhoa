@@ -20,6 +20,7 @@ module.exports = {
       throw new Error('Database query failed');
     }
   },
+  
 
   create: async (data) => {
     try {

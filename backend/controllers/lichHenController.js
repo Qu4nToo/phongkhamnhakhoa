@@ -29,6 +29,40 @@ const LichHenController = {
     }
   },
 
+  // 🔹 Lấy lịch hẹn theo bác sĩ
+  getLichHenByBacSiId: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const lichHen = await LichHen.getByBacSiId(id);
+
+      if (!lichHen) {
+        return res.status(404).json({ message: "Không tìm thấy lịch hẹn" });
+      }
+
+      res.status(200).json(lichHen);
+    } catch (error) {
+      console.error("Lỗi khi lấy lịch hẹn:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  // 🔹 Lấy lịch hẹn theo khách hàng
+  getLichHenByKhachHangId: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const lichHen = await LichHen.getByKhachHangId(id);
+
+      if (!lichHen) {
+        return res.status(404).json({ message: "Không tìm thấy lịch hẹn" });
+      }
+
+      res.status(200).json(lichHen);
+    } catch (error) {
+      console.error("Lỗi khi lấy lịch hẹn:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+  
   // 🔹 Tạo mới lịch hẹn
   createLichHen: async (req, res) => {
     try {
