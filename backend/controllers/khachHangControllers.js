@@ -59,6 +59,12 @@ const KhachHangController = {
                 return res.status(400).json({ message: "Mật khẩu phải có ít nhất 6 ký tự!" });
             }
 
+            const existingKhachHang = await KhachHang.getByEmail(Email);
+            if (existingKhachHang) {
+                
+                return res.status(409).json({ message: "Email đã tồn tại. Vui lòng sử dụng Email khác." });
+            }
+
             const result = await KhachHang.create({
                 HoTen,
                 NgaySinh,

@@ -35,7 +35,7 @@ export default function OrderView() {
     const handleViewClose = () => {
         setShowView(false);
     };
-        const formatPrice = (price: number): string => {
+    const formatPrice = (price: number): string => {
         // Kiểm tra giá trị đầu vào
         if (isNaN(price)) {
             throw new Error("Giá trị không hợp lệ");
@@ -124,7 +124,7 @@ export default function OrderView() {
                             </div>
                             <div>
                                 <p className="text-gray-600 font-medium">Ngày Sinh</p>
-                                <p className="text-gray-800">{userInfo?.NgaySinh || "Chưa có"}</p>
+                                <p className="text-gray-800">{new Date(userInfo?.NgaySinh).toLocaleDateString("vi-VN") || "Chưa có"}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -155,7 +155,7 @@ export default function OrderView() {
                                             <TableCell>{lh.TenBacSi}</TableCell>
                                             <TableCell>{lh.SDT}</TableCell>
                                             <TableCell>
-                                                {new Date(lh.NgayHen).toLocaleString()}
+                                                {new Date(lh.NgayHen).toLocaleDateString("vi-VN")}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge

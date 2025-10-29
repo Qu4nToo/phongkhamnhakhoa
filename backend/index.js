@@ -7,6 +7,9 @@ const db = require('./config/server');
 
 const app = express();
 
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 const nguoiDungRoutes = require('./routes/nguoiDungRoutes');
 const bacSiRoutes = require('./routes/bacSiRoutes');
 const hoaDonRoutes = require('./routes/hoaDonRoutes');
@@ -18,9 +21,6 @@ const danhGiaRoutes = require('./routes/danhGiaRoutes');
 const chiTietDichVuRoutes = require('./routes/chiTietDichVuRoutes');
 const chiTietPhieuKhamRoutes = require('./routes/chiTietPhieuKhamRoutes');
 const chucVuRoutes = require('./routes/chucVuRoutes');
-
-app.use(cors()); 
-app.use(express.json()); 
 
 app.get('/', async (req, res) => {
   try {
