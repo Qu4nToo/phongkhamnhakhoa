@@ -5,12 +5,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from "../ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "../ui/card";
 import { Label } from "../ui/label";
 import { toast, Toaster } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -20,9 +15,29 @@ import CalendarIcon from "@heroicons/react/24/outline/CalendarIcon";
 import { cn } from "../ui/utils";
 
 export default function BookingForm() {
+  interface BacSi {
+    MaBacSi: string;
+    HoTen: string;
+    SoDienThoai: string;
+    Email: string;
+    MatKhau: string;
+    KinhNghiem: number;
+    NgaySinh: string;
+    DiaChi: string;
+    MaLichLamViec: string;
+    ThuTrongTuan: string;
+  }
+  interface LichLamViec {
+    MaLichLamViec: string;
+    MaBacSi: string;
+    ThuTrongTuan: string;
+  }
+
   const router = useRouter();
   const [userInfo, setUserInfo] = useState<any>(null);
-  const [bacsi, setBacsi] = useState([]);
+  const [bacsi, setBacsi] = useState<BacSi[]>([]);
+  const [selectedBacSi, setSelectedBacSi] = useState<BacSi | null>(null);
+  const [lichlamviec, setLichLamViec] = useState<LichLamViec[]>([]);
 
   const [formData, setFormData] = useState({
     MaKhachHang: "",
@@ -152,6 +167,26 @@ export default function BookingForm() {
     );
   }
 
+  function handleCalendar(selected: BacSi | null) {
+    if (!selected) {
+      setLichLamViec([]);
+      return;
+    }
+
+    axios
+      .get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${selected.MaBacSi}`)
+      .then((res) => {
+        // res.data là mảng các lịch làm việc
+        setLichLamViec(res.data);
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy lịch làm việc:", err);
+        setLichLamViec([]);
+        toast.error("Không thể lấy lịch làm việc của bác sĩ!");
+      });
+  }
+
+
   return (
     <>
       <Toaster position="bottom-right" />
@@ -196,7 +231,14 @@ export default function BookingForm() {
             <select
               name="MaBacSi"
               value={formData.MaBacSi}
-              onChange={handleChange}
+              onChange={(e) => {
+                handleChange(e); // cập nhật formData.MaBacSi
+                const selected = bacsi.find(
+                  (bs) => bs.MaBacSi === e.target.value
+                );
+                setSelectedBacSi(selected || null);
+                handleCalendar(selected || null);
+              }}
               className="w-full border border-gray-300 text-black rounded-md p-2 mt-1 bg-white focus:ring-2 focus:ring-blue-400 outline-none"
               required
             >
@@ -208,88 +250,6 @@ export default function BookingForm() {
               ))}
             </select>
           </div>
-
-          {/* Ngày hẹn 0 */}
-          {/* <div>
-            <Label>Ngày hẹn *</Label>
-            <input
-              type="date"
-              name="NgayHen"
-              value={formData.NgayHen}
-              onChange={handleChange}
-              className="w-full border border-gray-300 text-black rounded-md p-2 mt-1 focus:ring-2 focus:ring-blue-400 outline-none"
-              min={new Date().toISOString().split("T")[0]}
-              required
-            />
-          </div> */}
-          {/* Ngày hẹn 1 */}
-          {/* <div className="flex flex-col">
-            <Label className="mb-1">Ngày hẹn</Label>
-            <div className="relative">
-              <DatePicker
-                selected={formData.NgayHen ? new Date(formData.NgayHen) : null}
-                onChange={(date: Date | null) => {
-                  if (!date) return;
-
-                  const today = new Date();
-                  const maxDate = new Date();
-                  maxDate.setDate(today.getDate() + 30);
-
-                  // Nếu chọn Chủ Nhật
-                  if (date.getDay() === 0) {
-                    toast.error(
-                      "Không thể chọn Chủ Nhật. Vui lòng chọn từ Thứ 2 đến Thứ 7!",
-                      {
-                        action: {
-                          label: "Đóng",
-                          onClick: () => toast.dismiss(),
-                        },
-                        style: {
-                          background: "#fef2f2",
-                          color: "#991b1b",
-                          borderRadius: "10px",
-                          border: "1px solid #ef4444",
-                        },
-                      }
-                    );
-                    return;
-                  }
-
-                  // Nếu vượt quá 30 ngày
-                  if (date > maxDate) {
-                    toast.error(
-                      "Bạn chỉ có thể đặt lịch trong vòng 30 ngày tới!",
-                      {
-                        action: {
-                          label: "Đóng",
-                          onClick: () => toast.dismiss(),
-                        },
-                        style: {
-                          background: "#fef2f2",
-                          color: "#991b1b",
-                          borderRadius: "10px",
-                          border: "1px solid #ef4444",
-                        },
-                      }
-                    );
-                    return;
-                  }
-
-                  setFormData((prev) => ({
-                    ...prev,
-                    NgayHen: date.toISOString().split("T")[0],
-                  }));
-                }}
-                minDate={new Date()}
-                maxDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
-                filterDate={(date) => date.getDay() !== 0}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="Chọn ngày hẹn"
-                className="w-full border border-gray-300 text-black rounded-md p-2 bg-gray-50 focus:ring-2 focus:ring-blue-400 outline-none"
-              />
-            </div>
-          </div> */}
-          {/* Ngày hẹn 2 */}
           <div className="flex flex-col">
             <Label className="mb-1">Ngày hẹn</Label>
             <Popover>
@@ -330,13 +290,17 @@ export default function BookingForm() {
 
                     // Chặn Chủ Nhật
                     if (date.getDay() === 0) {
-                      toast.error("Không thể chọn Chủ Nhật. Vui lòng chọn từ Thứ 2 đến Thứ 7!");
+                      toast.error(
+                        "Không thể chọn Chủ Nhật. Vui lòng chọn từ Thứ 2 đến Thứ 7!"
+                      );
                       return;
                     }
 
                     // Chặn vượt quá 30 ngày
                     if (date > maxDate) {
-                      toast.error("Bạn chỉ có thể đặt lịch trong vòng 30 ngày tới!");
+                      toast.error(
+                        "Bạn chỉ có thể đặt lịch trong vòng 30 ngày tới!"
+                      );
                       return;
                     }
 
@@ -346,11 +310,33 @@ export default function BookingForm() {
                       NgayHen: date.toLocaleDateString("en-CA"), // hoặc format(date, "yyyy-MM-dd")
                     }));
                   }}
-                  disabled={(date) =>
-                    date.getDay() === 0 ||
-                    date < new Date() ||
-                    date > new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-                  }
+
+
+                  // Disabled function
+                  disabled={(date) => {
+                    const thuMap: Record<string, number> = {
+                      "Chủ Nhật": 0,
+                      "Thứ Hai": 1,
+                      "Thứ Ba": 2,
+                      "Thứ Tư": 3,
+                      "Thứ Năm": 4,
+                      "Thứ Sáu": 5,
+                      "Thứ Bảy": 6,
+                    };
+
+
+                    const workingDays = lichlamviec.map((lv) => thuMap[lv.ThuTrongTuan.trim()]);
+                    const today = new Date();
+                    const maxDate = new Date();
+                    maxDate.setDate(today.getDate() + 30);
+
+                    // Nếu ngày không thuộc workingDays hoặc quá sớm/quá muộn → disabled
+                    return (
+                      !workingDays.includes(date.getDay()) ||
+                      date < today ||
+                      date > maxDate
+                    );
+                  }}
                 />
               </PopoverContent>
             </Popover>

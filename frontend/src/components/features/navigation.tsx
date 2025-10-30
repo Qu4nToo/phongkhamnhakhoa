@@ -52,8 +52,6 @@ export default function Navbar() {
 
   const handleSignOut = () => {
     sessionStorage.removeItem("user_info");
-    localStorage.removeItem("cart");
-    alert("Đăng xuất thành công!");
     globalThis.location.reload();
   };
 

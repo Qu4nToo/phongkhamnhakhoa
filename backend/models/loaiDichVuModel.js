@@ -1,9 +1,10 @@
-const db = require('../config/server');
+const db = require("../config/server");
 
 module.exports = {
+    // ✅ Lấy tất cả loại dịch vụ
     getAlls: async () => {
         try {
-            const sql = `SELECT * FROM bacsi bs`;
+            const sql = 'SELECT * FROM loaidichvu';
             const [rows] = await db.query(sql);
             return rows;
         } catch (err) {
@@ -11,21 +12,23 @@ module.exports = {
             throw new Error('Database query failed');
         }
     },
+
+    // ✅ Lấy loại dịch vụ theo ID
     getById: async (id) => {
         try {
-            const sql = `SELECT * FROM bacsi bs 
-                        JOIN lichlamviec llv ON llv.MaBacSi=bs.MaBacSi
-                        WHERE bs.MaBacSi = ?`;
-            const [row] = await db.query(sql, [id]);
-            return row;
+            const sql = 'SELECT * FROM loaidichvu WHERE MaLoaiDV = ?';
+            const [rows] = await db.query(sql, [id]);
+            return rows[0];
         } catch (error) {
             console.error('Query Error:', error);
             throw new Error('Database query failed');
         }
     },
+
+    // ✅ Tạo mới loại dịch vụ
     create: async (data) => {
         try {
-            const sql = `INSERT INTO bacsi set ?`;
+            const sql = 'INSERT INTO loaidichvu SET ?';
             const [result] = await db.query(sql, data);
             return result;
         } catch (error) {
@@ -33,9 +36,11 @@ module.exports = {
             throw new Error('Database insert failed');
         }
     },
+
+    // ✅ Cập nhật loại dịch vụ
     update: async (id, data) => {
         try {
-            const sql = `UPDATE bacsi SET ? WHERE MaBacSi = ?`;
+            const sql = 'UPDATE loaidichvu SET ? WHERE MaLoaiDV = ?';
             const [result] = await db.query(sql, [data, id]);
             return result;
         } catch (error) {
@@ -43,14 +48,16 @@ module.exports = {
             throw new Error('Database update failed');
         }
     },
+
+    // ✅ Xóa loại dịch vụ
     delete: async (id) => {
         try {
-            const sql = `DELETE FROM bacsi WHERE MaBacSi = ?`;
+            const sql = 'DELETE FROM loaidichvu WHERE MaLoaiDV = ?';
             const [result] = await db.query(sql, [id]);
             return result;
         } catch (error) {
             console.error('Delete Error:', error);
-            throw new Error(`Failed to delete doctor: ${error.message}`);
+            throw new Error(`Failed to delete service type: ${error.message}`);
         }
     }
 };

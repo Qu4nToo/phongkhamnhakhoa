@@ -21,6 +21,8 @@ const danhGiaRoutes = require('./routes/danhGiaRoutes');
 const chiTietDichVuRoutes = require('./routes/chiTietDichVuRoutes');
 const chiTietPhieuKhamRoutes = require('./routes/chiTietPhieuKhamRoutes');
 const chucVuRoutes = require('./routes/chucVuRoutes');
+const lichLamViecRoutes = require('./routes/lichLamViecRoutes');
+const loaiDichVuRoutes = require('./routes/loaiDichVuRoutes');
 
 app.get('/', async (req, res) => {
   try {
@@ -40,6 +42,8 @@ app.use('/api/bac-si', bacSiRoutes);
 app.use('/api/hoa-don', hoaDonRoutes);
 app.use('/api/lich-hen', lichHenRoutes);
 app.use('/api/khach-hang', khachHangRoutes);
+app.use('/api/lich-lam-viec', lichLamViecRoutes);
+app.use('/api/loai-dich-vu', loaiDichVuRoutes);
 app.use('/api/phieu-kham', phieuKhamRoutes);
 app.use('/api/dich-vu', dichVuRoutes);
 app.use('/api/danh-gia', danhGiaRoutes);
