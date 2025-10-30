@@ -22,6 +22,7 @@ import { FaArrowLeft } from "react-icons/fa";
 export default function OrderView() {
     const [lichhen, setLichHen] = useState<any[]>([]);
     const [userInfo, setUserInfo] = useState<any>(null);
+    const [user, setUser] = useState<any>(null);
     const [orderDetailFilter, setOrderDetailFilter] = useState<any>([]);
     const [showView, setShowView] = useState(false);
     const [order, setOrder] = useState<any>([]);
@@ -59,7 +60,20 @@ export default function OrderView() {
             user.NgaySinh = user.NgaySinh ? user.NgaySinh.split("T")[0] : "";
             console.log("User info:", user);
             setUserInfo(user);
-
+            if (user.MaKhachHang) {
+                axios
+                    .get(
+                        `http://localhost:5000/api/khach-hang/get/${user.MaKhachHang}`
+                    )
+                    .then((res) => {
+                        // Đảm bảo dữ liệu luôn là array
+                        console.log("Lịch hẹn khách hàng:", res.data);
+                        setUser(res.data);
+                    })
+                    .catch((err) => console.log(err));
+            } else {
+                console.warn("MaKhachHang undefined");
+            }
 
             if (user.MaKhachHang) {
                 axios
@@ -110,21 +124,21 @@ export default function OrderView() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <p className="text-gray-600 font-medium">Họ tên:</p>
-                                <p className="text-gray-800">{userInfo?.HoTen || "Chưa có"}</p>
+                                <p className="text-gray-800">{user?.HoTen || "Chưa có"}</p>
                             </div>
                             <div>
                                 <p className="text-gray-600 font-medium">Email:</p>
-                                <p className="text-gray-800">{userInfo?.Email || "Chưa có"}</p>
+                                <p className="text-gray-800">{user?.Email || "Chưa có"}</p>
                             </div>
                             <div>
                                 <p className="text-gray-600 font-medium">Số điện thoại:</p>
                                 <p className="text-gray-800">
-                                    {userInfo?.SoDienThoai || "Chưa có"}
+                                    {user?.SoDienThoai || "Chưa có"}
                                 </p>
                             </div>
                             <div>
                                 <p className="text-gray-600 font-medium">Ngày Sinh</p>
-                                <p className="text-gray-800">{new Date(userInfo?.NgaySinh).toLocaleDateString("vi-VN") || "Chưa có"}</p>
+                                <p className="text-gray-800">{new Date(user?.NgaySinh).toLocaleDateString("vi-VN") || "Chưa có"}</p>
                             </div>
                         </div>
                     </CardContent>

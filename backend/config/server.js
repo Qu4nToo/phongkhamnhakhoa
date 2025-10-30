@@ -7,7 +7,10 @@ const db = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
+  dateStrings: true,
 });
+
+
 
 // Kiểm tra kết nối khi khởi động ứng dụng
 db.getConnection()
