@@ -21,6 +21,18 @@ module.exports = {
             throw new Error('Database query failed');
         }
     },
+
+    getByEmail: async (email) => {
+        try {
+            const sql = `SELECT * FROM khachhang WHERE Email = ?`;
+            const [row] = await db.query(sql, [email]);
+            return row[0];
+        } catch (error) {
+            console.error('Query Error:', error);
+            throw new Error('Database query failed');
+        }
+    },
+
     create: async (data) => {
         try {
             const sql = `INSERT INTO khachhang set ?`;

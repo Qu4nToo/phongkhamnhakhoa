@@ -1,5 +1,4 @@
 const db = require('../config/server');
-const { getAlls } = require('./khachHangModel');
 
 module.exports = {
   getAlls: async () => {
@@ -14,6 +13,16 @@ module.exports = {
   getById: async (id) => {
     try {
       const [row] = await db.query('SELECT * FROM chitietdichvu WHERE MaBSDV = ?', [id]);
+      return row[0];
+    } catch (err) {
+      console.error('Query Error:', err.message);
+      throw new Error('Database query failed');
+    }
+  },
+
+  getByBacSiId: async (id) => {
+    try {
+      const [row] = await db.query('SELECT * FROM chitietdichvu WHERE MaBacSi = ?', [id]);
       return row[0];
     } catch (err) {
       console.error('Query Error:', err.message);

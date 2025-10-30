@@ -22,11 +22,26 @@ const KhachHangController = {
             res.status(500).json({ message: "Lỗi server", error: error.message });
         }
     },
+
+    getKhachHangByEmail: async (req, res) => {
+        try {
+            const { email } = req.params;
+            const khachHang = await KhachHang.getByEmail(email);
+            if (!khachHang) {
+                return res.status(404).json({ message: "Không tìm thấy khách hàng" });
+            }
+            res.status(200).json(khachHang);
+        } catch (error) {
+            console.error("Lỗi khi lấy khách hàng:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
     createKhachHang: async (req, res) => {
         try {
-            const { HoTen, NgaySinh, SoDienThoai, GioiTinh, Email, DiaChi, MatKhau } = req.body;
+            const { HoTen, NgaySinh, SoDienThoai, Email, MatKhau } = req.body;
 
-            if (!HoTen || !NgaySinh || !SoDienThoai || !GioiTinh || !Email || !DiaChi || !MatKhau) {
+            if (!HoTen || !NgaySinh || !SoDienThoai || !Email || !MatKhau) {
                 return res.status(400).json({ message: "Tất cả các trường đều là bắt buộc!" });
             }
 
@@ -44,13 +59,17 @@ const KhachHangController = {
                 return res.status(400).json({ message: "Mật khẩu phải có ít nhất 6 ký tự!" });
             }
 
+            const existingKhachHang = await KhachHang.getByEmail(Email);
+            if (existingKhachHang) {
+                
+                return res.status(409).json({ message: "Email đã tồn tại. Vui lòng sử dụng Email khác." });
+            }
+
             const result = await KhachHang.create({
                 HoTen,
                 NgaySinh,
                 SoDienThoai,
-                GioiTinh,
                 Email,
-                DiaChi,
                 MatKhau
             });
 
@@ -64,10 +83,10 @@ const KhachHangController = {
     updateKhachHang: async (req, res) => {
         try {
             const { id } = req.params;
-            const { HoTen, NgaySinh, SoDienThoai, GioiTinh, Email, DiaChi, MatKhau } = req.body;
+            const { HoTen, NgaySinh, SoDienThoai, Email, MatKhau } = req.body;
 
-            if (!HoTen || !NgaySinh || !SoDienThoai || !GioiTinh || !Email || !DiaChi) {
-                return res.status(400).json({ message: "Các trường HoTen, NgaySinh, SoDienThoai, GioiTinh, Email, DiaChi là bắt buộc!" });
+            if (!HoTen || !NgaySinh || !SoDienThoai || !Email || !MatKhau) {
+                return res.status(400).json({ message: "Các trường HoTen, NgaySinh, SoDienThoai, Email, MatKhau là bắt buộc!" });
             }
 
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -88,9 +107,7 @@ const KhachHangController = {
                 HoTen,
                 NgaySinh,
                 SoDienThoai,
-                GioiTinh,
                 Email,
-                DiaChi,
                 MatKhau
             });
 

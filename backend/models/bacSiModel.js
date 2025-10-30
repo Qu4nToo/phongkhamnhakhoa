@@ -3,7 +3,7 @@ const db = require('../config/server');
 module.exports = {
     getAlls: async () => {
         try {
-            const sql = 'SELECT * FROM bacsi';
+            const sql = `SELECT * FROM bacsi bs`;
             const [rows] = await db.query(sql);
             return rows;
         } catch (err) {
@@ -13,9 +13,11 @@ module.exports = {
     },
     getById: async (id) => {
         try {
-            const sql = `SELECT * FROM bacsi WHERE MaBacSi = ?`;
+            const sql = `SELECT * FROM bacsi bs 
+                        JOIN lichlamviec llv ON llv.MaBacSi=bs.MaBacSi
+                        WHERE bs.MaBacSi = ?`;
             const [row] = await db.query(sql, [id]);
-            return row[0];
+            return row;
         } catch (error) {
             console.error('Query Error:', error);
             throw new Error('Database query failed');
@@ -40,15 +42,15 @@ module.exports = {
             console.error('Update Error:', error);
             throw new Error('Database update failed');
         }
-   },
-   delete: async (id) => {
-       try {
-           const sql = `DELETE FROM bacsi WHERE MaBacSi = ?`;
-           const [result] = await db.query(sql, [id]);
-           return result;
-       } catch (error) {
-           console.error('Delete Error:', error);
-           throw new Error(`Failed to delete doctor: ${error.message}`);
-       }
-   }
+    },
+    delete: async (id) => {
+        try {
+            const sql = `DELETE FROM bacsi WHERE MaBacSi = ?`;
+            const [result] = await db.query(sql, [id]);
+            return result;
+        } catch (error) {
+            console.error('Delete Error:', error);
+            throw new Error(`Failed to delete doctor: ${error.message}`);
+        }
+    }
 };

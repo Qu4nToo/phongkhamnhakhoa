@@ -1,4 +1,4 @@
-const ChiTietDichVu = require("../models/chiTietDichVuModel");
+const ChiTietDichVu = require("../models/chiTietdichVuModel");
 
 const ChiTietDichVuController = {
   // 🔹 Lấy danh sách tất cả chi tiết dịch vụ
@@ -29,6 +29,21 @@ const ChiTietDichVuController = {
     }
   },
 
+  getChiTietDichVuByBacSiId: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const record = await ChiTietDichVu.getByBacSiId(id);
+
+      if (!record) {
+        return res.status(404).json({ message: "Không tìm thấy chi tiết dịch vụ!" });
+      }
+
+      res.status(200).json(record);
+    } catch (error) {
+      console.error("Lỗi khi lấy chi tiết dịch vụ:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
   // 🔹 Thêm chi tiết dịch vụ mới
   createChiTietDichVu: async (req, res) => {
     try {

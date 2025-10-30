@@ -29,19 +29,52 @@ const LichHenController = {
     }
   },
 
+  // 🔹 Lấy lịch hẹn theo bác sĩ
+  getLichHenByBacSiId: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const lichHen = await LichHen.getByBacSiId(id);
+
+      if (!lichHen) {
+        return res.status(404).json({ message: "Không tìm thấy lịch hẹn" });
+      }
+
+      res.status(200).json(lichHen);
+    } catch (error) {
+      console.error("Lỗi khi lấy lịch hẹn:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  // 🔹 Lấy lịch hẹn theo khách hàng
+  getLichHenByKhachHangId: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const lichHen = await LichHen.getByKhachHangId(id);
+
+      if (!lichHen) {
+        return res.status(404).json({ message: "Không tìm thấy lịch hẹn" });
+      }
+
+      res.status(200).json(lichHen);
+    } catch (error) {
+      console.error("Lỗi khi lấy lịch hẹn:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
   // 🔹 Tạo mới lịch hẹn
   createLichHen: async (req, res) => {
     try {
+      console.log("📥 Body nhận được từ client:", req.body);
       const { GhiChu, NgayHen, TinhTrang, MaKhachHang, MaBacSi } = req.body;
 
-      // Kiểm tra trường bắt buộc
       if (!NgayHen || !TinhTrang || !MaKhachHang || !MaBacSi) {
         return res.status(400).json({
           message: "Các trường NgayHen, TinhTrang, MaKhachHang, MaBacSi là bắt buộc!",
         });
       }
 
-      // Kiểm tra ngày hợp lệ (ngày hẹn không được trong quá khứ)
       const ngayHenDate = new Date(NgayHen);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -49,11 +82,35 @@ const LichHenController = {
         return res.status(400).json({ message: "Ngày hẹn không được nhỏ hơn ngày hiện tại!" });
       }
 
-      // Tình trạng phải là số nguyên (0: Chờ xác nhận, 1: Đã xác nhận, 2: Hoàn thành, 3: Hủy)
       if (![0, 1, 2, 3].includes(Number(TinhTrang))) {
         return res.status(400).json({ message: "Tình trạng không hợp lệ!" });
       }
 
+      const formattedDate = ngayHenDate.toISOString().split("T")[0];
+      const count = await LichHen.countByBacSiAndDate(MaBacSi, formattedDate);
+
+      if (count >= 6) {
+        const formatted = `${String(ngayHenDate.getDate()).padStart(2, "0")}/${String(
+          ngayHenDate.getMonth() + 1
+        ).padStart(2, "0")}/${ngayHenDate.getFullYear()}`;
+        return res.status(400).json({
+          message: `Bác sĩ này đã đủ lịch hẹn trong ngày ${formatted}, không thể đặt thêm!`,
+        });
+      }
+
+      const existed = await LichHen.countByKhachHangAndDate(MaKhachHang, formattedDate);
+
+      if (existed) {
+        const formatted = `${String(ngayHenDate.getDate()).padStart(2, "0")}/${String(
+          ngayHenDate.getMonth() + 1
+        ).padStart(2, "0")}/${ngayHenDate.getFullYear()}`;
+        return res.status(400).json({
+          message: `Bạn đã có lịch hẹn trong ngày ${formatted}, không thể đặt thêm!`,
+        });
+      }
+      console.log("📥 existed:", existed);
+
+      // ✅ Tạo lịch hẹn mới
       const result = await LichHen.create({
         GhiChu,
         NgayHen,
@@ -86,7 +143,7 @@ const LichHenController = {
 
       // Kiểm tra giá trị hợp lệ
       const ngayHenDate = new Date(NgayHen);
-      if (isNaN(ngayHenDate)) {
+      if (Number.isNaN(ngayHenDate.getTime())) {
         return res.status(400).json({ message: "Ngày hẹn không hợp lệ!" });
       }
 
