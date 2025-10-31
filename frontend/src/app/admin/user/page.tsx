@@ -62,27 +62,20 @@ import Admin from "../page"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/sonner"
 import { createDecipheriv } from "crypto"
 
 
 export default function User() {
-    const [file, setFile] = useState<File | null>(null);
     const [users, setUsers] = useState([]);
     const [user, setUser] = useState<any>([]);
-    const [roles, setRoles] = useState([]);
     const [showAlert, setShowAlert] = useState(false);
     const [showAlertEdit, setShowAlertEdit] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>([]);
     const [isDialogOpen, setDialogOpen] = useState(false);
     const { toast } = useToast();
     let a;
-    const [newUser, setNewUser] = useState({
-        roleID: '',
-        name: '',
-        email: '',
-        passWord: ''
-    });
+
     const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { id, value } = e.target;
         setNewUser((prev) => ({
@@ -104,11 +97,8 @@ export default function User() {
 
 
     useEffect(() => {
-        axios.get("http://localhost:5000/api/admin/user/get")
+        axios.get("http://localhost:5000/api/khach-hang/get")
             .then(users => setUsers(users.data))
-            .catch(err => console.log(err))
-        axios.get("http://localhost:5000/api/admin/role/get")
-            .then(roles => setRoles(roles.data))
             .catch(err => console.log(err))
     }, []);
     // const handleToggleMenuClick = (product: React.SetStateAction<null>)=>{
@@ -192,10 +182,11 @@ export default function User() {
                     .then((response) => setUsers(response.data))
                     .catch((err) => console.error("Error fetching users:", err));
                 setNewUser({
-                    roleID: '',
-                    name: '',
-                    email: '',
-                    passWord: ''
+                    HoTen: "",
+                    SoDienThoai: "",
+                    Email: "",
+                    NgaySinh: "",
+                    MatKhau: ""
                 });
                 setDialogOpen(false);
             })
@@ -208,9 +199,6 @@ export default function User() {
                 <div className="flex items-center">
                     <TabsList>
                         <TabsTrigger value="all">All</TabsTrigger>
-                        {roles.map((roles: any) => (
-                            <TabsTrigger value={roles.roleName}>{roles.roleName}</TabsTrigger>
-                        ))}
                     </TabsList>
                     <div className="ml-auto flex items-center gap-2">
                         <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
@@ -287,11 +275,10 @@ export default function User() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Role</TableHead>
-                                        <TableHead>ID</TableHead>
-                                        <TableHead>Name</TableHead>
+                                        <TableHead>Họ và Tên</TableHead>
+                                        <TableHead>Số điện thoại</TableHead>
                                         <TableHead>Email</TableHead>
-                                        <TableHead className="hidden">Password</TableHead>
+                                        <TableHead>Ngày sinh</TableHead>
                                         <TableHead>
                                             <span className="sr-only">Actions</span>
                                         </TableHead>
@@ -301,18 +288,15 @@ export default function User() {
                                     {users.map((users: any) => (
                                         <TableRow key={users.id}>
                                             <TableCell className="hidden sm:table-cell">
-                                                {users.role.roleName}
+                                                {users.HoTen}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {users.id}
+                                                {users.SoDienThoai}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {users.name}
+                                                {users.Email}
                                             </TableCell>
-                                            <TableCell>{users.email}</TableCell>
-                                            <TableCell className="font-medium hidden">
-                                                {users.passWord}
-                                            </TableCell>
+                                            <TableCell>{users.NgaySinh}</TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
@@ -346,11 +330,10 @@ export default function User() {
                         </CardFooter>
                     </Card>
                 </TabsContent>
-                {roles.map((roles: any) => (
-                    <TabsContent value={roles.roleName}>
+                    <TabsContent value="All">
                         <Card x-chunk="dashboard-06-chunk-0">
                             <CardHeader>
-                                <CardTitle>{roles.roleName}</CardTitle>
+                                <CardTitle>All Users</CardTitle>
                                 <CardDescription>
                                     Manage your users and view their sales performance.
                                 </CardDescription>
@@ -371,7 +354,7 @@ export default function User() {
                                     </TableHeader>
                                     <TableBody>
                                         {users.map((users: any) => {
-                                            if (users.role.roleName == roles.roleName) {
+                                            if (users.role.roleName == "All") {
                                                 return (
                                                     <TableRow key={users.id}>
                                                         <TableCell className="hidden sm:table-cell">

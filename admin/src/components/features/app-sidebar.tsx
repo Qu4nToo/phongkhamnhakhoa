@@ -2,10 +2,13 @@ import {
   Calendar,
   ChevronUp,
   Home,
-  Inbox,
-  Search,
-  Settings,
+  User,
   User2,
+  UserPen,
+  UserStar,
+  BookPlusIcon,
+  Receipt,
+  ReceiptText,
 } from "lucide-react";
 
 import {
@@ -14,7 +17,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -31,28 +33,43 @@ import {
 const items = [
   {
     title: "Home",
-    url: "/home",
+    url: "/Home",
     icon: Home,
   },
   {
-    title: "Inbox",
-    url: "/inbox",
-    icon: Inbox,
+    title: "Khách hàng",
+    url: "/KhachHang",
+    icon: User,
+  },
+      {
+    title: "Bác sĩ",
+    url: "/BacSi",
+    icon: UserPen,
+  },
+        {
+    title: "Người dùng",
+    url: "/NguoiDung",
+    icon: UserStar,
   },
   {
-    title: "Calendar",
-    url: "/calendar",
+    title: "Lịch hẹn",
+    url: "/LichHen",
     icon: Calendar,
   },
-  {
-    title: "Search",
-    url: "/search",
-    icon: Search,
+    {
+    title: "Phiếu khám",
+    url: "/PhieuKham",
+    icon: ReceiptText,
   },
   {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
+    title: "Dịch vụ",
+    url: "/DichVu",
+    icon: BookPlusIcon,
+  },
+  {
+    title: "Hóa đơn",
+    url: "/HoaDon",
+    icon: Receipt,
   },
 ];
 
