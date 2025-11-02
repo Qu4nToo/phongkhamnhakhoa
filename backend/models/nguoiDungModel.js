@@ -7,7 +7,7 @@ module.exports = {
             const sql = `
             SELECT 
             nd.*,
-            cv.TenChucVu AS RoleName
+            cv.TenChucVu AS TenChucVu
             FROM nguoidung nd
             JOIN chucvu cv ON nd.MaChucVu = cv.MaChucVu
         `;
@@ -20,8 +20,15 @@ module.exports = {
     },
     getById: async (id) => {
         try {
-            const sql = 'SELECT * FROM nguoidung WHERE MaNguoiDung = ?';
-            
+            const sql = `
+            SELECT 
+            nd.*,
+            cv.TenChucVu AS TenChucVu
+            FROM nguoidung nd
+            JOIN chucvu cv ON nd.MaChucVu = cv.MaChucVu
+            WHERE nd.MaNguoiDung = ?
+        `;
+
             const [row] = await db.query(sql, [id]);
             return row[0];
         } catch (error) {

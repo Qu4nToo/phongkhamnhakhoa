@@ -208,15 +208,15 @@ export default function User() {
                 <Button size="sm" className="h-7 gap-1">
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add User
+                    Thêm khách hàng
                   </span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Add New User</DialogTitle>
+                  <DialogTitle>Thêm khách hàng</DialogTitle>
                   <DialogDescription>
-                    Add new User to store catalog.
+                    Thêm khách hàng mới vào danh sách.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -317,12 +317,6 @@ export default function User() {
               ))}
               </Table>
             </CardContent>
-            <CardFooter>
-              <div className="text-xs text-muted-foreground">
-                Showing <strong>1-10</strong> of <strong>32</strong>{" "}
-                users
-              </div>
-            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>

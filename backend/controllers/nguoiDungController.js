@@ -59,7 +59,7 @@ const NguoiDungController = {
         return res.status(400).json({ message: "Email không hợp lệ!" });
       }
 
-      const result = await NguoiDung.create({ HoTen, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu });
+      const result = await NguoiDung.create({ HoTen,Email, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu });
       return res.status(201).json({ message: "Thêm người dùng thành công!", data: result });
     } catch (error) {
       console.error("Lỗi khi thêm người dùng:", error);
@@ -88,7 +88,7 @@ const NguoiDungController = {
         return res.status(400).json({ message: "Email không hợp lệ!" });
       }
 
-      const result = await NguoiDung.update(id, { HoTen, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu });
+      const result = await NguoiDung.update(id, { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu });
       if (result.affectedRows === 0) {
         return res.status(404).json({ message: "Không tìm thấy người dùng để cập nhật!" });
       }

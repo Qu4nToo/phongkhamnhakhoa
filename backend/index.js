@@ -11,6 +11,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const adminRoutes = require('./routes/adminRoutes');
 const nguoiDungRoutes = require('./routes/nguoiDungRoutes');
 const bacSiRoutes = require('./routes/bacSiRoutes');
 const hoaDonRoutes = require('./routes/hoaDonRoutes');
@@ -37,7 +38,7 @@ app.get('/', async (req, res) => {
     res.status(500).json({ error: 'Database query failed' });
   }
 });
-
+app.use("/api/admin", adminRoutes);
 app.use('/api/nguoi-dung', nguoiDungRoutes);
 app.use('/api/bac-si', bacSiRoutes);
 app.use('/api/hoa-don', hoaDonRoutes);
