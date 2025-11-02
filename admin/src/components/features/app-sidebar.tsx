@@ -2,6 +2,7 @@ import {
   Calendar,
   ChevronUp,
   Home,
+  ChartPie,
   User,
   User2,
   UserPen,
@@ -32,9 +33,9 @@ import {
 // Menu items.
 const items = [
   {
-    title: "Home",
-    url: "/Home",
-    icon: Home,
+    title: "Dashboard",
+    url: "/Dashboard",
+    icon: ChartPie,
   },
   {
     title: "Khách hàng",

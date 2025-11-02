@@ -133,6 +133,7 @@ export default function User() {
   const handleConfirmEdit = () => {
     axios.put(`http://localhost:5000/api/bac-si/update/${user.MaBacSi}`, newUser)
       .then(() => {
+        toast("User Edit: User has been edit.");
         // toast({
         //     title: "User Edit",
         //     description: `User has been edit.`,
@@ -146,6 +147,7 @@ export default function User() {
       })
       .catch((err) => {
         console.error("Error deleting user:", err);
+        toast("Edit Failed: There was an error edit the user.");
         // toast({
         //     title: "Edit Failed",
         //     description: `There was an error edit the user.`,
@@ -211,15 +213,15 @@ export default function User() {
                 <Button size="sm" className="h-7 gap-1">
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add User
+                    Thêm bác sĩ
                   </span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Add New User</DialogTitle>
+                  <DialogTitle>Thêm bác sĩ</DialogTitle>
                   <DialogDescription>
-                    Add new User to store catalog.
+                    Thêm bác sĩ mới vào danh sách.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
