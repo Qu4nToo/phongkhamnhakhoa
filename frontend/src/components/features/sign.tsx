@@ -28,7 +28,14 @@ export function Login() {
         try {
             // Fetch user data by email from the backend
             const response = await fetch(
-                `http://localhost:5000/api/khach-hang/getByEmail/${email}`
+                `http://localhost:5000/api/khach-hang/login`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ Email: email, MatKhau: password }),
+                }
             );
 
             if (!response.ok) {
@@ -37,10 +44,9 @@ export function Login() {
 
             const user = await response.json();
 
-            const hashedPassword = sha3_512(password);
 
-            if (user && hashedPassword == user.MatKhau) {
-                // if (user && password === user.MatKhau) {
+
+            if (user) {
                 toast.success("Đăng nhập thành công!", {
                     duration: 3000,
                     action: {
@@ -56,35 +62,35 @@ export function Login() {
                 });
                 sessionStorage.setItem("user_info", JSON.stringify(user));
                 router.push("/");
-            } else {
-                toast.error("Sai mật khẩu!", {
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                toast.error(error.response?.data?.message || "Lỗi không xác định!", {
                     action: {
                         label: "Đóng",
                         onClick: () => toast.dismiss(),
                     },
-                    duration: 5000,
                     style: {
-                        background: "#fef2f2",
-                        color: "#991b1b",
+                        background: "#ecfdf5",
+                        color: "#065f46",
                         borderRadius: "10px",
-                        border: "1px solid #ef4444",
+                        border: "1px solid #10b981",
+                    },
+                });
+            } else {
+                toast.error("Lỗi không xác định!", {
+                    action: {
+                        label: "Đóng",
+                        onClick: () => toast.dismiss(),
+                    },
+                    style: {
+                        background: "#ecfdf5",
+                        color: "#065f46",
+                        borderRadius: "10px",
+                        border: "1px solid #10b981",
                     },
                 });
             }
-        } catch (error) {
-            let errorMessage = "Email không đúng!";
-            if (error instanceof Error) {
-                errorMessage = error.message;
-            }
-            toast.error(errorMessage, {
-                duration: 5000,
-                style: {
-                    background: "#fef2f2",
-                    color: "#991b1b",
-                    borderRadius: "10px",
-                    border: "1px solid #ef4444",
-                },
-            });
         }
     };
 
@@ -183,13 +189,12 @@ export function Sign() {
             setError("Mật khẩu không khớp");
             return;
         }
-        const hashedPassword = sha3_512(newUser.MatKhau);
         try {
             // Chỉ lấy phần ngày (bỏ giờ)
             const formattedUser = {
                 ...newUser,
                 NgaySinh: newUser.NgaySinh ? newUser.NgaySinh.split("T")[0] : "",
-                MatKhau: hashedPassword,
+                // MatKhau: hashedPassword,
             };
 
             await axios.post(

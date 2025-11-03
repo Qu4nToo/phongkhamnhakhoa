@@ -21,7 +21,11 @@ module.exports = {
             throw new Error('Database query failed');
         }
     },
-
+    updatePassword: async (id, password) => {
+        let sql = `UPDATE khachhang SET MatKhau = ? WHERE MaKhachHang = ?`;
+        const [result] = await db.query(sql, [password, id]);
+        return result;
+    },
     getByEmail: async (email) => {
         try {
             const sql = `SELECT * FROM khachhang WHERE Email = ?`;
@@ -52,15 +56,15 @@ module.exports = {
             console.error('Update Error:', error);
             throw new Error('Database update failed');
         }
-   },
-   delete: async (id) => {
-       try {
-           const sql = `DELETE FROM khachhang WHERE MaKhachHang = ?`;
-           const [result] = await db.query(sql, [id]);
-           return result;
-       } catch (error) {
-           console.error('Delete Error:', error);
-           throw new Error(`Failed to delete customer: ${error.message}`);
-       }
-   }
+    },
+    delete: async (id) => {
+        try {
+            const sql = `DELETE FROM khachhang WHERE MaKhachHang = ?`;
+            const [result] = await db.query(sql, [id]);
+            return result;
+        } catch (error) {
+            console.error('Delete Error:', error);
+            throw new Error(`Failed to delete customer: ${error.message}`);
+        }
+    }
 };
