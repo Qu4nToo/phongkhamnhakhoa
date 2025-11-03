@@ -2,12 +2,10 @@
 import { useEffect, useState } from "react"
 import React from "react"
 import { sha3_512 } from "js-sha3";
-import Image from "next/image"
 import {
-    File,
-    ListFilter,
     MoreHorizontal,
     PlusCircle,
+    Search, // Import Search icon
 } from "lucide-react"
 import {
     Dialog,
@@ -22,8 +20,6 @@ import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -65,7 +61,6 @@ import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 
 
-
 export default function User() {
     const [users, setUsers] = useState([]);
     const [user, setUser] = useState<any>([]);
@@ -74,7 +69,7 @@ export default function User() {
     const [selectedUser, setSelectedUser] = useState<any>([]);
     const [isDialogOpen, setDialogOpen] = useState(false);
     const [chucVu, setChucVu] = useState<any>([]);
-
+    const [searchTerm, setSearchTerm] = useState("");
 
     const [newUser, setNewUser] = useState({
         HoTen: "",
@@ -82,106 +77,85 @@ export default function User() {
         Email: "",
         NgaySinh: "",
         MatKhau: "",
-        DiaChi: ""
+        DiaChi: "",
+        MaChucVu: ""
     });
+
+
     const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { id, value } = e.target;
         setNewUser((prev) => ({
             ...prev,
             [id]: value,
         }));
-        console.log(newUser);
     };
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { id } = e.target;
 
-        const { value } = e.target;
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target;
         setNewUser((prev) => ({
             ...prev,
             [id]: value,
         }));
-        console.log(newUser);
     };
 
 
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const filteredUsers = users.filter((user: any) => {
+        const term = searchTerm.toLowerCase();
+        const hoTen = user.HoTen?.toLowerCase() || "";
+        const email = user.Email?.toLowerCase() || "";
+
+        return hoTen.includes(term) || email.includes(term);
+    });
+
     useEffect(() => {
+        // Lấy danh sách Người dùng
         axios.get("http://localhost:5000/api/nguoi-dung/get")
             .then(users => setUsers(users.data))
             .catch(err => console.log(err))
+
+        // Lấy danh sách Chức vụ
         axios.get("http://localhost:5000/api/chuc-vu/get")
             .then(chucVu => setChucVu(chucVu.data))
             .catch(err => console.log(err))
     }, []);
+
     const handleDeleteClick = (user: React.SetStateAction<null>) => {
-        console.log(user);
         setSelectedUser(user);
         setShowAlert(true);
     }
+
     const handleEditClick = (user: any) => {
+
         setUser(user);
-        setNewUser(user);
+
+        const formattedDate = user.NgaySinh ? user.NgaySinh.split('T')[0] : '';
+
+        setNewUser({
+            ...user,
+            NgaySinh: formattedDate,
+        });
         setShowAlertEdit(true);
     }
+
     const handleAlertEditClose = () => {
         setShowAlertEdit(false);
     }
+
     const handleAlertClose = () => {
         setShowAlert(false);
         setSelectedUser(null);
     }
+
     const handleConfirmEdit = () => {
-        axios.put(`http://localhost:5000/api/nguoi-dung/update/${user.MaNguoiDung}`, newUser)
+        const maNguoiDung = user.MaNguoiDung;
+        axios.put(`http://localhost:5000/api/nguoi-dung/update/${maNguoiDung}`, newUser)
             .then(() => {
-                toast("User Edit: User has been edit.");
-                // toast({
-                //     title: "User Edit",
-                //     description: `User has been edit.`,
-                // });
-                // Reload the users or update state after deletion
-                axios.get("http://localhost:5000/api/nguoi-dung/get")
-                    .then((response) => setUsers(response.data))
-                    .catch((err) => console.error("Error fetching users:", err));
-
-                setShowAlert(false);  // Close the alert dialog
-            })
-            .catch((err) => {
-                console.error("Error deleting user:", err);
-                toast("Edit Failed: There was an error edit the user.");
-                // toast({
-                //     title: "Edit Failed",
-                //     description: `There was an error edit the user.`,
-                //     variant: "destructive",
-                // });
-            });
-    }
-
-    const handleConfirmDelete = () => {
-
-        if (selectedUser) {
-            axios.delete(`http://localhost:5000/api/nguoi-dung/delete/${selectedUser.MaNguoiDung}`)
-                .then(() => {
-                    toast("User Deleted: User has been deleted.");
-                    axios.get("http://localhost:5000/api/nguoi-dung/get")
-                        .then((response) => setUsers(response.data))
-                        .catch((err) => console.error("Error fetching users:", err));
-                    setShowAlert(false);
-                })
-                .catch((err) => {
-                    console.error("Error deleting user:", err);
-                    toast("Delete Failed: There was an error deleting the user.");
-                });
-        }
-    };
-    const handleCreateUser = () => {
-        console.log("Final newUser before submit:", newUser); 
-        const userToCreate = {
-            ...newUser,
-            MatKhau: sha3_512(newUser.MatKhau) // hash mật khẩu
-        };
-        axios.post("http://localhost:5000/api/nguoi-dung/create", userToCreate)
-            .then(() => {
-                toast("User Created: New User has been added successfully.");
-                // Load lại danh sách sản phẩm
+                toast("User Edited: User information has been updated.");
                 axios.get("http://localhost:5000/api/nguoi-dung/get")
                     .then((response) => setUsers(response.data))
                     .catch((err) => console.error("Error fetching users:", err));
@@ -191,22 +165,89 @@ export default function User() {
                     Email: "",
                     NgaySinh: "",
                     MatKhau: "",
-                    DiaChi: ""
+                    DiaChi: "",
+                    MaChucVu: ""
+                });
+                setShowAlertEdit(false);
+            })
+            .catch((err) => {
+                console.error("Error editing user:", err);
+                toast("Edit Failed: There was an error updating the user.");
+            });
+    }
+
+    const handleConfirmDelete = () => {
+        if (selectedUser) {
+            axios.delete(`http://localhost:5000/api/nguoi-dung/delete/${selectedUser.MaNguoiDung}`)
+                .then(() => {
+                    toast("User Deleted: User has been deleted.");
+                    axios.get("http://localhost:5000/api/nguoi-dung/get")
+                        .then((response) => setUsers(response.data))
+                        .catch((err) => console.error("Error fetching users:", err));
+                    setNewUser({
+                        HoTen: "",
+                        SDT: "",
+                        Email: "",
+                        NgaySinh: "",
+                        MatKhau: "",
+                        DiaChi: "",
+                        MaChucVu: ""
+                    });
+                    setShowAlert(false);
+                })
+                .catch((err) => {
+                    console.error("Error deleting user:", err);
+                    toast("Delete Failed: There was an error deleting the user.");
+                });
+        }
+    };
+
+    const handleCreateUser = () => {
+        const userToCreate = {
+            ...newUser,
+            MatKhau: sha3_512(newUser.MatKhau)
+        };
+        axios.post("http://localhost:5000/api/nguoi-dung/create", userToCreate)
+            .then(() => {
+                toast("User Created: New User has been added successfully.");
+                axios.get("http://localhost:5000/api/nguoi-dung/get")
+                    .then((response) => setUsers(response.data))
+                    .catch((err) => console.error("Error fetching users:", err));
+                setNewUser({
+                    HoTen: "",
+                    SDT: "",
+                    Email: "",
+                    NgaySinh: "",
+                    MatKhau: "",
+                    DiaChi: "",
+                    MaChucVu: ""
                 });
                 setDialogOpen(false);
             })
-            .catch((err) => console.error("Error creating userduct:", err));
+            .catch((err) => console.error("Error creating user:", err));
     };
+
     return (
         <>
             <title>User</title>
             <Tabs defaultValue="all">
                 <div className="flex items-center">
                     <TabsList>
-                        <TabsTrigger value="all">All</TabsTrigger>
+                        <TabsTrigger value="all">Tất cả</TabsTrigger>
                     </TabsList>
-                    
+
                     <div className="ml-auto flex items-center gap-2">
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Tìm kiếm theo tên hoặc Email..."
+                                className="w-full pl-8 md:w-[250px] lg:w-[350px]"
+                                onChange={handleSearchChange}
+                                value={searchTerm}
+                            />
+                        </div>
+
                         <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
                             <DialogTrigger asChild>
                                 <Button size="sm" className="h-7 gap-1">
@@ -216,6 +257,8 @@ export default function User() {
                                     </span>
                                 </Button>
                             </DialogTrigger>
+
+                            {/* Dialog Thêm Người Dùng */}
                             <DialogContent className="sm:max-w-[425px]">
                                 <DialogHeader>
                                     <DialogTitle>Thêm người dùng</DialogTitle>
@@ -229,9 +272,10 @@ export default function User() {
                                             Role
                                         </Label>
                                         <select
-                                            id="MaChucVu"  // Đây là ID cho dropdown
-                                            onChange={handleInputChange2}  // Gọi handleInputChange khi có sự thay đổi
-                                            className="col-span-4"
+                                            id="MaChucVu"
+                                            onChange={handleInputChange2}
+                                            className="col-span-4 border border-input p-2 rounded-md"
+                                            value={newUser.MaChucVu}
                                         >
                                             <option value="">Chọn chức vụ</option>
                                             {chucVu.map((chucvu: any) => (
@@ -243,37 +287,37 @@ export default function User() {
                                         <Label htmlFor="HoTen" className="text-right col-span-2">
                                             Họ và Tên
                                         </Label>
-                                        <Input onChange={handleInputChange} id="HoTen" type="text" className="col-span-4" />
+                                        <Input onChange={handleInputChange} id="HoTen" type="text" className="col-span-4" value={newUser.HoTen} />
                                     </div>
                                     <div className="grid grid-cols-6 items-center gap-4">
                                         <Label htmlFor="Email" className="text-right col-span-2">
                                             Email
                                         </Label>
-                                        <Input onChange={handleInputChange} id="Email" type="text" className="col-span-4" />
+                                        <Input onChange={handleInputChange} id="Email" type="text" className="col-span-4" value={newUser.Email} />
                                     </div>
                                     <div className="grid grid-cols-6 items-center gap-4">
                                         <Label htmlFor="SDT" className="text-right col-span-2">
                                             Số điện thoại
                                         </Label>
-                                        <Input onChange={handleInputChange} id="SDT" type="text" className="col-span-4" />
+                                        <Input onChange={handleInputChange} id="SDT" type="text" className="col-span-4" value={newUser.SDT} />
                                     </div>
                                     <div className="grid grid-cols-6 items-center gap-4">
                                         <Label htmlFor="NgaySinh" className="text-right col-span-2">
                                             Ngày sinh
                                         </Label>
-                                        <Input onChange={handleInputChange} id="NgaySinh" type="date" className="col-span-4" />
+                                        <Input onChange={handleInputChange} id="NgaySinh" type="date" className="col-span-4" value={newUser.NgaySinh} />
                                     </div>
                                     <div className="grid grid-cols-6 items-center gap-4">
                                         <Label htmlFor="DiaChi" className="text-right col-span-2">
                                             Địa chỉ
                                         </Label>
-                                        <Input onChange={handleInputChange} id="DiaChi" type="text" className="col-span-4" />
+                                        <Input onChange={handleInputChange} id="DiaChi" type="text" className="col-span-4" value={newUser.DiaChi} />
                                     </div>
                                     <div className="grid grid-cols-6 items-center gap-4">
                                         <Label htmlFor="MatKhau" className="text-right col-span-2">
                                             Mật khẩu
                                         </Label>
-                                        <Input onChange={handleInputChange} id="MatKhau" type="text" className="col-span-4" />
+                                        <Input onChange={handleInputChange} id="MatKhau" type="password" className="col-span-4" value={newUser.MatKhau} />
                                     </div>
                                 </div>
                                 <DialogFooter>
@@ -288,7 +332,7 @@ export default function User() {
                 <TabsContent value="all">
                     <Card x-chunk="dashboard-06-chunk-0">
                         <CardHeader>
-                            <CardTitle>Danh sách bác sĩ</CardTitle>
+                            <CardTitle>Danh sách người dùng</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <Table>
@@ -305,23 +349,25 @@ export default function User() {
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                {users.map((users: any) => (
-                                    <TableBody key={users.MaNguoiDung}>
-                                        <TableRow>
+                                <TableBody>
+                                    {filteredUsers.map((user: any) => (
+                                        <TableRow key={user.MaNguoiDung}>
                                             <TableCell className="font-medium">
-                                                {users.TenChucVu}
+                                                {user.TenChucVu}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {users.HoTen}
+                                                {user.HoTen}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {users.SDT}
+                                                {user.SDT}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {users.Email}
+                                                {user.Email}
                                             </TableCell>
-                                            <TableCell>{users.NgaySinh}</TableCell>
-                                            <TableCell>{users.DiaChi}</TableCell>
+                                            <TableCell>
+                                                {user.NgaySinh ? user.NgaySinh.split('T')[0] : ''}
+                                            </TableCell>
+                                            <TableCell>{user.DiaChi}</TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
@@ -329,7 +375,6 @@ export default function User() {
                                                             aria-haspopup="true"
                                                             size="icon"
                                                             variant="ghost"
-                                                        // onClick={() => handleToggleMenuClick(product)}
                                                         >
                                                             <MoreHorizontal className="h-4 w-4" />
                                                             <span className="sr-only">Toggle menu</span>
@@ -337,26 +382,21 @@ export default function User() {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem onClick={() => handleEditClick(users)}>Edit</DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleDeleteClick(users)}>Delete</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleEditClick(user)}>Sửa</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleDeleteClick(user)}>Xóa</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
                                         </TableRow>
-
-                                    </TableBody>
-                                ))}
+                                    ))}
+                                </TableBody>
                             </Table>
                         </CardContent>
-                        {/* <CardFooter>
-              <div className="text-xs text-muted-foreground">
-                Showing <strong>1-10</strong> of <strong>32</strong>{" "}
-                users
-              </div>
-            </CardFooter> */}
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            {/* AlertDialog Xóa */}
             <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -373,43 +413,64 @@ export default function User() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* AlertDialog Sửa */}
             <AlertDialog open={showAlertEdit} onOpenChange={setShowAlertEdit}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Edit userduct</AlertDialogTitle>
+                        <AlertDialogTitle>Sửa thông tin người dùng</AlertDialogTitle>
                     </AlertDialogHeader>
                     <div className="grid gap-4 py-4">
+                        {/* Dropdown Chức vụ (Edit) */}
+                        <div className="grid grid-cols-6 items-center gap-4">
+                            <Label htmlFor="MaChucVu" className="text-right col-span-2">
+                                Role
+                            </Label>
+                            <select
+                                id="MaChucVu"
+                                onChange={handleInputChange2}
+                                className="col-span-4 border border-input p-2 rounded-md"
+                                defaultValue={newUser.MaChucVu}
+                            >
+                                <option value="">Chọn chức vụ</option>
+                                {chucVu.map((chucvu: any) => (
+                                    <option key={chucvu.MaChucVu} value={chucvu.MaChucVu}>{chucvu.TenChucVu}</option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div className="grid grid-cols-6 items-center gap-4">
                             <Label htmlFor="HoTen" className="text-right col-span-2">
                                 Họ và Tên
                             </Label>
-                            <Input onChange={handleInputChange} id="HoTen" type="text" className="col-span-4" defaultValue={user.HoTen} />
+                            <Input onChange={handleInputChange} id="HoTen" type="text" className="col-span-4" defaultValue={newUser.HoTen} />
                         </div>
                         <div className="grid grid-cols-6 items-center gap-4">
                             <Label htmlFor="Email" className="text-right col-span-2">
                                 Email
                             </Label>
-                            <Input onChange={handleInputChange} id="Email" type="text" className="col-span-4" defaultValue={user.Email} readOnly />
+                            <Input onChange={handleInputChange} id="Email" type="text" className="col-span-4" defaultValue={newUser.Email} readOnly />
                         </div>
                         <div className="grid grid-cols-6 items-center gap-4">
-                            <Label htmlFor="SoDienThoai" className="text-right col-span-2">
+                            <Label htmlFor="SDT" className="text-right col-span-2">
                                 Số điện thoại
                             </Label>
-                            <Input onChange={handleInputChange} id="SoDienThoai" type="text" className="col-span-4" defaultValue={user.SDT} />
+                            <Input onChange={handleInputChange} id="SDT" type="text" className="col-span-4" defaultValue={newUser.SDT} />
                         </div>
                         <div className="grid grid-cols-6 items-center gap-4">
                             <Label htmlFor="NgaySinh" className="text-right col-span-2">
                                 Ngày sinh
                             </Label>
-                            <Input onChange={handleInputChange} id="NgaySinh" type="date" className="col-span-4" defaultValue={user.NgaySinh} />
+                            {/* Giá trị NgaySinh đã được format YYYY-MM-DD trong handleEditClick */}
+                            <Input onChange={handleInputChange} id="NgaySinh" type="date" className="col-span-4" defaultValue={newUser.NgaySinh} />
                         </div>
                         <div className="grid grid-cols-6 items-center gap-4">
                             <Label htmlFor="DiaChi" className="text-right col-span-2">
                                 Địa chỉ
                             </Label>
-                            <Input onChange={handleInputChange} id="DiaChi" type="text" className="col-span-4" defaultValue={user.DiaChi} />
+                            <Input onChange={handleInputChange} id="DiaChi" type="text" className="col-span-4" defaultValue={newUser.DiaChi} />
                         </div>
-                        <Input onChange={handleInputChange} id="MatKhau" type="text" className="col-span-4" defaultValue={user.MatKhau} hidden />
+                        <Input id="MatKhau" type="hidden" defaultValue={newUser.MatKhau} />
                     </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel onClick={handleAlertEditClose}>Cancel</AlertDialogCancel>

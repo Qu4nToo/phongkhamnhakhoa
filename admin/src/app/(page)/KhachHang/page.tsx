@@ -2,12 +2,10 @@
 import { useEffect, useState } from "react"
 import React from "react"
 import { sha3_512 } from "js-sha3";
-import Image from "next/image"
 import {
-  File,
-  ListFilter,
   MoreHorizontal,
   PlusCircle,
+  Search,
 } from "lucide-react"
 import {
   Dialog,
@@ -22,8 +20,6 @@ import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -65,16 +61,14 @@ import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 
 
-
 export default function User() {
-  const [file, setFile] = useState<File | null>(null);
   const [users, setUsers] = useState([]);
-  const [user, setUser] = useState<any>([]);
+  const [user, setUser] = useState<any>([]); // User đang được chỉnh sửa
   const [showAlert, setShowAlert] = useState(false);
   const [showAlertEdit, setShowAlertEdit] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>([]);
   const [isDialogOpen, setDialogOpen] = useState(false);
-
+  const [searchTerm, setSearchTerm] = useState(""); // State mới cho tìm kiếm
 
   const [newUser, setNewUser] = useState({
     HoTen: "",
@@ -83,78 +77,84 @@ export default function User() {
     NgaySinh: "",
     MatKhau: ""
   });
-  const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setNewUser((prev) => ({
       ...prev,
       [id]: value,
     }));
-    console.log(newUser);
-  };
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id } = e.target;
-
-    const { value } = e.target;
-    setNewUser((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
-    console.log(newUser);
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const filteredUsers = users.filter((user: any) => {
+    const term = searchTerm.toLowerCase();
+    const hoTen = user.HoTen?.toLowerCase() || "";
+    const email = user.Email?.toLowerCase() || "";
+
+    return hoTen.includes(term) || email.includes(term);
+  });
 
   useEffect(() => {
     axios.get("http://localhost:5000/api/khach-hang/get")
       .then(users => setUsers(users.data))
       .catch(err => console.log(err))
   }, []);
-  // const handleToggleMenuClick = (product: React.SetStateAction<null>)=>{
-  //     setSelectedProduct(product);
-  //     a = selectedProduct;
-  // }
+
   const handleDeleteClick = (user: React.SetStateAction<null>) => {
-    console.log(user);
     setSelectedUser(user);
     setShowAlert(true);
   }
+
   const handleEditClick = (user: any) => {
     setUser(user);
-    setNewUser(user);
+
+    const formattedDate = user.NgaySinh ? user.NgaySinh.split('T')[0] : '';
+
+    setNewUser({
+      ...user,
+      NgaySinh: formattedDate,
+    });
     setShowAlertEdit(true);
   }
+
   const handleAlertEditClose = () => {
     setShowAlertEdit(false);
   }
+
   const handleAlertClose = () => {
     setShowAlert(false);
     setSelectedUser(null);
   }
+
   const handleConfirmEdit = () => {
+    // Gửi dữ liệu cập nhật
     axios.put(`http://localhost:5000/api/khach-hang/update/${user.MaKhachHang}`, newUser)
       .then(() => {
-        // toast({
-        //     title: "User Edit",
-        //     description: `User has been edit.`,
-        // });
-        // Reload the users or update state after deletion
+        toast("User Edited: User information has been updated.");
+        // Tải lại danh sách
         axios.get("http://localhost:5000/api/khach-hang/get")
           .then((response) => setUsers(response.data))
           .catch((err) => console.error("Error fetching users:", err));
-
-        setShowAlert(false);  // Close the alert dialog
+        setNewUser({
+          HoTen: "",
+          SoDienThoai: "",
+          Email: "",
+          NgaySinh: "",
+          MatKhau: ""
+        });
+        setShowAlertEdit(false);
       })
       .catch((err) => {
-        console.error("Error deleting user:", err);
-        // toast({
-        //     title: "Edit Failed",
-        //     description: `There was an error edit the user.`,
-        //     variant: "destructive",
-        // });
+        console.error("Error editing user:", err);
+        toast("Edit Failed: There was an error updating the user.");
       });
   }
 
   const handleConfirmDelete = () => {
-
     if (selectedUser) {
       axios.delete(`http://localhost:5000/api/khach-hang/delete/${selectedUser.MaKhachHang}`)
         .then(() => {
@@ -163,6 +163,13 @@ export default function User() {
             .then((response) => setUsers(response.data))
             .catch((err) => console.error("Error fetching users:", err));
           setShowAlert(false);
+          setNewUser({
+            HoTen: "",
+            SoDienThoai: "",
+            Email: "",
+            NgaySinh: "",
+            MatKhau: ""
+          });
         })
         .catch((err) => {
           console.error("Error deleting user:", err);
@@ -170,16 +177,15 @@ export default function User() {
         });
     }
   };
+
   const handleCreateUser = () => {
-    console.log(newUser);
-      const userToCreate = {
-        ...newUser,
-        MatKhau: sha3_512(newUser.MatKhau) // hash mật khẩu
+    const userToCreate = {
+      ...newUser,
+      MatKhau: sha3_512(newUser.MatKhau) // hash mật khẩu
     };
     axios.post("http://localhost:5000/api/khach-hang/create", userToCreate)
       .then(() => {
         toast("User Created: New User has been added successfully.");
-        // Load lại danh sách sản phẩm
         axios.get("http://localhost:5000/api/khach-hang/get")
           .then((response) => setUsers(response.data))
           .catch((err) => console.error("Error fetching users:", err));
@@ -192,17 +198,31 @@ export default function User() {
         });
         setDialogOpen(false);
       })
-      .catch((err) => console.error("Error creating userduct:", err));
+      .catch((err) => console.error("Error creating user:", err));
   };
+
   return (
     <>
       <title>User</title>
       <Tabs defaultValue="all">
         <div className="flex items-center">
           <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="all">Tất cả</TabsTrigger>
           </TabsList>
+
+          {/* Phần Tìm kiếm và Nút Thêm */}
           <div className="ml-auto flex items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Tìm kiếm theo tên hoặc Email..."
+                className="w-full pl-8 md:w-[250px] lg:w-[350px]"
+                onChange={handleSearchChange}
+                value={searchTerm}
+              />
+            </div>
+
             <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" className="h-7 gap-1">
@@ -212,6 +232,8 @@ export default function User() {
                   </span>
                 </Button>
               </DialogTrigger>
+
+              {/* Dialog Thêm Khách Hàng (Giữ nguyên) */}
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle>Thêm khách hàng</DialogTitle>
@@ -224,31 +246,31 @@ export default function User() {
                     <Label htmlFor="HoTen" className="text-right col-span-2">
                       Họ và Tên
                     </Label>
-                    <Input onChange={handleInputChange} id="HoTen" type="text" className="col-span-4" />
+                    <Input onChange={handleInputChange} id="HoTen" type="text" className="col-span-4" value={newUser.HoTen} />
                   </div>
                   <div className="grid grid-cols-6 items-center gap-4">
                     <Label htmlFor="Email" className="text-right col-span-2">
                       Email
                     </Label>
-                    <Input onChange={handleInputChange} id="Email" type="text" className="col-span-4" />
+                    <Input onChange={handleInputChange} id="Email" type="text" className="col-span-4" value={newUser.Email} />
                   </div>
                   <div className="grid grid-cols-6 items-center gap-4">
                     <Label htmlFor="SoDienThoai" className="text-right col-span-2">
                       Số điện thoại
                     </Label>
-                    <Input onChange={handleInputChange} id="SoDienThoai" type="text" className="col-span-4" />
+                    <Input onChange={handleInputChange} id="SoDienThoai" type="text" className="col-span-4" value={newUser.SoDienThoai} />
                   </div>
                   <div className="grid grid-cols-6 items-center gap-4">
                     <Label htmlFor="NgaySinh" className="text-right col-span-2">
                       Ngày sinh
                     </Label>
-                    <Input onChange={handleInputChange} id="NgaySinh" type="date" className="col-span-4" />
+                    <Input onChange={handleInputChange} id="NgaySinh" type="date" className="col-span-4" value={newUser.NgaySinh} />
                   </div>
                   <div className="grid grid-cols-6 items-center gap-4">
                     <Label htmlFor="MatKhau" className="text-right col-span-2">
                       Mật khẩu
                     </Label>
-                    <Input onChange={handleInputChange} id="MatKhau" type="text" className="col-span-4" />
+                    <Input onChange={handleInputChange} id="MatKhau" type="password" className="col-span-4" value={newUser.MatKhau} />
                   </div>
                 </div>
                 <DialogFooter>
@@ -278,20 +300,23 @@ export default function User() {
                     </TableHead>
                   </TableRow>
                 </TableHeader>
-                {users.map((users: any) => (
-                <TableBody key={users.MaKhachHang}>
-                  
-                    <TableRow >
-                      <TableCell className="hidden sm:table-cell">
-                        {users.HoTen}
+                {/* Dùng filteredUsers để hiển thị kết quả */}
+                <TableBody>
+                  {filteredUsers.map((user: any) => (
+                    <TableRow key={user.MaKhachHang}>
+                      <TableCell className="font-medium">
+                        {user.HoTen}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {users.SoDienThoai}
+                        {user.SoDienThoai}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {users.Email}
+                        {user.Email}
                       </TableCell>
-                      <TableCell>{users.NgaySinh}</TableCell>
+                      <TableCell>
+                        {/* Hiển thị ngày sinh ở định dạng YYYY-MM-DD */}
+                        {user.NgaySinh ? user.NgaySinh.split('T')[0] : ''}
+                      </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -299,7 +324,6 @@ export default function User() {
                               aria-haspopup="true"
                               size="icon"
                               variant="ghost"
-                            // onClick={() => handleToggleMenuClick(product)}
                             >
                               <MoreHorizontal className="h-4 w-4" />
                               <span className="sr-only">Toggle menu</span>
@@ -307,19 +331,21 @@ export default function User() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEditClick(users)}>Edit</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteClick(users)}>Delete</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditClick(user)}>Sửa</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteClick(user)}>Xóa</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
+                  ))}
                 </TableBody>
-              ))}
               </Table>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* AlertDialog Xóa */}
       <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -336,37 +362,42 @@ export default function User() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* AlertDialog Sửa */}
       <AlertDialog open={showAlertEdit} onOpenChange={setShowAlertEdit}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Edit userduct</AlertDialogTitle>
+            <AlertDialogTitle>Sửa thông tin khách hàng</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="grid gap-4 py-4">
-<div className="grid grid-cols-6 items-center gap-4">
-                    <Label htmlFor="HoTen" className="text-right col-span-2">
-                      Họ và Tên
-                    </Label>
-                    <Input onChange={handleInputChange} id="HoTen" type="text" className="col-span-4" defaultValue={user.HoTen} />
-                  </div>
-                  <div className="grid grid-cols-6 items-center gap-4">
-                    <Label htmlFor="Email" className="text-right col-span-2">
-                      Email
-                    </Label>
-                    <Input onChange={handleInputChange} id="Email" type="text" className="col-span-4" defaultValue={user.Email} />
-                  </div>
-                  <div className="grid grid-cols-6 items-center gap-4">
-                    <Label htmlFor="SoDienThoai" className="text-right col-span-2">
-                      Số điện thoại
-                    </Label>
-                    <Input onChange={handleInputChange} id="SoDienThoai" type="text" className="col-span-4" defaultValue={user.SoDienThoai} />
-                  </div>
-                  <div className="grid grid-cols-6 items-center gap-4">
-                    <Label htmlFor="NgaySinh" className="text-right col-span-2">
-                      Ngày sinh
-                    </Label>
-                    <Input onChange={handleInputChange} id="NgaySinh" type="date" className="col-span-4" defaultValue={user.NgaySinh} />
-                  </div>
-                    <Input onChange={handleInputChange} id="MatKhau" type="text" className="col-span-4" defaultValue={user.MatKhau} hidden />
+            <div className="grid grid-cols-6 items-center gap-4">
+              <Label htmlFor="HoTen" className="text-right col-span-2">
+                Họ và Tên
+              </Label>
+              {/* Dùng newUser.HoTen làm giá trị và handleInputChange để cập nhật */}
+              <Input onChange={handleInputChange} id="HoTen" type="text" className="col-span-4" defaultValue={newUser.HoTen} />
+            </div>
+            <div className="grid grid-cols-6 items-center gap-4">
+              <Label htmlFor="Email" className="text-right col-span-2">
+                Email
+              </Label>
+              <Input onChange={handleInputChange} id="Email" type="text" className="col-span-4" defaultValue={newUser.Email} />
+            </div>
+            <div className="grid grid-cols-6 items-center gap-4">
+              <Label htmlFor="SoDienThoai" className="text-right col-span-2">
+                Số điện thoại
+              </Label>
+              <Input onChange={handleInputChange} id="SoDienThoai" type="text" className="col-span-4" defaultValue={newUser.SoDienThoai} />
+            </div>
+            <div className="grid grid-cols-6 items-center gap-4">
+              <Label htmlFor="NgaySinh" className="text-right col-span-2">
+                Ngày sinh
+              </Label>
+              {/* Giá trị NgaySinh đã được format YYYY-MM-DD trong handleEditClick */}
+              <Input onChange={handleInputChange} id="NgaySinh" type="date" className="col-span-4" defaultValue={newUser.NgaySinh} />
+            </div>
+            {/* MatKhau (hidden) - dùng để giữ nguyên mật khẩu cũ nếu không muốn đổi */}
+            <Input id="MatKhau" type="hidden" defaultValue={newUser.MatKhau} />
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleAlertEditClose}>Cancel</AlertDialogCancel>

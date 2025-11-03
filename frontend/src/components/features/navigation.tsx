@@ -151,7 +151,7 @@ export default function Navbar() {
                       <>
                         <MenuItem>
                           <span className="block px-4 py-2 text-sm text-gray-700 font-bold">
-                            {userInfo.HoTen || "Name"}
+                            {userInfo?.khachHang.HoTen || "Name"}
                           </span>
                         </MenuItem>
                         <MenuItem>

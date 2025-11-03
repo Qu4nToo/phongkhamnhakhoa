@@ -4,10 +4,9 @@ import React from "react"
 import { sha3_512 } from "js-sha3";
 import Image from "next/image"
 import {
-  File,
-  ListFilter,
   MoreHorizontal,
   PlusCircle,
+  Search,
 } from "lucide-react"
 import {
   Dialog,
@@ -73,7 +72,7 @@ export default function User() {
   const [showAlertEdit, setShowAlertEdit] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>([]);
   const [isDialogOpen, setDialogOpen] = useState(false);
-
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [newUser, setNewUser] = useState({
     HoTen: "",
@@ -84,6 +83,19 @@ export default function User() {
     KinhNghiem: "",
     DiaChi: ""
   });
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchTerm(e.target.value);
+    };
+  
+    const filteredUsers = users.filter((user: any) => {
+      const term = searchTerm.toLowerCase();
+      const hoTen = user.HoTen?.toLowerCase() || "";
+      const email = user.Email?.toLowerCase() || "";
+  
+      return hoTen.includes(term) || email.includes(term);
+    });
+
   const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { id, value } = e.target;
     setNewUser((prev) => ({
@@ -205,9 +217,19 @@ export default function User() {
       <Tabs defaultValue="all">
         <div className="flex items-center">
           <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="all">Tất cả</TabsTrigger>
           </TabsList>
           <div className="ml-auto flex items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Tìm kiếm theo tên hoặc Email..."
+                className="w-full pl-8 md:w-[250px] lg:w-[350px]"
+                onChange={handleSearchChange}
+                value={searchTerm}
+              />
+            </div>
             <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" className="h-7 gap-1">
@@ -297,7 +319,7 @@ export default function User() {
                     </TableHead>
                   </TableRow>
                 </TableHeader>
-                {users.map((users: any) => (
+                {filteredUsers.map((users: any) => (
                   <TableBody key={users.MaBacSi}>
                     <TableRow>
                       <TableCell className="hidden sm:table-cell">
@@ -327,8 +349,8 @@ export default function User() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEditClick(users)}>Edit</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteClick(users)}>Delete</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditClick(users)}>Sửa</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteClick(users)}>Xóa</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

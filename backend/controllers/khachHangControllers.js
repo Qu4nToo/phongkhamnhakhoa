@@ -1,4 +1,6 @@
 const KhachHang = require("../models/khachHangModel");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const KhachHangController = {
     getAllKhachHang: async (req, res) => {
         try {
@@ -36,6 +38,26 @@ const KhachHangController = {
             res.status(500).json({ message: "Lỗi server", error: error.message });
         }
     },
+    loginKhachHang: async (req, res) => {
+        try {
+            const { Email, MatKhau } = req.body;
+            const khachHang = await KhachHang.getByEmail(Email);
+            if (!khachHang) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            const isMatch = await bcrypt.compare(MatKhau, khachHang.MatKhau);
+            if (!isMatch) {
+                return res.status(401).json({ message: "Invalid credentials" });
+            }
+            if (khachHang && isMatch) {
+                const token = jwt.sign({ id: khachHang.MaKhachHang, role: "khachHang" }, process.env.JWT_SECRET, { expiresIn: "1h" });
+                res.status(200).json({ khachHang, token, message: 'Đăng nhập thành công' });
+            }
+        } catch (error) {
+            console.error("Lỗi khi đăng nhập:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
 
     createKhachHang: async (req, res) => {
         try {
@@ -61,16 +83,16 @@ const KhachHangController = {
 
             const existingKhachHang = await KhachHang.getByEmail(Email);
             if (existingKhachHang) {
-                
+
                 return res.status(409).json({ message: "Email đã tồn tại. Vui lòng sử dụng Email khác." });
             }
-
+            const hashedPassword = await bcrypt.hash(MatKhau, 10);
             const result = await KhachHang.create({
                 HoTen,
                 NgaySinh,
                 SoDienThoai,
                 Email,
-                MatKhau
+                MatKhau: hashedPassword,
             });
 
             return res.status(201).json({ message: "Thêm khách hàng thành công!", data: result });

@@ -14,4 +14,6 @@ router.put('/update/:id', khachHangController.updateKhachHang);
 
 router.delete('/delete/:id', khachHangController.deleteKhachHang);
 
+router.post('/login', khachHangController.loginKhachHang);
+
 module.exports = router;
