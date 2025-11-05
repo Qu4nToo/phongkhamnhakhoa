@@ -67,11 +67,11 @@ const LichHenController = {
   createLichHen: async (req, res) => {
     try {
       console.log("📥 Body nhận được từ client:", req.body);
-      const { GhiChu, NgayHen, TinhTrang, MaKhachHang, MaBacSi } = req.body;
+      const { GhiChu, NgayHen, MaKhachHang, MaBacSi } = req.body;
 
-      if (!NgayHen || !TinhTrang || !MaKhachHang || !MaBacSi) {
+      if (!NgayHen || !MaKhachHang || !MaBacSi) {
         return res.status(400).json({
-          message: "Các trường NgayHen, TinhTrang, MaKhachHang, MaBacSi là bắt buộc!",
+          message: "Các trường NgayHen, MaKhachHang, MaBacSi là bắt buộc!",
         });
       }
 
@@ -82,9 +82,7 @@ const LichHenController = {
         return res.status(400).json({ message: "Ngày hẹn không được nhỏ hơn ngày hiện tại!" });
       }
 
-      if (![0, 1, 2, 3].includes(Number(TinhTrang))) {
-        return res.status(400).json({ message: "Tình trạng không hợp lệ!" });
-      }
+
 
       const formattedDate = ngayHenDate.toISOString().split("T")[0];
       const count = await LichHen.countByBacSiAndDate(MaBacSi, formattedDate);
@@ -114,7 +112,6 @@ const LichHenController = {
       const result = await LichHen.create({
         GhiChu,
         NgayHen,
-        TinhTrang,
         MaKhachHang,
         MaBacSi,
       });
@@ -133,11 +130,11 @@ const LichHenController = {
   updateLichHen: async (req, res) => {
     try {
       const { id } = req.params;
-      const { GhiChu, NgayHen, TinhTrang, MaKhachHang, MaBacSi } = req.body;
+      const { GhiChu, NgayHen, MaKhachHang, MaBacSi } = req.body;
 
-      if (!NgayHen || !TinhTrang || !MaKhachHang || !MaBacSi) {
+      if (!NgayHen || !MaKhachHang || !MaBacSi) {
         return res.status(400).json({
-          message: "Các trường NgayHen, TinhTrang, MaKhachHang, MaBacSi là bắt buộc!",
+          message: "Các trường NgayHen MaKhachHang, MaBacSi là bắt buộc!",
         });
       }
 
@@ -147,14 +144,9 @@ const LichHenController = {
         return res.status(400).json({ message: "Ngày hẹn không hợp lệ!" });
       }
 
-      if (![0, 1, 2, 3].includes(Number(TinhTrang))) {
-        return res.status(400).json({ message: "Tình trạng không hợp lệ!" });
-      }
-
       const result = await LichHen.update(id, {
         GhiChu,
         NgayHen,
-        TinhTrang,
         MaKhachHang,
         MaBacSi,
       });

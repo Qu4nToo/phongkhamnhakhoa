@@ -5,13 +5,28 @@ const ChiTietPhieuKhamController = {
   getAllChiTietPhieuKham: async (req, res) => {
     try {
       const data = await ChiTietPhieuKham.getAlls();
+      if (!data) {
+        return res.status(404).json({ message: "Không tìm thấy chi tiết phiếu khám!" });
+      }
       res.status(200).json(data);
     } catch (error) {
       console.error("Lỗi khi lấy danh sách chi tiết phiếu khám:", error);
       res.status(500).json({ message: "Lỗi server", error: error.message });
     }
   },
-
+  getByPhieuKhamId: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = await ChiTietPhieuKham.getByPhieuKhamId(id);
+      if (!data) {
+        return res.status(404).json({ message: "Không tìm thấy chi tiết phiếu khám!" });
+      }
+      res.status(200).json(data);
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách chi tiết phiếu khám theo mã phiếu khám:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
   // 🔹 Lấy chi tiết theo ID (MaCTPK)
   getChiTietPhieuKhamById: async (req, res) => {
     try {

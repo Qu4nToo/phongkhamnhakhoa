@@ -7,7 +7,9 @@ const router = express.Router();
 router.get('/get', chiTietPhieuKhamController.getAllChiTietPhieuKham);
 
 // GET chi tiet phieu kham by ID
-router.get('/get:id', chiTietPhieuKhamController.getChiTietPhieuKhamById);
+router.get('/get/:id', chiTietPhieuKhamController.getChiTietPhieuKhamById);
+// GET chi tiet phieu kham by MaPhieuKham
+router.get('/getByPhieuKhamID/:id', chiTietPhieuKhamController.getByPhieuKhamId);
 
 // CREATE new chi tiet phieu kham
 router.post('/create', chiTietPhieuKhamController.createChiTietPhieuKham);

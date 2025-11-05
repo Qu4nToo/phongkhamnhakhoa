@@ -1,149 +1,178 @@
-"use client"
-import { Typography } from "@material-tailwind/react";
+import React from 'react';
+// Đã loại bỏ import từ 'react-icons/fa' và thay bằng SVG nội tuyến
+// const { FaFacebookF, FaYoutube, FaEnvelope } = require('react-icons/fa'); 
 
-const LINKS = [
-  {
-    title: "Product",
-    items: ["Overview", "Features", "Solutions", "Tutorials"],
-  },
-  {
-    title: "Company",
-    items: ["About us", "Careers", "Press", "News"],
-  },
-  {
-    title: "Resource",
-    items: ["Blog", "Newsletter", "Events", "Help center"],
-  },
-];
+// === SVG ICONS THAY THẾ CHO react-icons/fa ===
 
-const currentYear = new Date().getFullYear();
+const IconFacebook = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" className="w-4 h-4">
+    <path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V363.5h-55V256h55v-92.88c0-51.78 35.29-76.88 86.43-76.88 15.39 0 32.32 2.76 35.8 5.04v60.13h-34.6c-27.47 0-38.38 21.08-38.38 41.53V256h68.78l-10.97 107.5H301V501.38C413.31 482.38 504 379.78 504 256z"/>
+  </svg>
+);
 
-export default function Footer() {
+const IconYoutube = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" fill="currentColor" className="w-4 h-4">
+    <path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.88C458.828 64 288 64 288 64S117.172 64 74.629 75.203c-23.497 6.604-42.003 25.23-48.284 48.88C16 160.118 16 256 16 256s0 95.882 8.345 131.917c6.281 23.65 24.787 42.276 48.284 48.88C117.172 448 288 448 288 448s170.828 0 213.371-11.203c23.497-6.604 42.003-25.23 48.284-48.88C560 351.882 560 256 560 256s0-95.882-10.345-131.917zM232 352V160l144 96-144 96z"/>
+  </svg>
+);
+
+const IconEnvelope = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" className="w-4 h-4">
+    <path d="M480 96H32c-17.6 0-32 14.4-32 32v256c0 17.6 14.4 32 32 32h448c17.6 0 32-14.4 32-32V128c0-17.6-14.4-32-32-32zM450.4 128L256 264.8 61.6 128H450.4zm0 256H61.6L256 230.2 450.4 384z"/>
+  </svg>
+);
+// ==========================================
+
+
+const footerLinks = {
+  gioiThieu: [
+    { name: "Về Chúng Tôi", href: "#" },
+    { name: "Bảng Giá Dịch Vụ", href: "#" },
+    { name: "Tin tức sự kiện", href: "#" },
+    { name: "Kiến Thức Nha Khoa", href: "/kienthucnhakhoa" },
+    { name: "Chính sách bảo mật", href: "#" },
+    { name: "Tuyển dụng", href: "#" },
+  ],
+  heThong: [
+    { name: "Tp. Hồ Chí Minh", href: "#" },
+    { name: "Hà Nội", href: "#" },
+    { name: "Các Tỉnh", href: "#" },
+  ],
+};
+
+const Footer = () => {
+  // Array chứa các Component SVG đã định nghĩa
+  const SocialIcons = [IconFacebook, IconYoutube, IconEnvelope];
+
   return (
-    <footer className="relative w-full border-t-2 p-4 border-black bg-green-800">
-      <div className="mx-auto w-full max-w-7xl px-8">
-        <div className="grid grid-cols-1 justify-between gap-4 md:grid-cols-2">
+    // Container chính với màu nền Dark Blue (#3A3D62 hoặc tương tự)
+    <footer className="bg-[#3A3D62] text-white">
+      {/* ĐIỀU CHỈNH LẦN 2: Giảm padding dọc từ py-8 lg:py-10 xuống py-6 lg:py-8 */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        
+        {/* Phần Nội dung chính - Chia làm 4 cột trên Desktop */}
+        {/* Giữ nguyên gap để đảm bảo cấu trúc cột không bị ảnh hưởng */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+
+          {/* Cột 1: Thông tin Logo và Công ty */}
+          {/* ĐIỀU CHỈNH LẦN 2: Giảm khoảng cách từ space-y-3 xuống space-y-2 */}
+          <div className="space-y-2">
+            {/* Logo */}
+            <div className="flex items-center space-x-2">
+              {/* ĐIỀU CHỈNH LẦN 3: Thay thế div placeholder bằng thẻ img và chỉnh kích thước logo */}
+              <img 
+                src="/logo.png" 
+                alt="Nha Khoa Parkway Logo"
+                // Kích thước nhỏ hơn (w-16 h-16) để logo gọn hơn trong footer
+                className="w-16 h-16 rounded-full object-cover" 
+              />
+              <p className="text-xl font-bold">NHA KHOA PARKWAY</p>
+            </div>
+            
+            {/* DMCA Badge */}
+            <div className="py-2">
+              {/* Ảnh DMCA */}
+              <p className="text-xs text-gray-300 border border-gray-300 p-1 inline-block">PROTECTED BY DMCA.COM</p>
+            </div>
+
+            {/* ĐIỀU CHỈNH LẦN 2: Giảm pt-3 xuống pt-2 */}
+            <p className="text-sm font-semibold pt-2">Công ty chủ quản: CÔNG TY CỔ PHẦN Y TẾ PW</p>
+            <p className="text-sm">Địa chỉ: 215 Nam Kỳ Khởi Nghĩa, Phường Võ Thị Sáu, Q3, thành phố Hồ Chí Minh.</p>
+            <p className="text-sm">Email: it@nhakhoaparkway.com</p>
+            
+            {/* ĐIỀU CHỈNH LẦN 2: Giảm pt-3 xuống pt-2 */}
+            <p className="text-xs pt-2">
+              CMSDN: 0315575273 do Sở Kế hoạch và Đầu tư Thành phố Hồ Chí Minh cấp lần đầu 20/03/2019, sửa đổi lần thứ 7 ngày 09/06/2022.
+            </p>
+            {/* ĐIỀU CHỈNH LẦN 2: Giảm pt-1 xuống pt-0 (không cần padding trên) */}
+            <p className="text-xs italic pt-0">Hiệu quả điều trị phụ thuộc vào cơ địa mỗi người (*)</p>
+          </div>
+
+          {/* Cột 2: Giới thiệu */}
           <div>
-            <p className="text-6xl font-bold text-white">About Us</p>
-            <img src="/logo.png" alt="" className="w-32 h-32" />
+            <h3 className="text-lg font-bold mb-4">Giới thiệu</h3>
+            {/* ĐIỀU CHỈNH LẦN 2: Giảm khoảng cách từ space-y-2 xuống space-y-1 */}
+            <ul className="space-y-1">
+              {footerLinks.gioiThieu.map((item) => (
+                <li key={item.name}>
+                  <a 
+                    href={item.href} 
+                    className="text-sm text-gray-300 hover:text-white transition duration-200"
+                  >
+                    {item.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className="grid grid-cols-3 justify-between gap-4 p-5">
-            {LINKS.map(({ title, items }) => (
-              <ul key={title}>
-                <Typography
-                  variant="small"
-                  color="blue-gray"
-                  className="mb-3 font-bold text-2xl text-white"
-                >
-                  {title}
-                </Typography>
-                {items.map((link) => (
-                  <li key={link}>
-                    <Typography
-                      as="a"
-                      href="#"
-                      color="gray"
-                      className="py-1.5 font-normal text-black transition-colors hover:text-white"
-                    >
-                      {link}
-                    </Typography>
-                  </li>
+
+          {/* Cột 3: Hệ thống phòng khám */}
+          <div>
+            <h3 className="text-lg font-bold mb-4">Hệ thống phòng khám</h3>
+            {/* ĐIỀU CHỈNH LẦN 2: Giảm khoảng cách từ space-y-2 xuống space-y-1 */}
+            <ul className="space-y-1">
+              {footerLinks.heThong.map((item) => (
+                <li key={item.name}>
+                  <a 
+                    href={item.href} 
+                    className="text-sm text-gray-300 hover:text-white transition duration-200"
+                  >
+                    {item.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Cột 4: Liên hệ & Giờ làm việc */}
+          {/* ĐIỀU CHỈNH LẦN 2: Giảm khoảng cách từ space-y-4 xuống space-y-3 */}
+          <div className="space-y-3">
+            
+            {/* Liên hệ */}
+            <div>
+              <h3 className="text-lg font-bold mb-4">Liên hệ</h3>
+              <p className="text-sm font-semibold mb-3">HOTLINE: 1900 8059</p>
+              
+              {/* Social Icons */}
+              <div className="flex space-x-4">
+                {/* Thay thế [FaFacebookF, FaYoutube, FaEnvelope] bằng SocialIcons */}
+                {SocialIcons.map((Icon, index) => (
+                  <a 
+                    key={index}
+                    href="#" 
+                    className="w-8 h-8 rounded-full border border-white flex items-center justify-center text-sm hover:bg-white hover:text-[#3A3D62] transition duration-200"
+                  >
+                    <Icon />
+                  </a>
                 ))}
-              </ul>
-            ))}
+              </div>
+            </div>
+
+            {/* Giờ làm việc */}
+            <div>
+              <h3 className="text-lg font-bold mb-4">Giờ làm việc</h3>
+              <p className="text-sm">
+                TỪ 8:30 tới 18:30 tất cả các ngày trong tuần
+              </p>
+            </div>
           </div>
+
         </div>
-        <div className="mt-12 flex w-full flex-col items-center justify-center border-t border-blue-gray-50 py-4 md:flex-row md:justify-end">
-          <div className="flex gap-4 text-blue-gray-900 sm:justify-center left-10">
-            <Typography
-              as="a"
-              href="#"
-              className="opacity-80 transition-opacity hover:text-white"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </Typography>
-            <Typography
-              as="a"
-              href="#"
-              className="opacity-80 transition-opacity hover:text-white"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </Typography>
-            <Typography
-              as="a"
-              href="#"
-              className="opacity-80 transition-opacity hover:text-white"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-              </svg>
-            </Typography>
-            <Typography
-              as="a"
-              href="#"
-              className="opacity-80 transition-opacity hover:text-white"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </Typography>
-            <Typography
-              as="a"
-              href="#"
-              className="opacity-80 transition-opacity hover:text-white"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c5.51 0 10-4.48 10-10S17.51 2 12 2zm6.605 4.61a8.502 8.502 0 011.93 5.314c-.281-.054-3.101-.629-5.943-.271-.065-.141-.12-.293-.184-.445a25.416 25.416 0 00-.564-1.236c3.145-1.28 4.577-3.124 4.761-3.362zM12 3.475c2.17 0 4.154.813 5.662 2.148-.152.216-1.443 1.941-4.48 3.08-1.399-2.57-2.95-4.675-3.189-5A8.687 8.687 0 0112 3.475zm-3.633.803a53.896 53.896 0 013.167 4.935c-3.992 1.063-7.517 1.04-7.896 1.04a8.581 8.581 0 014.729-5.975zM3.453 12.01v-.26c.37.01 4.512.065 8.775-1.215.25.477.477.965.694 1.453-.109.033-.228.065-.336.098-4.404 1.42-6.747 5.303-6.942 5.629a8.522 8.522 0 01-2.19-5.705zM12 20.547a8.482 8.482 0 01-5.239-1.8c.152-.315 1.888-3.656 6.703-5.337.022-.01.033-.01.054-.022a35.318 35.318 0 011.823 6.475 8.4 8.4 0 01-3.341.684zm4.761-1.465c-.086-.52-.542-3.015-1.659-6.084 2.679-.423 5.022.271 5.314.369a8.468 8.468 0 01-3.655 5.715z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </Typography>
-          </div>
+        
+      </div>
+      
+      {/* Footer đáy (Bottom Footer) */}
+      {/* ĐIỀU CHỈNH LẦN 2: Giảm padding dọc từ py-3 xuống py-2 */}
+      <div className="bg-[#2D2F4B] py-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs">
+          <p>
+            Người chịu trách nhiệm nội dung Giám đốc Trần Nguyễn Hoàng Quân - SĐT: <span className="font-semibold">1900 8059</span>
+          </p>
         </div>
       </div>
+
     </footer>
   );
-}
+};
+
+export default Footer;
