@@ -3,7 +3,7 @@ const db = require('../config/server');
 module.exports = {
   getAlls: async () => {
     try {
-      const [rows] = await db.query('SELECT * FROM phieukham');
+      const [rows] = await db.query('SELECT pk.*, kh.HoTen as TenKhachHang, bs.HoTen as TenBacSi FROM phieukham pk join khachhang kh on pk.MaKhachHang = kh.MaKhachHang join bacsi bs on pk.MaBacSi = bs.MaBacSi');
       return rows;
     } catch (err) {
       console.error('Query Error:', err.message);

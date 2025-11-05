@@ -56,7 +56,7 @@ module.exports = {
 
     create: async (data) => {
         try {
-            const { MaBacSi, MaKhachHang, NgayHen, GhiChu, TinhTrang } = data;
+            const { MaBacSi, MaKhachHang, NgayHen, GhiChu } = data;
 
             // Kiểm tra số lượng lịch đã có trong ngày
             const sqlCheck = `
@@ -77,15 +77,14 @@ module.exports = {
 
             // Nếu chưa đủ 6 thì thêm mới
             const sqlInsert = `
-            INSERT INTO lichhen (MaLichHen, MaKhachHang, MaBacSi, NgayHen, GhiChu, TinhTrang)
-            VALUES (UUID(), ?, ?, ?, ?, ?)
+            INSERT INTO lichhen (MaLichHen, MaKhachHang, MaBacSi, NgayHen, GhiChu)
+            VALUES (UUID(), ?, ?, ?, ?)
         `;
             const [result] = await db.query(sqlInsert, [
                 MaKhachHang,
                 MaBacSi,
                 NgayHen,
                 GhiChu,
-                TinhTrang,
             ]);
 
             return result;

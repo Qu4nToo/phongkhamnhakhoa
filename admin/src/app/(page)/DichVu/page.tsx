@@ -57,64 +57,66 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
-export default function BookingView() {
-    const [bookings, setbookings] = useState([]);
-    const [customers, setCustomers] = useState([]);
-    const [doctors, setDoctors] = useState([]);
-    const [booking, setbooking] = useState<any>([]);
+export default function ServiceView() {
+    const [services, setServices] = useState([]);
+    const [categorys, setCategorys] = useState([]);
+    const [service, setService] = useState<any>([]);
     const [showAlert, setShowAlert] = useState(false);
     const [showAlertEdit, setShowAlertEdit] = useState(false);
-    const [selectedbooking, setSelectedbooking] = useState<any>([]);
+    const [selectedservice, setSelectedservice] = useState<any>([]);
     const [isDialogOpen, setDialogOpen] = useState(false);
 
 
-    const [newbooking, setNewbooking] = useState({
-        GhiChu: "",
-        NgayHen: "",
+    const [newService, setNewService] = useState({
+        TenDichVu: "",
+        MoTa: "",
+        Gia: "",
+        DonVi: "",
+        MaLoaiDV: ""
     });
     const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { id, value } = e.target;
-        setNewbooking((prev) => ({
+        setNewService((prev) => ({
             ...prev,
             [id]: value,
         }));
-        console.log(newbooking);
+        console.log(newService);
     };
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id } = e.target;
 
         const { value } = e.target;
-        setNewbooking((prev) => ({
+        setNewService((prev) => ({
             ...prev,
             [id]: value,
         }));
-        console.log(newbooking);
+        console.log(newService);
     };
 
-
+    const DonVi = [
+        "Gói",
+        "Chiếc"
+    ];
     useEffect(() => {
-        axios.get("http://localhost:5000/api/lich-hen/get")
-            .then(bookings => setbookings(bookings.data))
+        axios.get("http://localhost:5000/api/dich-vu/get")
+            .then(services => setServices(services.data))
             .catch(err => console.log(err))
-        axios.get("http://localhost:5000/api/bac-si/get")
-            .then(doctors => setDoctors(doctors.data))
-            .catch(err => console.log(err))
-        axios.get("http://localhost:5000/api/khach-hang/get")
-            .then(customers => setCustomers(customers.data))
+        axios.get("http://localhost:5000/api/loai-dich-vu/get")
+            .then(categorys => setCategorys(categorys.data))
             .catch(err => console.log(err))
     }, []);
     // const handleToggleMenuClick = (product: React.SetStateAction<null>)=>{
     //     setSelectedProduct(product);
     //     a = selectedProduct;
     // }
-    const handleDeleteClick = (booking: React.SetStateAction<null>) => {
-        console.log(booking);
-        setSelectedbooking(booking);
+    const handleDeleteClick = (service: React.SetStateAction<null>) => {
+        console.log(service);
+        setSelectedservice(service);
         setShowAlert(true);
     }
-    const handleEditClick = (booking: any) => {
-        setbooking(booking);
-        setNewbooking(booking);
+    const handleEditClick = (service: any) => {
+        setService(service);
+        setNewService(service);
         setShowAlertEdit(true);
     }
     const handleAlertEditClose = () => {
@@ -122,27 +124,27 @@ export default function BookingView() {
     }
     const handleAlertClose = () => {
         setShowAlert(false);
-        setSelectedbooking(null);
+        setSelectedservice(null);
     }
     const handleConfirmEdit = () => {
-        axios.put(`http://localhost:5000/api/lich-hen/update/${booking.MaLichHen}`, newbooking)
+        axios.put(`http://localhost:5000/api/dich-vu/update/${service.MaDichVu}`, newService)
             .then(() => {
                 // toast({
-                //     title: "booking Edit",
-                //     description: `booking has been edit.`,
+                //     title: "service Edit",
+                //     description: `service has been edit.`,
                 // });
-                // Reload the bookings or update state after deletion
-                axios.get("http://localhost:5000/api/lich-hen/get")
-                    .then((response) => setbookings(response.data))
-                    .catch((err) => console.error("Error fetching bookings:", err));
+                // Reload the services or update state after deletion
+                axios.get("http://localhost:5000/api/dich-vu/get")
+                    .then((response) => setServices(response.data))
+                    .catch((err) => console.error("Error fetching services:", err));
 
                 setShowAlert(false);  // Close the alert dialog
             })
             .catch((err) => {
-                console.error("Error deleting booking:", err);
+                console.error("Error deleting service:", err);
                 // toast({
                 //     title: "Edit Failed",
-                //     description: `There was an error edit the booking.`,
+                //     description: `There was an error edit the service.`,
                 //     variant: "destructive",
                 // });
             });
@@ -150,74 +152,48 @@ export default function BookingView() {
 
     const handleConfirmDelete = () => {
 
-        if (selectedbooking) {
-            axios.delete(`http://localhost:5000/api/lich-hen/delete/${selectedbooking.MaLichHen}`)
+        if (selectedservice) {
+            axios.delete(`http://localhost:5000/api/dich-vu/delete/${selectedservice.MaDichVu}`)
                 .then(() => {
-                    toast("booking Deleted: booking has been deleted.");
-                    axios.get("http://localhost:5000/api/lich-hen/get")
-                        .then((response) => setbookings(response.data))
-                        .catch((err) => console.error("Error fetching bookings:", err));
+                    toast("service Deleted: service has been deleted.");
+                    axios.get("http://localhost:5000/api/dich-vu/get")
+                        .then((response) => setServices(response.data))
+                        .catch((err) => console.error("Error fetching services:", err));
                     setShowAlert(false);
                 })
                 .catch((err) => {
-                    console.error("Error deleting booking:", err);
-                    toast("Delete Failed: There was an error deleting the booking.");
+                    console.error("Error deleting service:", err);
+                    toast("Delete Failed: There was an error deleting the service.");
                 });
         }
     };
-    const handleCreatebooking = () => {
-        console.log(newbooking);
-        const bookingToCreate = {
-            ...newbooking,
+    const handleCreateservice = () => {
+        console.log(newService);
+        const serviceToCreate = {
+            ...newService,
         };
-        axios.post("http://localhost:5000/api/lich-hen/create", bookingToCreate)
+        axios.post("http://localhost:5000/api/dich-vu/create", serviceToCreate)
             .then(() => {
-                toast("booking Created: New booking has been added successfully.");
+                toast("service Created: New service has been added successfully.");
                 // Load lại danh sách sản phẩm
-                axios.get("http://localhost:5000/api/lich-hen/get")
-                    .then((response) => setbookings(response.data))
-                    .catch((err) => console.error("Error fetching bookings:", err));
-                setNewbooking({
-                    GhiChu: "",
-                    NgayHen: "",
+                axios.get("http://localhost:5000/api/dich-vu/get")
+                    .then((response) => setServices(response.data))
+                    .catch((err) => console.error("Error fetching services:", err));
+                setNewService({
+                    TenDichVu: "",
+                    MoTa: "",
+                    Gia: "",
+                    DonVi: "",
+                    MaLoaiDV: ""
                 });
                 setDialogOpen(false);
             })
-            .catch((error) => {
-                console.error("Lỗi đặt lịch:", error);
-                if (axios.isAxiosError(error)) {
-                    toast.error(error.response?.data?.message || "Lỗi không xác định!", {
-                        action: {
-                            label: "Đóng",
-                            onClick: () => toast.dismiss(),
-                        },
-                        style: {
-                            background: "#ecfdf5",
-                            color: "#065f46",
-                            borderRadius: "10px",
-                            border: "1px solid #10b981",
-                        },
-                    });
-                } else {
-                    toast.error("Lỗi không xác định!", {
-                        action: {
-                            label: "Đóng",
-                            onClick: () => toast.dismiss(),
-                        },
-                        style: {
-                            background: "#ecfdf5",
-                            color: "#065f46",
-                            borderRadius: "10px",
-                            border: "1px solid #10b981",
-                        },
-                    });
-                }
-            });
+            .catch((err) => console.error("Error creating service:", err));
     };
 
     return (
         <>
-            <title>booking</title>
+            <title>service</title>
             <Tabs defaultValue="all">
                 <div className="flex items-center">
                     <TabsList>
@@ -229,63 +205,69 @@ export default function BookingView() {
                                 <Button size="sm" className="h-7 gap-1">
                                     <PlusCircle className="h-3.5 w-3.5" />
                                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                        Thêm lịch hẹn
+                                        Thêm dịch vụ
                                     </span>
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[425px]">
                                 <DialogHeader>
-                                    <DialogTitle>Thêm lịch hẹn</DialogTitle>
+                                    <DialogTitle>Thêm dịch vụ</DialogTitle>
                                     <DialogDescription>
-                                        Thêm lịch hẹn mới vào danh sách.
+                                        Thêm dịch vụ mới vào danh sách.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
                                     <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="MaKhachHang" className="text-right col-span-2">
-                                            Khách Hàng
+                                        <Label htmlFor="MaLoaiDV" className="text-right col-span-2">
+                                            Loại dịch vụ
                                         </Label>
                                         <select
-                                            id="MaKhachHang"  // Đây là ID cho dropdown
+                                            id="MaLoaiDV"  // Đây là ID cho dropdown
                                             onChange={handleInputChange2}  // Gọi handleInputChange khi có sự thay đổi
                                             className="col-span-4"
                                         >
-                                            <option value="">Chọn khách hàng</option>
-                                            {customers.map((customer: any) => (
-                                                <option key={customer.MaKhachHang} value={customer.MaKhachHang}>{customer.HoTen}</option>
+                                            <option value="">Chọn Loại dịch vụ</option>
+                                            {categorys.map((category: any) => (
+                                                <option key={category.MaLoaiDV} value={category.MaLoaiDV}>{category.TenLoaiDV}</option>
                                             ))}
                                         </select>
                                     </div>
                                     <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="MaBacSi" className="text-right col-span-2">
-                                            Bác Sĩ
+                                        <Label htmlFor="TenDichVu" className="text-right col-span-2">
+                                            Tên dịch vụ
+                                        </Label>
+                                        <Input onChange={handleInputChange} id="TenDichVu" type="text" className="col-span-4" />
+                                    </div>
+                                    <div className="grid grid-cols-6 items-center gap-4">
+                                        <Label htmlFor="MoTa" className="text-right col-span-2">
+                                            Mô tả
+                                        </Label>
+                                        <Input onChange={handleInputChange} id="MoTa" type="text" className="col-span-4" />
+                                    </div>
+                                    <div className="grid grid-cols-6 items-center gap-4">
+                                        <Label htmlFor="DonVi" className="text-right col-span-2">
+                                            Đơn vị
                                         </Label>
                                         <select
-                                            id="MaBacSi"  // Đây là ID cho dropdown
+                                            id="DonVi"  // Đây là ID cho dropdown
                                             onChange={handleInputChange2}  // Gọi handleInputChange khi có sự thay đổi
                                             className="col-span-4"
                                         >
-                                            <option value="">Chọn bác sĩ</option>
-                                            {doctors.map((doctor: any) => (
-                                                <option key={doctor.MaBacSi} value={doctor.MaBacSi}>{doctor.HoTen}</option>
+                                            <option value="">Chọn Đơn vị</option>
+                                            {DonVi.map((donvi) => (
+                                                <option key={donvi} value={donvi}>{donvi}</option>
                                             ))}
                                         </select>
                                     </div>
                                     <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="NgayHen" className="text-right col-span-2">
-                                            Ngày hẹn
+                                        <Label htmlFor="Gia" className="text-right col-span-2">
+                                            Giá
                                         </Label>
-                                        <Input onChange={handleInputChange} id="NgayHen" type="date" className="col-span-4" />
-                                    </div>
-                                    <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="GhiChu" className="text-right col-span-2">
-                                            Ghi chú
-                                        </Label>
-                                        <Input onChange={handleInputChange} id="GhiChu" type="text" className="col-span-4" />
+                                        <Input onChange={handleInputChange} id="Gia" type="number" className="col-span-4" />
                                     </div>
                                 </div>
                                 <DialogFooter>
-                                    <Button type="button" onClick={handleCreatebooking}>
+                                    <Button type="button" onClick={handleCreateservice}>
                                         Confirm
                                     </Button>
                                 </DialogFooter>
@@ -296,39 +278,43 @@ export default function BookingView() {
                 <TabsContent value="all">
                     <Card x-chunk="dashboard-06-chunk-0">
                         <CardHeader>
-                            <CardTitle>Danh sách lich hẹn</CardTitle>
+                            <CardTitle>Danh sách dịch vụ</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Khách hàng</TableHead>
-                                        <TableHead>Bác sĩ</TableHead>
-                                        <TableHead>Ngày hẹn</TableHead>
-                                        <TableHead>Tình trạng</TableHead>
-                                        <TableHead>Ghi chú</TableHead>
+                                        <TableHead>Loại dịch vụ</TableHead>
+                                        <TableHead>Tên dịch vụ</TableHead>
+                                        <TableHead>Mô tả</TableHead>
+                                        <TableHead>Đơn vị</TableHead>
+                                        <TableHead>Giá</TableHead>
                                         <TableHead>
                                             <span className="sr-only">Actions</span>
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                {bookings.map((bookings: any) => (
-                                    <TableBody key={bookings.MaLichHen}>
+                                {services.map((services: any) => (
+                                    <TableBody key={services.MaDichVu}>
                                         <TableRow >
                                             <TableCell className="font-medium">
-                                                {bookings.TenKhachHang}
+                                                {services.TenLoaiDV}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {bookings.TenBacSi}
+                                                {services.TenDichVu}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {bookings.NgayHen}
+                                                {services.MoTa}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {bookings.TinhTrang}
+                                                {services.DonVi}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {bookings.GhiChu}
+                                                {/* Sử dụng Intl.NumberFormat để định dạng tiền tệ */}
+                                                {new Intl.NumberFormat('vi-VN', {
+                                                    style: 'currency',
+                                                    currency: 'VND'
+                                                }).format(services.Gia)}
                                             </TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
@@ -345,9 +331,8 @@ export default function BookingView() {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem onClick={() => handleEditClick(bookings)}>Sửa</DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleEditClick(bookings)}>Tạo phiếu khám</DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleDeleteClick(bookings)}>Xóa</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleEditClick(services)}>Sửa</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleDeleteClick(services)}>Xóa</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
@@ -364,7 +349,7 @@ export default function BookingView() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this booking?
+                            Are you sure you want to delete this service?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -378,41 +363,49 @@ export default function BookingView() {
             <AlertDialog open={showAlertEdit} onOpenChange={setShowAlertEdit}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Edit booking</AlertDialogTitle>
+                        <AlertDialogTitle>Edit service</AlertDialogTitle>
                     </AlertDialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-6 items-center gap-4">
-                            <Label htmlFor="HoTen" className="text-right col-span-2">
-                                Khách Hàng
+                            <Label htmlFor="LoaiDichVu" className="text-right col-span-2">
+                                Loại dịch vụ
                             </Label>
-                            <Input id="HoTen" type="text" className="col-span-4" defaultValue={booking.TenKhachHang} readOnly />
+                            <Input id="LoaiDichVu" type="text" className="col-span-4" defaultValue={service.TenLoaiDV} readOnly />
                         </div>
                         <div className="grid grid-cols-6 items-center gap-4">
-                            <Label htmlFor="HoTen" className="text-right col-span-2">
-                                Bác sĩ
+                            <Label htmlFor="TenDichVu" className="text-right col-span-2">
+                                Tên dịch vụ
                             </Label>
-                            <Input id="HoTen" type="text" className="col-span-4" defaultValue={booking.TenBacSi} readOnly />
+                            <Input id="TenDichVu" type="text" className="col-span-4" defaultValue={service.TenDichVu} readOnly />
                         </div>
                         <div className="grid grid-cols-6 items-center gap-4">
-                            <Label htmlFor="NgayHen" className="text-right col-span-2">
-                                Ngày hẹn
+                            <Label htmlFor="MoTa" className="text-right col-span-2">
+                                Mô tả
                             </Label>
-                            <Input onChange={handleInputChange} id="NgayHen" type="date" className="col-span-4" defaultValue={booking.NgayHen} />
+                            <Input onChange={handleInputChange} id="MoTa" type="text" className="col-span-4" defaultValue={service.MoTa} />
                         </div>
                         <div className="grid grid-cols-6 items-center gap-4">
-                            <Label htmlFor="MaBacSi" className="text-right col-span-2">
-                                Tình Trạng
+                            <Label htmlFor="DonVi" className="text-right col-span-2">
+                                Đơn vị
                             </Label>
                             <select
-                                id="TinhTrang"  // Đây là ID cho dropdown
+                                id="MaLoaiDV"  // Đây là ID cho dropdown
                                 onChange={handleInputChange2}  // Gọi handleInputChange khi có sự thay đổi
                                 className="col-span-4"
                             >
-                                <option value="">Chọn Tình Trạng</option>
-                                <option value="0">Chưa hoàn thành</option>
-                                <option value="1">Đã hoàn thành</option>
+                                <option key={service.MaLoaiDV} value={service.MaLoaiDV}>{service.TenLoaiDV}</option>
+                                {categorys.map((category: any) => (
+                                    <option key={category.MaLoaiDV} value={category.MaLoaiDV}>{category.TenLoaiDV}</option>
+                                ))}
                             </select>
                         </div>
+                        <div className="grid grid-cols-6 items-center gap-4">
+                            <Label htmlFor="Gia" className="text-right col-span-2">
+                                Giá
+                            </Label>
+                            <Input onChange={handleInputChange} id="Gia" type="text" className="col-span-4" defaultValue={service.Gia} />
+                        </div>
+
                     </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel onClick={handleAlertEditClose}>Cancel</AlertDialogCancel>

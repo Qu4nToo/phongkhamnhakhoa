@@ -20,6 +20,15 @@ module.exports = {
       throw new Error('Database query failed');
     }
   },
+  getByPhieuKhamId: async (id) => {
+    try {
+      const [rows] = await db.query('SELECT ctpk.*, dv.TenDichVu FROM chitietphieukham ctpk join dichvu dv on ctpk.MaDichVu = dv.MaDichVu WHERE ctpk.MaPhieuKham = ?', [id]);
+      return rows;
+    } catch (err) {
+      console.error('Query Error:', err.message);
+      throw new Error('Database query failed');
+    }
+  },
 
   create: async (data) => {
     try {

@@ -197,6 +197,7 @@ export default function User() {
           MatKhau: ""
         });
         setDialogOpen(false);
+        toast.success("User created successfully!");
       })
       .catch((err) => console.error("Error creating user:", err));
   };

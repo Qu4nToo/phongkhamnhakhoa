@@ -44,7 +44,6 @@ export default function BookingForm() {
     MaBacSi: "",
     NgayHen: "",
     GhiChu: "",
-    TinhTrang: "0",
   });
 
   useEffect(() => {
@@ -120,6 +119,12 @@ export default function BookingForm() {
           border: "1px solid #10b981",
         },
       });
+      setFormData({
+        MaKhachHang: "",
+        MaBacSi: "",
+        NgayHen: "",
+        GhiChu: "",
+      })
       router.push("/LichHen");
     } catch (error) {
       console.error("Lỗi đặt lịch:", error);

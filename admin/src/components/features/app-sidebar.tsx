@@ -10,6 +10,7 @@ import {
   BookPlusIcon,
   Receipt,
   ReceiptText,
+  Book,
 } from "lucide-react";
 
 import {
@@ -29,6 +30,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
 // Menu items.
 const items = [
@@ -42,12 +45,12 @@ const items = [
     url: "/KhachHang",
     icon: User,
   },
-      {
+  {
     title: "Bác sĩ",
     url: "/BacSi",
     icon: UserPen,
   },
-        {
+  {
     title: "Người dùng",
     url: "/NguoiDung",
     icon: UserStar,
@@ -57,7 +60,7 @@ const items = [
     url: "/LichHen",
     icon: Calendar,
   },
-    {
+  {
     title: "Phiếu khám",
     url: "/PhieuKham",
     icon: ReceiptText,
@@ -72,13 +75,30 @@ const items = [
     url: "/HoaDon",
     icon: Receipt,
   },
+  {
+    title: "Loại dịch vụ",
+    url: "/LoaiDichVu",
+    icon: Book,
+  },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [userInfo, setUserInfo] = useState<any>(null);
+  useEffect(() => {
+    const storedUserInfo = sessionStorage.getItem("user_info");
+    if (storedUserInfo) {
+      const user = JSON.parse(storedUserInfo);
+      setUserInfo(user);
+    }
+  }, []);
+  const handleSignOut = () => {
+    sessionStorage.removeItem("user_info");
+    globalThis.location.reload();
+  };
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="flex flex-row px-2 py-4">
-        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground" />
+        <img src="/logo.png" alt="Test Logo" width="40" height="40" />
         <div className="grid flex-1 text-left text-sm leading-tight">
           <span className="truncate font-semibold">ADMIN PAGE</span>
           <span className="truncate text-xs">Quản Trị Viên</span>
@@ -117,12 +137,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 className="w-[--radix-popper-anchor-width]"
               >
                 <DropdownMenuItem>
-                  <span>Account</span>
+                  <span className="font-medium">{userInfo?.HoTen}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span>Billing</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut}>
                   <span>Sign out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>

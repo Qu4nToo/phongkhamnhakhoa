@@ -380,7 +380,7 @@ export function RSign() {
         <Image
             className="object-fit-cover"
             fill={true}
-            src="/Olymstore 001361 (2).jpg"
+            src="/banner.jpg"
             alt="bg-image"
         />
     );

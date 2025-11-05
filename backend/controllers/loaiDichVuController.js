@@ -30,14 +30,14 @@ const LoaiDichVuController = {
     // ✅ Thêm loại dịch vụ mới
     createLoaiDichVu: async (req, res) => {
         try {
-            const { TenLoaiDichVu, MoTa } = req.body;
+            const { TenLoaiDV, MoTa } = req.body;
 
-            if (!TenLoaiDichVu || TenLoaiDichVu.trim() === "") {
+            if (!TenLoaiDV || TenLoaiDV.trim() === "") {
                 return res.status(400).json({ message: "Tên loại dịch vụ là bắt buộc!" });
             }
 
             const result = await LoaiDichVu.create({
-                TenLoaiDichVu,
+                TenLoaiDV,
                 MoTa: MoTa || null
             });
 
@@ -55,14 +55,14 @@ const LoaiDichVuController = {
     updateLoaiDichVu: async (req, res) => {
         try {
             const { id } = req.params;
-            const { TenLoaiDichVu, MoTa } = req.body;
+            const { TenLoaiDV, MoTa } = req.body;
 
-            if (!TenLoaiDichVu || TenLoaiDichVu.trim() === "") {
+            if (!TenLoaiDV || TenLoaiDV.trim() === "") {
                 return res.status(400).json({ message: "Tên loại dịch vụ là bắt buộc!" });
             }
 
             const result = await LoaiDichVu.update(id, {
-                TenLoaiDichVu,
+                TenLoaiDV,
                 MoTa: MoTa || null
             });
 
