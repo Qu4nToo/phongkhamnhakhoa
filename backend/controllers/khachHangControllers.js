@@ -43,14 +43,14 @@ const KhachHangController = {
             const { Email, MatKhau } = req.body;
             const khachHang = await KhachHang.getByEmail(Email);
             if (!khachHang) {
-                return res.status(404).json({ message: "User not found" });
+                return res.status(404).json({ message: "Email hoặc mật khẩu không hợp lệ." });
             }
             const isMatch = await bcrypt.compare(MatKhau, khachHang.MatKhau);
             if (!isMatch) {
-                return res.status(401).json({ message: "Invalid credentials" });
+                return res.status(401).json({ message: "Email hoặc mật khẩu không hợp lệ." });
             }
             if (khachHang && isMatch) {
-                const token = jwt.sign({ id: khachHang.MaKhachHang, role: "khachHang" }, process.env.JWT_SECRET, { expiresIn: "1h" });
+                const token = jwt.sign({ id: khachHang.MaKhachHang, role: khachHang.VaiTro}, process.env.JWT_SECRET, { expiresIn: "1h" });
                 res.status(200).json({ khachHang, token, message: 'Đăng nhập thành công' });
             }
         } catch (error) {

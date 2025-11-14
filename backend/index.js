@@ -22,7 +22,6 @@ const dichVuRoutes = require('./routes/dichVuRoutes');
 const danhGiaRoutes = require('./routes/danhGiaRoutes');
 const chiTietDichVuRoutes = require('./routes/chiTietDichVuRoutes');
 const chiTietPhieuKhamRoutes = require('./routes/chiTietPhieuKhamRoutes');
-const chucVuRoutes = require('./routes/chucVuRoutes');
 const lichLamViecRoutes = require('./routes/lichLamViecRoutes');
 const loaiDichVuRoutes = require('./routes/loaiDichVuRoutes');
 
@@ -51,7 +50,6 @@ app.use('/api/dich-vu', dichVuRoutes);
 app.use('/api/danh-gia', danhGiaRoutes);
 app.use('/api/chi-tiet-dich-vu', chiTietDichVuRoutes);
 app.use('/api/chi-tiet-phieu-kham', chiTietPhieuKhamRoutes);
-app.use('/api/chuc-vu', chucVuRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

@@ -104,7 +104,12 @@ export default function BookingForm() {
       });
       return;
     }
-
+    setFormData({
+      MaKhachHang: userInfo.khachHang.MaKhachHang,
+      MaBacSi: "",
+      NgayHen: "",
+      GhiChu: "",
+    })
     try {
       await axios.post("http://localhost:5000/api/lich-hen/create", formData);
       toast.success("Đặt lịch thành công!", {
@@ -203,9 +208,10 @@ export default function BookingForm() {
         </CardHeader>
         <CardContent className="pt-6 space-y-5">
           <input
-            type="hidden"
+
             name="MaKhachHang"
-            value={userInfo.MaKhachHang}
+            value={userInfo.khachHang.MaKhachHang}
+            onChange={handleChange}
           />
 
           {/* Họ tên */}
@@ -213,7 +219,7 @@ export default function BookingForm() {
             <Label>Họ và tên</Label>
             <input
               type="text"
-              value={userInfo.HoTen}
+              value={userInfo.khachHang.HoTen}
               readOnly
               className="w-full bg-gray-50 border border-gray-300 text-black rounded-md p-2 focus:ring-2 focus:ring-blue-400 outline-none"
             />
@@ -224,7 +230,7 @@ export default function BookingForm() {
             <Label>Email</Label>
             <input
               type="email"
-              value={userInfo.Email}
+              value={userInfo.khachHang.Email}
               readOnly
               className="w-full bg-gray-50 border border-gray-300 text-black rounded-md p-2 focus:ring-2 focus:ring-blue-400 outline-none"
             />
@@ -291,7 +297,7 @@ export default function BookingForm() {
 
                     const today = new Date();
                     const maxDate = new Date();
-                    maxDate.setDate(today.getDate() + 30);
+                    maxDate.setDate(today.getDate() + 7);
 
                     // Chặn Chủ Nhật
                     if (date.getDay() === 0) {
@@ -333,7 +339,7 @@ export default function BookingForm() {
                     const workingDays = lichlamviec.map((lv) => thuMap[lv.ThuTrongTuan.trim()]);
                     const today = new Date();
                     const maxDate = new Date();
-                    maxDate.setDate(today.getDate() + 30);
+                    maxDate.setDate(today.getDate() + 7);
 
                     // Nếu ngày không thuộc workingDays hoặc quá sớm/quá muộn → disabled
                     return (

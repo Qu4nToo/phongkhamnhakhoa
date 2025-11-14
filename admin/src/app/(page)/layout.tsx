@@ -23,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     } else {
       const user = JSON.parse(storedUserInfo);
       console.log("User info from sessionStorage:", user);
-      if (user.TenChucVu !== 'Quản Lý') {
+      if (user.nguoiDung.VaiTro !== 'Quản lý') {
         toast.error("Bạn không có quyền truy cập trang này");
         // router.push("/Login");
       } else {

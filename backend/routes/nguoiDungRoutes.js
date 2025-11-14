@@ -10,6 +10,8 @@ router.get('/getByEmail/:email', nguoiDungController.getNguoiDungByEmail);
 
 router.post('/create', nguoiDungController.createNguoiDung);
 
+router.post('/login', nguoiDungController.loginNguoiDung);
+
 router.put('/update/:id', nguoiDungController.updateNguoiDung);
 
 router.delete('/delete/:id', nguoiDungController.deleteNguoiDung);
