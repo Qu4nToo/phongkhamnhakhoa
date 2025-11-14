@@ -8,6 +8,8 @@ router.get('/get/:id', bacSiController.getBacSiById);
 
 router.post('/create', bacSiController.createBacSi);
 
+router.post('/login', bacSiController.loginBacSi);
+
 router.put('/update/:id', bacSiController.updateBacSi);
 
 router.delete('/delete/:id', bacSiController.deleteBacSi);

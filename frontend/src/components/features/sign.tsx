@@ -11,7 +11,6 @@ import axios from "axios";
 import { toast, Toaster } from "sonner";
 import { FaEyeSlash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
-import { sha3_512 } from "js-sha3";
 // Login Component
 export function Login() {
     const [email, setEmail] = useState("");
@@ -27,70 +26,46 @@ export function Login() {
 
         try {
             // Fetch user data by email from the backend
+            // --- BƯỚC 1: KIỂM TRA KHÁCH HÀNG ---
             const response = await fetch(
                 `http://localhost:5000/api/khach-hang/login`,
                 {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ Email: email, MatKhau: password }),
                 }
             );
 
-            if (!response.ok) {
-                throw new Error("User not found");
-            }
-
-            const user = await response.json();
-
-
-
-            if (user) {
-                toast.success("Đăng nhập thành công!", {
-                    duration: 3000,
-                    action: {
-                        label: "Đóng",
-                        onClick: () => toast.dismiss(),
-                    },
-                    style: {
-                        background: "#ecfdf5",
-                        color: "#065f46",
-                        borderRadius: "10px",
-                        border: "1px solid #10b981",
-                    },
-                });
+            if (response.ok) {
+                const user = await response.json();
+                // Xử lý đăng nhập thành công Khách hàng
                 sessionStorage.setItem("user_info", JSON.stringify(user));
+                toast.success("Đăng nhập Khách hàng thành công!");
                 router.push("/");
+                return;
             }
+
+            // --- BƯỚC 2: KIỂM TRA BÁC SĨ ---
+            const response2 = await fetch(
+                `http://localhost:5000/api/bac-si/login`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ Email: email, MatKhau: password }),
+                }
+            );
+
+            if (response2.ok) {
+                const user2 = await response2.json();
+                // Xử lý đăng nhập thành công Bác sĩ
+                sessionStorage.setItem("user_info", JSON.stringify(user2));
+                toast.success("Đăng nhập Bác sĩ thành công!");
+                router.push("/BacSi");
+                return;
+            }
+            toast.error("Email hoặc mật khẩu không hợp lệ.");
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                toast.error(error.response?.data?.message || "Lỗi không xác định!", {
-                    action: {
-                        label: "Đóng",
-                        onClick: () => toast.dismiss(),
-                    },
-                    style: {
-                        background: "#ecfdf5",
-                        color: "#065f46",
-                        borderRadius: "10px",
-                        border: "1px solid #10b981",
-                    },
-                });
-            } else {
-                toast.error("Lỗi không xác định!", {
-                    action: {
-                        label: "Đóng",
-                        onClick: () => toast.dismiss(),
-                    },
-                    style: {
-                        background: "#ecfdf5",
-                        color: "#065f46",
-                        borderRadius: "10px",
-                        border: "1px solid #10b981",
-                    },
-                });
-            }
+            console.error("Login error:", error);
         }
     };
 

@@ -7,9 +7,7 @@ module.exports = {
             const sql = `
             SELECT 
             nd.*,
-            cv.TenChucVu AS TenChucVu
             FROM nguoidung nd
-            JOIN chucvu cv ON nd.MaChucVu = cv.MaChucVu
         `;
             const [rows] = await db.query(sql);
             return rows;
@@ -22,10 +20,8 @@ module.exports = {
         try {
             const sql = `
             SELECT 
-            nd.*,
-            cv.TenChucVu AS TenChucVu
+            nd.*
             FROM nguoidung nd
-            JOIN chucvu cv ON nd.MaChucVu = cv.MaChucVu
             WHERE nd.MaNguoiDung = ?
         `;
 
@@ -40,10 +36,8 @@ module.exports = {
         try {
             const sql = `
             SELECT 
-            nd.*,
-            cv.TenChucVu AS TenChucVu
+            nd.*
             FROM nguoidung nd
-            JOIN chucvu cv ON nd.MaChucVu = cv.MaChucVu
             WHERE nd.Email = ?
         `;
             const [row] = await db.query(sql, [email]);

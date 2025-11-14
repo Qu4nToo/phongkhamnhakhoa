@@ -1,4 +1,6 @@
 const NguoiDung = require("../models/nguoiDungModel");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const NguoiDungController = {
   getAllNguoiDung: async (req, res) => {
@@ -39,6 +41,27 @@ const NguoiDungController = {
     }
   },
 
+  loginNguoiDung: async (req, res) => {
+    try {
+      const { Email, MatKhau } = req.body;
+      const nguoiDung = await NguoiDung.getByEmail(Email);
+      if (!nguoiDung) {
+        return res.status(404).json({ message: "Email hoặc mật khẩu không hợp lệ." });
+      }
+      const isMatch = await bcrypt.compare(MatKhau, nguoiDung.MatKhau);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Email hoặc mật khẩu không hợp lệ." });
+      }
+      if (nguoiDung && isMatch) {
+        const token = jwt.sign({ id: nguoiDung.MaNguoiDung, role: nguoiDung.VaiTro }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        res.status(200).json({ nguoiDung, token, message: 'Đăng nhập thành công' });
+      }
+    } catch (error) {
+      console.error("Lỗi khi đăng nhập:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
   createNguoiDung: async (req, res) => {
     try {
       const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu } = req.body;
@@ -58,8 +81,12 @@ const NguoiDungController = {
       if (!emailRegex.test(Email)) {
         return res.status(400).json({ message: "Email không hợp lệ!" });
       }
-
-      const result = await NguoiDung.create({ HoTen,Email, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu });
+      const existingNguoiDung = await NguoiDung.getByEmail(Email);
+      if (existingNguoiDung) {
+        return res.status(400).json({ message: "Email đã được sử dụng bởi người dùng khác!" });
+      }
+      const hashedPassword = await bcrypt.hash(MatKhau, 10);
+      const result = await NguoiDung.create({ HoTen, Email, NgaySinh, SDT, MatKhau: hashedPassword, DiaChi, MaChucVu });
       return res.status(201).json({ message: "Thêm người dùng thành công!", data: result });
     } catch (error) {
       console.error("Lỗi khi thêm người dùng:", error);
