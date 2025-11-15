@@ -20,7 +20,20 @@ module.exports = {
       throw new Error('Database query failed');
     }
   },
-
+  findByFields: async ({ MaKhachHang, MaBacSi, NgayKham }) => {
+    try {
+      const sql = `
+            SELECT * FROM phieukham 
+            WHERE MaKhachHang = ? AND MaBacSi = ? AND NgayKham = ?
+        `;
+      // Giả sử db.query trả về một mảng kết quả
+      const [rows] = await db.query(sql, [MaKhachHang, MaBacSi, NgayKham]);
+      return rows;
+    } catch (error) {
+      console.error("Query Error:", error.message);
+      throw new Error("Database query failed");
+    }
+  },
   create: async (data) => {
     try {
       const [result] = await db.query('INSERT INTO phieukham SET ?', data);

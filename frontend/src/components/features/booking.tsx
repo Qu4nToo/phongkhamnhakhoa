@@ -134,16 +134,18 @@ export default function BookingForm() {
     } catch (error) {
       console.error("Lỗi đặt lịch:", error);
       if (axios.isAxiosError(error)) {
-        toast.error(error.response?.data?.message || "Lỗi không xác định!", {
+        const errorMessage = error.response?.data?.message || "Lỗi không xác định!";
+
+        toast.error(errorMessage, {
           action: {
             label: "Đóng",
             onClick: () => toast.dismiss(),
           },
           style: {
-            background: "#ecfdf5",
-            color: "#065f46",
+            background: "#fef2f2",
+            color: "#dc2626",
             borderRadius: "10px",
-            border: "1px solid #10b981",
+            border: "1px solid #fca5a5",
           },
         });
       } else {
@@ -153,10 +155,10 @@ export default function BookingForm() {
             onClick: () => toast.dismiss(),
           },
           style: {
-            background: "#ecfdf5",
-            color: "#065f46",
+            background: "#fef2f2",
+            color: "#dc2626",
             borderRadius: "10px",
-            border: "1px solid #10b981",
+            border: "1px solid #fca5a5",
           },
         });
       }
@@ -212,6 +214,7 @@ export default function BookingForm() {
             name="MaKhachHang"
             value={userInfo.khachHang.MaKhachHang}
             onChange={handleChange}
+            hidden
           />
 
           {/* Họ tên */}

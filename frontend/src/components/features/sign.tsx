@@ -58,7 +58,7 @@ export function Login() {
             if (response2.ok) {
                 const user2 = await response2.json();
                 // Xử lý đăng nhập thành công Bác sĩ
-                sessionStorage.setItem("user_info", JSON.stringify(user2));
+                sessionStorage.setItem("bacsi_info", JSON.stringify(user2));
                 toast.success("Đăng nhập Bác sĩ thành công!");
                 router.push("/BacSi");
                 return;

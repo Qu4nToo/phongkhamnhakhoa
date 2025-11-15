@@ -37,16 +37,6 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import {
     Tabs,
     TabsContent,
     TabsList,
@@ -57,23 +47,19 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation";
 export default function BookingView() {
     const router = useRouter();
     const [bookings, setbookings] = useState([]);
     const [customers, setCustomers] = useState([]);
-    const [doctors, setDoctors] = useState([]);
-    const [booking, setbooking] = useState<any>([]);
-    const [showAlert, setShowAlert] = useState(false);
-    const [showAlertEdit, setShowAlertEdit] = useState(false);
-    const [selectedbooking, setSelectedbooking] = useState<any>([]);
+    const [doctors, setDoctors] = useState<any>(null);
     const [isDialogOpen, setDialogOpen] = useState(false);
-
 
     const [newbooking, setNewbooking] = useState({
         GhiChu: "",
         NgayHen: "",
     });
+
     const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { id, value } = e.target;
         setNewbooking((prev) => ({
@@ -82,6 +68,7 @@ export default function BookingView() {
         }));
         console.log(newbooking);
     };
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id } = e.target;
 
@@ -93,88 +80,41 @@ export default function BookingView() {
         console.log(newbooking);
     };
 
-
     useEffect(() => {
-        axios.get("http://localhost:5000/api/lich-hen/get")
-            .then(bookings => setbookings(bookings.data))
-            .catch(err => console.log(err))
-        axios.get("http://localhost:5000/api/bac-si/get")
-            .then(doctors => setDoctors(doctors.data))
-            .catch(err => console.log(err))
         axios.get("http://localhost:5000/api/khach-hang/get")
             .then(customers => setCustomers(customers.data))
             .catch(err => console.log(err))
-    }, []);
-    // const handleToggleMenuClick = (product: React.SetStateAction<null>)=>{
-    //     setSelectedProduct(product);
-    //     a = selectedProduct;
-    // }
-    const handleDeleteClick = (booking: React.SetStateAction<null>) => {
-        console.log(booking);
-        setSelectedbooking(booking);
-        setShowAlert(true);
-    }
-    const handleEditClick = (booking: any) => {
-        setbooking(booking);
-        setNewbooking(booking);
-        setShowAlertEdit(true);
-    }
-    const handleAlertEditClose = () => {
-        setShowAlertEdit(false);
-    }
-    const handleAlertClose = () => {
-        setShowAlert(false);
-        setSelectedbooking(null);
-    }
-    const handleConfirmEdit = () => {
-        axios.put(`http://localhost:5000/api/lich-hen/update/${booking.MaLichHen}`, newbooking)
-            .then(() => {
-                // toast({
-                //     title: "booking Edit",
-                //     description: `booking has been edit.`,
-                // });
-                // Reload the bookings or update state after deletion
-                axios.get("http://localhost:5000/api/lich-hen/get")
-                    .then((response) => setbookings(response.data))
-                    .catch((err) => console.error("Error fetching bookings:", err));
+        const storedUserInfo = sessionStorage.getItem("bacsi_info");
+        if (storedUserInfo) {
 
-                setShowAlert(false);  // Close the alert dialog
-            })
-            .catch((err) => {
-                console.error("Error deleting booking:", err);
-                // toast({
-                //     title: "Edit Failed",
-                //     description: `There was an error edit the booking.`,
-                //     variant: "destructive",
-                // });
-            });
-    }
-
-    const handleConfirmDelete = () => {
-
-        if (selectedbooking) {
-            axios.delete(`http://localhost:5000/api/lich-hen/delete/${selectedbooking.MaLichHen}`)
-                .then(() => {
-                    toast("booking Deleted: booking has been deleted.");
-                    axios.get("http://localhost:5000/api/lich-hen/get")
-                        .then((response) => setbookings(response.data))
-                        .catch((err) => console.error("Error fetching bookings:", err));
-                    setShowAlert(false);
-                })
-                .catch((err) => {
-                    console.error("Error deleting booking:", err);
-                    toast("Delete Failed: There was an error deleting the booking.");
-                });
+            const doctorsinfo = JSON.parse(storedUserInfo);
+            axios.get(`http://localhost:5000/api/lich-hen/get/bacsi/${doctorsinfo.bacSi.MaBacSi}`)
+                .then(bookings => setbookings(bookings.data))
+                .catch(err => console.log(err))
+            setDoctors(doctorsinfo);
         }
-    };
+    }, []);
+
     const handleCreatebooking = () => {
         console.log(newbooking);
         const bookingToCreate = {
             ...newbooking,
+            MaBacSi: doctors.bacSi.MaBacSi,
         };
         axios.post("http://localhost:5000/api/lich-hen/create", bookingToCreate)
             .then(() => {
-                toast("booking Created: New booking has been added successfully.");
+                toast.success("Đặt lịch thành công!", {
+                    action: {
+                        label: "Đóng",
+                        onClick: () => toast.dismiss(),
+                    },
+                    style: {
+                        background: "#ecfdf5",
+                        color: "#065f46",
+                        borderRadius: "10px",
+                        border: "1px solid #10b981",
+                    },
+                });
                 // Load lại danh sách sản phẩm
                 axios.get("http://localhost:5000/api/lich-hen/get")
                     .then((response) => setbookings(response.data))
@@ -183,6 +123,7 @@ export default function BookingView() {
                     GhiChu: "",
                     NgayHen: "",
                 });
+
                 setDialogOpen(false);
             })
             .catch((error) => {
@@ -194,10 +135,10 @@ export default function BookingView() {
                             onClick: () => toast.dismiss(),
                         },
                         style: {
-                            background: "#fef2f2",
-                            color: "#dc2626",
+                            background: "#bf0407",
+                            color: "#bf0407",
                             borderRadius: "10px",
-                            border: "1px solid #fca5a5",
+                            border: "1px solid #10b981",
                         },
                     });
                 } else {
@@ -207,10 +148,10 @@ export default function BookingView() {
                             onClick: () => toast.dismiss(),
                         },
                         style: {
-                            background: "#fef2f2",
-                            color: "#dc2626",
+                            background: "#bf0407",
+                            color: "#bf0407",
                             borderRadius: "10px",
-                            border: "1px solid #fca5a5",
+                            border: "1px solid #10b981",
                         },
                     });
                 }
@@ -256,7 +197,7 @@ export default function BookingView() {
                     onClick: () => toast.dismiss(),
                 },
                 style: {
-                    background: "#fef2f2",
+                    background: "#fef2f2", 
                     color: "#dc2626",
                     borderRadius: "10px",
                     border: "1px solid #fca5a5",
@@ -267,6 +208,7 @@ export default function BookingView() {
 
     return (
         <>
+            <Toaster />
             <title>booking</title>
             <Tabs defaultValue="all">
                 <div className="flex items-center">
@@ -276,18 +218,18 @@ export default function BookingView() {
                     <div className="ml-auto flex items-center gap-2">
                         <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button size="sm" className="h-7 gap-1">
+                                <Button size="sm" className="h-7 gap-1 bg-black text-white hover:bg-white hover:text-black border border-black">
                                     <PlusCircle className="h-3.5 w-3.5" />
                                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                        Thêm lịch hẹn
+                                        Tạo lịch hẹn
                                     </span>
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[425px]">
                                 <DialogHeader>
-                                    <DialogTitle>Thêm lịch hẹn</DialogTitle>
+                                    <DialogTitle>Tạo lịch hẹn</DialogTitle>
                                     <DialogDescription>
-                                        Thêm lịch hẹn mới vào danh sách.
+                                        Tạo lịch hẹn mới.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
@@ -306,21 +248,7 @@ export default function BookingView() {
                                             ))}
                                         </select>
                                     </div>
-                                    <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="MaBacSi" className="text-right col-span-2">
-                                            Bác Sĩ
-                                        </Label>
-                                        <select
-                                            id="MaBacSi"  // Đây là ID cho dropdown
-                                            onChange={handleInputChange2}  // Gọi handleInputChange khi có sự thay đổi
-                                            className="col-span-4"
-                                        >
-                                            <option value="">Chọn bác sĩ</option>
-                                            {doctors.map((doctor: any) => (
-                                                <option key={doctor.MaBacSi} value={doctor.MaBacSi}>{doctor.HoTen}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+
                                     <div className="grid grid-cols-6 items-center gap-4">
                                         <Label htmlFor="NgayHen" className="text-right col-span-2">
                                             Ngày hẹn
@@ -335,7 +263,7 @@ export default function BookingView() {
                                     </div>
                                 </div>
                                 <DialogFooter>
-                                    <Button type="button" onClick={handleCreatebooking}>
+                                    <Button className="bg-black text-white hover:bg-white hover:text-black border-1" type="button" onClick={handleCreatebooking}>
                                         Confirm
                                     </Button>
                                 </DialogFooter>
@@ -353,7 +281,6 @@ export default function BookingView() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Khách hàng</TableHead>
-                                        <TableHead>Bác sĩ</TableHead>
                                         <TableHead>Ngày hẹn</TableHead>
                                         <TableHead>Tình trạng</TableHead>
                                         <TableHead>Ghi chú</TableHead>
@@ -367,9 +294,6 @@ export default function BookingView() {
                                         <TableRow >
                                             <TableCell className="font-medium">
                                                 {bookings.TenKhachHang}
-                                            </TableCell>
-                                            <TableCell className="font-medium">
-                                                {bookings.TenBacSi}
                                             </TableCell>
                                             <TableCell className="font-medium">
                                                 {bookings.NgayHen}
@@ -393,11 +317,9 @@ export default function BookingView() {
                                                             <span className="sr-only">Toggle menu</span>
                                                         </Button>
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
+                                                    <DropdownMenuContent className="bg-white" align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem onClick={() => handleEditClick(bookings)}>Sửa</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleCreatePhieuKhamClick(bookings)}>Tạo phiếu khám</DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleDeleteClick(bookings)}>Xóa</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
@@ -409,70 +331,7 @@ export default function BookingView() {
                     </Card>
                 </TabsContent>
             </Tabs>
-            <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to delete this booking?
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleAlertClose}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleConfirmDelete}>
-                            Confirm
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-            <AlertDialog open={showAlertEdit} onOpenChange={setShowAlertEdit}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Edit booking</AlertDialogTitle>
-                    </AlertDialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-6 items-center gap-4">
-                            <Label htmlFor="HoTen" className="text-right col-span-2">
-                                Khách Hàng
-                            </Label>
-                            <Input id="HoTen" type="text" className="col-span-4" defaultValue={booking.TenKhachHang} readOnly />
-                        </div>
-                        <div className="grid grid-cols-6 items-center gap-4">
-                            <Label htmlFor="HoTen" className="text-right col-span-2">
-                                Bác sĩ
-                            </Label>
-                            <Input id="HoTen" type="text" className="col-span-4" defaultValue={booking.TenBacSi} readOnly />
-                        </div>
-                        <div className="grid grid-cols-6 items-center gap-4">
-                            <Label htmlFor="NgayHen" className="text-right col-span-2">
-                                Ngày hẹn
-                            </Label>
-                            <Input onChange={handleInputChange} id="NgayHen" type="date" className="col-span-4" defaultValue={booking.NgayHen} />
-                        </div>
-                        <div className="grid grid-cols-6 items-center gap-4">
-                            <Label htmlFor="MaBacSi" className="text-right col-span-2">
-                                Tình Trạng
-                            </Label>
-                            <select
-                                id="TinhTrang"  // Đây là ID cho dropdown
-                                onChange={handleInputChange2}  // Gọi handleInputChange khi có sự thay đổi
-                                className="col-span-4"
-                            >
-                                <option value="">Chọn Tình Trạng</option>
-                                <option value="0">Chưa hoàn thành</option>
-                                <option value="1">Đã hoàn thành</option>
-                            </select>
-                        </div>
-                    </div>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleAlertEditClose}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleConfirmEdit}>
-                            Confirm
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-            <Toaster />
+
         </>
     )
 }

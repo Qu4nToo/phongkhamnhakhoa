@@ -196,7 +196,7 @@ export default function Navbar() {
 
                 {/* Burger icon (mobile) */}
                 <div className="flex md:hidden">
-                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-[#66bb6a] focus:outline-none">
+                  <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-blue-950 hover:text-sky-600 hover:border-sky-600 border-b-2 border-b-white focus:outline-none">
                     {open ? (
                       <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
                     ) : (
@@ -209,13 +209,13 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu */}
-          <Disclosure.Panel className="md:hidden bg-[#4CAF50] px-4 pt-2 pb-3 space-y-1">
+          <Disclosure.Panel className="md:hidden bg-white px-4 pt-2 pb-3 space-y-1">
             {navigation.map((item) =>
               item.name === "Dịch vụ" ? (
                 <div key={item.name}>
                   <button
                     onClick={() => setOpenDichVu(!openDichVu)}
-                    className="flex justify-between items-center w-full px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#66bb6a]"
+                    className="flex justify-between items-center w-full px-3 py-2 rounded-md text-base font-medium text-blue-950 hover:text-sky-600 hover:border-sky-600 border-b-2 border-b-white"
                   >
                     Dịch vụ
                     {openDichVu ? (
@@ -231,7 +231,7 @@ export default function Navbar() {
                         <Link
                           key={dv.name}
                           href={dv.href}
-                          className="block text-white text-sm py-1 hover:bg-[#66bb6a] rounded-md px-2"
+                          className="block text-blue-950 text-sm py-1 hover:text-sky-600 hover:border-sky-600 border-b-2 border-b-white rounded-md px-2"
                         >
                           {dv.name}
                         </Link>
@@ -243,7 +243,7 @@ export default function Navbar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#66bb6a]"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-blue-950 hover:text-sky-600 hover:border-sky-600 border-b-2 border-b-white"
                 >
                   {item.name}
                 </Link>

@@ -92,12 +92,12 @@ const BacSiController = {
     updateBacSi: async (req, res) => {
         try {
             const { id } = req.params;
-            const { HoTen, SoDienThoai, Email, MatKhau, KinhNghiem, NgaySinh, DiaChi } = req.body;
+            const { HoTen, SoDienThoai, Email, KinhNghiem, NgaySinh, DiaChi } = req.body;
 
             if (!HoTen || !SoDienThoai || !Email || !KinhNghiem || !NgaySinh || !DiaChi)
                 return res.status(400).json({ message: "Thiếu thông tin bắt buộc!" });
 
-            const result = await BacSi.update(id, { HoTen, SoDienThoai, Email, MatKhau, KinhNghiem, NgaySinh, DiaChi });
+            const result = await BacSi.update(id, { HoTen, SoDienThoai, Email, KinhNghiem, NgaySinh, DiaChi });
             if (result.affectedRows === 0)
                 return res.status(404).json({ message: "Không tìm thấy bác sĩ để cập nhật!" });
 
