@@ -25,28 +25,43 @@ const PhieuKhamController = {
         }
     },
 
-    createPhieuKham: async (req, res) => {
-        try {
-            const { MaKhachHang, MaBacSi, NgayKham, TrieuChung, ChanDoan } = req.body;
+createPhieuKham: async (req, res) => {
+    try {
+        const { MaKhachHang, MaBacSi, NgayKham, MaLichHen } = req.body;
 
-            if (!MaKhachHang || !MaBacSi || !NgayKham || !TrieuChung || !ChanDoan) {
-                return res.status(400).json({ message: "Thiếu trường dữ liệu" });
-            }
-
-            const result = await PhieuKham.create({
-                MaKhachHang,
-                MaBacSi,
-                NgayKham,
-                TrieuChung,
-                ChanDoan
-            });
-
-            res.status(201).json({ message: "Thêm phiếu khám thành công!", data: result });
-        } catch (error) {
-            console.error("Lỗi khi thêm phiếu khám:", error);
-            res.status(500).json({ message: "Lỗi server", error: error.message });
+        if (!MaKhachHang || !MaBacSi || !NgayKham || !MaLichHen) {
+            return res.status(400).json({ message: "Thiếu trường dữ liệu" });
         }
-    },
+        
+        // 1. THÊM BƯỚC KIỂM TRA TỒN TẠI
+        const existingPhieuKham = await PhieuKham.findByFields({
+            MaKhachHang,
+            MaBacSi,
+            NgayKham,
+            MaLichHen
+        });
+
+        if (existingPhieuKham && existingPhieuKham.length > 0) {
+            return res.status(409).json({ 
+                message: "Phiếu khám của lịch hẹn này đã tồn tại!" 
+            });
+        }
+        // -----------------------------------
+        
+        // 2. Nếu chưa tồn tại, tiến hành tạo mới
+        const result = await PhieuKham.create({
+            MaKhachHang,
+            MaBacSi,
+            NgayKham,
+            MaLichHen
+        });
+
+        res.status(201).json({ message: "Thêm phiếu khám thành công!", data: result });
+    } catch (error) {
+        console.error("Lỗi khi thêm phiếu khám:", error);
+        res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+},
 
     updatePhieuKham: async (req, res) => {
         try {
