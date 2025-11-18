@@ -64,34 +64,34 @@ module.exports = {
 
     create: async (data) => {
         try {
-            const { MaBacSi, MaKhachHang, NgayHen, GhiChu } = data;
+            const { MaBacSi, MaKhachHang, NgayHen, GioHen, GhiChu } = data;
 
-            // Kiểm tra số lượng lịch đã có trong ngày
+            // Kiểm tra trùng lặp theo bác sĩ, ngày và giờ
             const sqlCheck = `
             SELECT COUNT(*) AS count 
             FROM lichhen 
-            WHERE MaBacSi = ? AND DATE(NgayHen) = DATE(?)
+            WHERE MaBacSi = ? AND DATE(NgayHen) = DATE(?) AND GioHen = ?
         `;
-            const [rows] = await db.query(sqlCheck, [MaBacSi, NgayHen]);
+            const [rows] = await db.query(sqlCheck, [MaBacSi, NgayHen, GioHen]);
 
-            if (rows[0].count >= 6) {
-                // Trả lỗi về cho controller xử lý
+            if (rows[0].count > 0) {
                 const err = new Error(
-                    "Bác sĩ này đã có đủ 6 lịch trong ngày, vui lòng chọn ngày khác!"
+                    "Bác sĩ này đã có lịch hẹn vào khung giờ này, vui lòng chọn giờ khác!"
                 );
                 err.code = 400;
                 throw err;
             }
 
-            // Nếu chưa đủ 6 thì thêm mới
+            // Thêm mới lịch hẹn
             const sqlInsert = `
-            INSERT INTO lichhen (MaLichHen, MaKhachHang, MaBacSi, NgayHen, GhiChu)
-            VALUES (UUID(), ?, ?, ?, ?)
+            INSERT INTO lichhen (MaLichHen, MaKhachHang, MaBacSi, NgayHen, GioHen, GhiChu)
+            VALUES (UUID(), ?, ?, ?, ?, ?)
         `;
             const [result] = await db.query(sqlInsert, [
                 MaKhachHang,
                 MaBacSi,
                 NgayHen,
+                GioHen,
                 GhiChu,
             ]);
 

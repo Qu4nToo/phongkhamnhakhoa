@@ -68,7 +68,6 @@ export default function User() {
     const [showAlertEdit, setShowAlertEdit] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>([]);
     const [isDialogOpen, setDialogOpen] = useState(false);
-    const [chucVu, setChucVu] = useState<any>([]);
     const [searchTerm, setSearchTerm] = useState("");
 
     const [newUser, setNewUser] = useState({
@@ -78,7 +77,7 @@ export default function User() {
         NgaySinh: "",
         MatKhau: "",
         DiaChi: "",
-        MaChucVu: ""
+        VaiTro: ""
     });
 
 
@@ -92,6 +91,7 @@ export default function User() {
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        console.log(newUser);
         const { id, value } = e.target;
         setNewUser((prev) => ({
             ...prev,
@@ -116,11 +116,6 @@ export default function User() {
         // Lấy danh sách Người dùng
         axios.get("http://localhost:5000/api/nguoi-dung/get")
             .then(users => setUsers(users.data))
-            .catch(err => console.log(err))
-
-        // Lấy danh sách Chức vụ
-        axios.get("http://localhost:5000/api/chuc-vu/get")
-            .then(chucVu => setChucVu(chucVu.data))
             .catch(err => console.log(err))
     }, []);
 
@@ -166,7 +161,7 @@ export default function User() {
                     NgaySinh: "",
                     MatKhau: "",
                     DiaChi: "",
-                    MaChucVu: ""
+                    VaiTro: ""
                 });
                 setShowAlertEdit(false);
             })
@@ -191,7 +186,7 @@ export default function User() {
                         NgaySinh: "",
                         MatKhau: "",
                         DiaChi: "",
-                        MaChucVu: ""
+                        VaiTro: ""
                     });
                     setShowAlert(false);
                 })
@@ -202,29 +197,35 @@ export default function User() {
         }
     };
 
-    const handleCreateUser = () => {
-        const userToCreate = {
-            ...newUser,
-            MatKhau: sha3_512(newUser.MatKhau)
-        };
-        axios.post("http://localhost:5000/api/nguoi-dung/create", userToCreate)
-            .then(() => {
-                toast("User Created: New User has been added successfully.");
-                axios.get("http://localhost:5000/api/nguoi-dung/get")
-                    .then((response) => setUsers(response.data))
-                    .catch((err) => console.error("Error fetching users:", err));
-                setNewUser({
-                    HoTen: "",
-                    SDT: "",
-                    Email: "",
-                    NgaySinh: "",
-                    MatKhau: "",
-                    DiaChi: "",
-                    MaChucVu: ""
-                });
-                setDialogOpen(false);
-            })
-            .catch((err) => console.error("Error creating user:", err));
+    const handleCreateUser = async () => {
+        try {
+            await axios.post("http://localhost:5000/api/nguoi-dung/create", newUser);
+            toast("User Created: New User has been added successfully.");
+            
+            // Reload users list
+            const response = await axios.get("http://localhost:5000/api/nguoi-dung/get");
+            setUsers(response.data);
+            
+            // Reset form
+            setNewUser({
+                HoTen: "",
+                SDT: "",
+                Email: "",
+                NgaySinh: "",
+                MatKhau: "",
+                DiaChi: "",
+                VaiTro: ""
+            });
+            setDialogOpen(false);
+        } catch (err: any) {
+            console.error("Error creating user:", err);
+            console.error("Error response:", err.response?.data);
+            if (err.response?.data?.message) {
+                toast.error(err.response.data.message);
+            } else {
+                toast.error("Có lỗi xảy ra khi thêm người dùng");
+            }
+        }
     };
 
     return (
@@ -268,19 +269,18 @@ export default function User() {
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
                                     <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="MaChucVu" className="text-right col-span-2">
-                                            Role
+                                        <Label htmlFor="VaiTro" className="text-right col-span-2">
+                                            Vai trò
                                         </Label>
                                         <select
-                                            id="MaChucVu"
+                                            id="VaiTro"
                                             onChange={handleInputChange2}
                                             className="col-span-4 border border-input p-2 rounded-md"
-                                            value={newUser.MaChucVu}
+                                            value={newUser.VaiTro}
                                         >
-                                            <option value="">Chọn chức vụ</option>
-                                            {chucVu.map((chucvu: any) => (
-                                                <option key={chucvu.MaChucVu} value={chucvu.MaChucVu}>{chucvu.TenChucVu}</option>
-                                            ))}
+                                            <option value="">Chọn vai trò</option>
+                                            <option value="Lễ tân">Lễ tân</option>
+                                            <option value="Quản lý">Quản lý</option>
                                         </select>
                                     </div>
                                     <div className="grid grid-cols-6 items-center gap-4">
@@ -338,7 +338,7 @@ export default function User() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Chức vụ</TableHead>
+                                        <TableHead>Vai trò</TableHead>
                                         <TableHead>Họ và Tên</TableHead>
                                         <TableHead>Số điện thoại</TableHead>
                                         <TableHead>Email</TableHead>
@@ -353,7 +353,7 @@ export default function User() {
                                     {filteredUsers.map((user: any) => (
                                         <TableRow key={user.MaNguoiDung}>
                                             <TableCell className="font-medium">
-                                                {user.TenChucVu}
+                                                {user.VaiTro}
                                             </TableCell>
                                             <TableCell className="font-medium">
                                                 {user.HoTen}
@@ -423,19 +423,18 @@ export default function User() {
                     <div className="grid gap-4 py-4">
                         {/* Dropdown Chức vụ (Edit) */}
                         <div className="grid grid-cols-6 items-center gap-4">
-                            <Label htmlFor="MaChucVu" className="text-right col-span-2">
-                                Role
+                            <Label htmlFor="VaiTro" className="text-right col-span-2">
+                                Vai trò
                             </Label>
                             <select
-                                id="MaChucVu"
+                                id="VaiTro"
                                 onChange={handleInputChange2}
                                 className="col-span-4 border border-input p-2 rounded-md"
-                                defaultValue={newUser.MaChucVu}
+                                defaultValue={newUser.VaiTro}
                             >
-                                <option value="">Chọn chức vụ</option>
-                                {chucVu.map((chucvu: any) => (
-                                    <option key={chucvu.MaChucVu} value={chucvu.MaChucVu}>{chucvu.TenChucVu}</option>
-                                ))}
+                                <option value="">Chọn vai trò</option>
+                                <option value="Lễ tân">Lễ tân</option>
+                                <option value="Quản lý">Quản lý</option>
                             </select>
                         </div>
 

@@ -20,6 +20,17 @@ module.exports = {
       throw new Error('Database query failed');
     }
   },
+
+  getByBacSiId: async (id) => {
+    try {
+      const [row] = await db.query('SELECT pk.*, kh.HoTen as TenKhachHang FROM phieukham pk join khachhang kh on pk.MaKhachHang = kh.MaKhachHang WHERE pk.MaBacSi = ? order by pk.NgayKham asc ', [id]);
+      return row[0];
+    } catch (err) {
+      console.error('Query Error:', err.message);
+      throw new Error('Database query failed');
+    }
+  },
+
   findByFields: async ({ MaKhachHang, MaBacSi, NgayKham }) => {
     try {
       const sql = `
@@ -34,6 +45,7 @@ module.exports = {
       throw new Error("Database query failed");
     }
   },
+  
   create: async (data) => {
     try {
       const [result] = await db.query('INSERT INTO phieukham SET ?', data);
