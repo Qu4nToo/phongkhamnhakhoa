@@ -33,16 +33,25 @@ export default function BookingForm() {
     ThuTrongTuan: string;
   }
 
+  const TIME_SLOTS = [
+    { value: "08:00 - 10:00", label: "08:00 - 10:00" },
+    { value: "10:00 - 12:00", label: "10:00 - 12:00" },
+    { value: "13:00 - 15:00", label: "13:00 - 15:00" },
+    { value: "15:00 - 17:00", label: "15:00 - 17:00" },
+  ];
+
   const router = useRouter();
   const [userInfo, setUserInfo] = useState<any>(null);
   const [bacsi, setBacsi] = useState<BacSi[]>([]);
   const [selectedBacSi, setSelectedBacSi] = useState<BacSi | null>(null);
   const [lichlamviec, setLichLamViec] = useState<LichLamViec[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     MaKhachHang: "",
     MaBacSi: "",
     NgayHen: "",
+    GioHen: "",
     GhiChu: "",
   });
 
@@ -61,6 +70,23 @@ export default function BookingForm() {
       .then((res) => setBacsi(res.data))
       .catch((error) => console.log(error));
   }, [router]);
+
+  // Fetch giờ đã đặt khi thay đổi ngày hoặc bác sĩ
+  useEffect(() => {
+    if (formData.NgayHen && formData.MaBacSi) {
+      axios
+        .get(`http://localhost:5000/api/lich-hen/get/bacsi/${formData.MaBacSi}`)
+        .then((res) => {
+          const bookedTimes = res.data
+            .filter((booking: any) => booking.NgayHen === formData.NgayHen)
+            .map((booking: any) => booking.GioHen);
+          setBookedSlots(bookedTimes);
+        })
+        .catch((error) => console.log(error));
+    } else {
+      setBookedSlots([]);
+    }
+  }, [formData.NgayHen, formData.MaBacSi]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -108,6 +134,7 @@ export default function BookingForm() {
       MaKhachHang: userInfo.khachHang.MaKhachHang,
       MaBacSi: "",
       NgayHen: "",
+      GioHen: "",
       GhiChu: "",
     })
     try {
@@ -128,6 +155,7 @@ export default function BookingForm() {
         MaKhachHang: "",
         MaBacSi: "",
         NgayHen: "",
+        GioHen: "",
         GhiChu: "",
       })
       router.push("/LichHen");
@@ -354,6 +382,33 @@ export default function BookingForm() {
                 />
               </PopoverContent>
             </Popover>
+          </div>
+
+          {/* Giờ hẹn */}
+          <div>
+            <Label>Chọn giờ hẹn</Label>
+            <select
+              name="GioHen"
+              value={formData.GioHen}
+              onChange={handleChange}
+              className="w-full border border-gray-300 text-black rounded-md p-2 mt-1 bg-white focus:ring-2 focus:ring-blue-400 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+              required
+              disabled={!formData.NgayHen || !formData.MaBacSi}
+            >
+              <option value="">
+                {!formData.NgayHen || !formData.MaBacSi
+                  ? "Vui lòng chọn ngày và bác sĩ trước"
+                  : "-- Chọn giờ --"}
+              </option>
+              {TIME_SLOTS.map((slot) => {
+                const isBooked = bookedSlots.includes(slot.value);
+                return (
+                  <option key={slot.value} value={slot.value} disabled={isBooked}>
+                    {slot.label} {isBooked ? "(Đã đặt)" : ""}
+                  </option>
+                );
+              })}
+            </select>
           </div>
 
           {/* Ghi chú */}

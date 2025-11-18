@@ -6,7 +6,7 @@ module.exports = {
         try {
             const sql = `
             SELECT 
-            nd.*,
+            nd.*
             FROM nguoidung nd
         `;
             const [rows] = await db.query(sql);

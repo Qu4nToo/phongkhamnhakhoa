@@ -64,8 +64,10 @@ const NguoiDungController = {
 
   createNguoiDung: async (req, res) => {
     try {
-      const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu } = req.body;
-      if (!HoTen || !Email || !NgaySinh || !SDT || !MatKhau || !DiaChi || !MaChucVu) {
+      const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, VaiTro } = req.body;
+      console.log("Received data:", { HoTen, Email, NgaySinh, SDT, MatKhau: MatKhau ? "***" : MatKhau, DiaChi, VaiTro });
+      if (!HoTen || !Email || !NgaySinh || !SDT || !MatKhau || !DiaChi || !VaiTro) {
+        console.log("Missing fields:", { HoTen: !!HoTen, Email: !!Email, NgaySinh: !!NgaySinh, SDT: !!SDT, MatKhau: !!MatKhau, DiaChi: !!DiaChi, VaiTro: !!VaiTro });
         return res.status(400).json({ message: "Tất cả các trường đều là bắt buộc!" });
       }
 
@@ -86,7 +88,7 @@ const NguoiDungController = {
         return res.status(400).json({ message: "Email đã được sử dụng bởi người dùng khác!" });
       }
       const hashedPassword = await bcrypt.hash(MatKhau, 10);
-      const result = await NguoiDung.create({ HoTen, Email, NgaySinh, SDT, MatKhau: hashedPassword, DiaChi, MaChucVu });
+      const result = await NguoiDung.create({ HoTen, Email, NgaySinh, SDT, MatKhau: hashedPassword, DiaChi, VaiTro });
       return res.status(201).json({ message: "Thêm người dùng thành công!", data: result });
     } catch (error) {
       console.error("Lỗi khi thêm người dùng:", error);
@@ -97,8 +99,8 @@ const NguoiDungController = {
   updateNguoiDung: async (req, res) => {
     try {
       const { id } = req.params;
-      const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu } = req.body;
-      if (!HoTen || !Email || !NgaySinh || !SDT || !MatKhau || !DiaChi || !MaChucVu) {
+      const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, VaiTro } = req.body;
+      if (!HoTen || !Email || !NgaySinh || !SDT || !MatKhau || !DiaChi || !VaiTro) {
         return res.status(400).json({ message: "Tất cả các trường đều là bắt buộc!" });
       }
 
@@ -115,7 +117,7 @@ const NguoiDungController = {
         return res.status(400).json({ message: "Email không hợp lệ!" });
       }
 
-      const result = await NguoiDung.update(id, { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, MaChucVu });
+      const result = await NguoiDung.update(id, { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, VaiTro });
       if (result.affectedRows === 0) {
         return res.status(404).json({ message: "Không tìm thấy người dùng để cập nhật!" });
       }

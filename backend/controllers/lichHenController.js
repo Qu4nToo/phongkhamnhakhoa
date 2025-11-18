@@ -67,11 +67,11 @@ const LichHenController = {
   createLichHen: async (req, res) => {
     try {
       console.log("📥 Body nhận được từ client:", req.body);
-      const { GhiChu, NgayHen, MaKhachHang, MaBacSi } = req.body;
+      const { GhiChu, NgayHen, GioHen, MaKhachHang, MaBacSi } = req.body;
 
-      if (!NgayHen || !MaKhachHang || !MaBacSi) {
+      if (!NgayHen || !GioHen || !MaKhachHang || !MaBacSi) {
         return res.status(400).json({
-          message: "Các trường NgayHen, MaKhachHang, MaBacSi là bắt buộc!",
+          message: "Các trường NgayHen, GioHen, MaKhachHang, MaBacSi là bắt buộc!",
         });
       }
 
@@ -85,16 +85,6 @@ const LichHenController = {
 
 
       const formattedDate = ngayHenDate.toISOString().split("T")[0];
-      const count = await LichHen.countByBacSiAndDate(MaBacSi, formattedDate);
-
-      if (count >= 6) {
-        const formatted = `${String(ngayHenDate.getDate()).padStart(2, "0")}/${String(
-          ngayHenDate.getMonth() + 1
-        ).padStart(2, "0")}/${ngayHenDate.getFullYear()}`;
-        return res.status(400).json({
-          message: `Bác sĩ này đã đủ lịch hẹn trong ngày ${formatted}, không thể đặt thêm!`,
-        });
-      }
 
       const existed = await LichHen.countByKhachHangAndDate(MaKhachHang, formattedDate);
 
@@ -112,6 +102,7 @@ const LichHenController = {
       const result = await LichHen.create({
         GhiChu,
         NgayHen,
+        GioHen,
         MaKhachHang,
         MaBacSi,
       });
@@ -130,11 +121,11 @@ const LichHenController = {
   updateLichHen: async (req, res) => {
     try {
       const { id } = req.params;
-      const { GhiChu, NgayHen, MaKhachHang, MaBacSi } = req.body;
+      const { GhiChu, NgayHen, GioHen, MaKhachHang, MaBacSi } = req.body;
 
-      if (!NgayHen || !MaKhachHang || !MaBacSi) {
+      if (!NgayHen || !GioHen || !MaKhachHang || !MaBacSi) {
         return res.status(400).json({
-          message: "Các trường NgayHen MaKhachHang, MaBacSi là bắt buộc!",
+          message: "Các trường NgayHen, GioHen, MaKhachHang, MaBacSi là bắt buộc!",
         });
       }
 
@@ -147,6 +138,7 @@ const LichHenController = {
       const result = await LichHen.update(id, {
         GhiChu,
         NgayHen,
+        GioHen,
         MaKhachHang,
         MaBacSi,
       });

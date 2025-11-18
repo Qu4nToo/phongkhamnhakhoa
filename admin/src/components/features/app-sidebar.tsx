@@ -137,7 +137,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 className="w-[--radix-popper-anchor-width]"
               >
                 <DropdownMenuItem>
-                  <span className="font-medium">{userInfo?.HoTen}</span>
+                  <span className="font-medium">{userInfo?.nguoiDung.HoTen}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>
                   <span>Sign out</span>
