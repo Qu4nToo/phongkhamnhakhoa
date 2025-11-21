@@ -121,7 +121,7 @@ const LichHenController = {
   updateLichHen: async (req, res) => {
     try {
       const { id } = req.params;
-      const { GhiChu, NgayHen, GioHen, MaKhachHang, MaBacSi } = req.body;
+      const { GhiChu, NgayHen, GioHen, MaKhachHang, MaBacSi, TinhTrang } = req.body;
 
       if (!NgayHen || !GioHen || !MaKhachHang || !MaBacSi) {
         return res.status(400).json({
@@ -141,6 +141,7 @@ const LichHenController = {
         GioHen,
         MaKhachHang,
         MaBacSi,
+        TinhTrang,
       });
 
       if (result.affectedRows === 0) {

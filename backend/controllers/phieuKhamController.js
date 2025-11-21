@@ -81,9 +81,9 @@ const PhieuKhamController = {
     updatePhieuKham: async (req, res) => {
         try {
             const { id } = req.params;
-            const { MaKhachHang, MaBacSi, NgayKham, TrieuChung, ChanDoan } = req.body;
+            const { MaKhachHang, MaBacSi, NgayKham, ChuanDoan, GhiChu, TrangThai } = req.body;
 
-            if (!MaKhachHang || !MaBacSi || !NgayKham || !TrieuChung || !ChanDoan) {
+            if (!MaKhachHang || !MaBacSi || !NgayKham || !ChuanDoan) {
                 return res.status(400).json({ message: "Thiếu trường dữ liệu" });
             }
 
@@ -91,8 +91,9 @@ const PhieuKhamController = {
                 MaKhachHang,
                 MaBacSi,
                 NgayKham,
-                TrieuChung,
-                ChanDoan
+                ChuanDoan,
+                GhiChu,
+                TrangThai
             });
 
             if (result.affectedRows === 0) {

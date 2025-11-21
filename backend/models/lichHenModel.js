@@ -4,7 +4,7 @@ module.exports = {
     getAlls: async () => {
         try {
             const sql =
-                "SELECT lh.*, kh.HoTen AS TenKhachHang, bs.HoTen AS TenBacSi FROM lichhen lh join khachhang kh on lh.MaKhachHang = kh.MaKhachHang join bacsi bs on lh.MaBacSi = bs.MaBacSi order by lh.NgayHen asc";
+                "SELECT lh.*, kh.HoTen AS TenKhachHang, bs.HoTen AS TenBacSi FROM lichhen lh join khachhang kh on lh.MaKhachHang = kh.MaKhachHang join bacsi bs on lh.MaBacSi = bs.MaBacSi order by lh.NgayHen asc, lh.GioHen asc";
             const [rows] = await db.query(sql);
             return rows;
         } catch (err) {
@@ -32,7 +32,7 @@ module.exports = {
             JOIN khachhang kh ON lh.MaKhachHang = kh.MaKhachHang 
             JOIN bacsi bs ON lh.MaBacSi = bs.MaBacSi 
             WHERE lh.MaBacSi = ?
-            order by lh.NgayHen asc
+            order by lh.NgayHen asc, lh.GioHen asc
         `;
             const [row] = await db.query(sql, [id]);
             return row;

@@ -74,6 +74,7 @@ export default function BookingView() {
     const [showAlertEdit, setShowAlertEdit] = useState(false);
     const [selectedbooking, setSelectedbooking] = useState<any>([]);
     const [isDialogOpen, setDialogOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
 
     const TIME_SLOTS = [
@@ -83,12 +84,22 @@ export default function BookingView() {
         { value: "15:00 - 17:00", label: "15:00 - 17:00" },
     ];
 
+    const TINH_TRANG = [
+        { value: "Chờ xác nhận", label: "Chờ xác nhận" },
+        { value: "Đã xác nhận", label: "Đã xác nhận" },
+        { value: "Không đến", label: "Không đến" },
+        { value: "Đang khám", label: "Đang khám" },
+        { value: "Đã hủy", label: "Đã hủy" },
+        { value: "Hoàn thành", label: "Hoàn thành" },
+    ];
+
     const [newbooking, setNewbooking] = useState({
         GhiChu: "",
         NgayHen: "",
         GioHen: "",
         MaBacSi: "",
         MaKhachHang: "",
+        TinhTrang: "",
     });
 
     const [bookedSlots, setBookedSlots] = useState<string[]>([]);
@@ -130,7 +141,7 @@ export default function BookingView() {
     useEffect(() => {
         if (newbooking.NgayHen && newbooking.MaBacSi) {
             axios
-                .get(`http://localhost:5000/api/lich-hen/get/bacsi/${newbooking.MaBacSi}`)
+                .get(`http://localhost:5000/api/lich-hen/getByBacSiID/${newbooking.MaBacSi}`)
                 .then((res) => {
                     const bookedTimes = res.data
                         .filter((booking: any) => booking.NgayHen === newbooking.NgayHen)
@@ -230,7 +241,7 @@ export default function BookingView() {
     };
     const handleCreatebooking = () => {
         console.log(newbooking);
-        
+
         // Kiểm tra ngày hẹn có thuộc lịch làm việc không
         const selectedDate = new Date(newbooking.NgayHen);
         const dayOfWeek = selectedDate.getDay();
@@ -249,7 +260,7 @@ export default function BookingView() {
             });
             return;
         }
-        
+
         const bookingToCreate = {
             ...newbooking,
         };
@@ -266,6 +277,7 @@ export default function BookingView() {
                     GioHen: "",
                     MaBacSi: "",
                     MaKhachHang: "",
+                    TinhTrang: "",
                 });
                 setDialogOpen(false);
             })
@@ -301,7 +313,31 @@ export default function BookingView() {
             });
     };
 
-    const handleCreatePhieuKhamClick = async (booking: any) => { 
+    const handleAcceptClick = async (booking: any) => {
+        if(booking.TinhTrang === "Chờ xác nhận" ){
+            await axios.put(`http://localhost:5000/api/lich-hen/update/${booking.MaLichHen}`, {
+                MaKhachHang: booking.MaKhachHang,
+                MaBacSi: booking.MaBacSi,
+                NgayHen: booking.NgayHen,
+                GioHen: booking.GioHen,
+                TinhTrang: "Đã xác nhận",
+                GhiChu: booking.GhiChu
+            });
+            toast.success("Xác nhận lịch hẹn thành công");
+            // Reload danh sách lịch hẹn
+            axios.get("http://localhost:5000/api/lich-hen/get")
+                .then((response) => setbookings(response.data))
+                .catch((err) => console.error("Error fetching bookings:", err));
+        } else {
+            toast.error("Chỉ có thể xác nhận lịch hẹn đang ở trạng thái 'Chờ xác nhận'.");
+        }
+    };
+
+    const handleCreatePhieuKhamClick = async (booking: any) => {
+        if (booking.TinhTrang !== "Đã xác nhận") {
+            toast.error("Chỉ có thể tạo phiếu khám cho lịch hẹn đang ở trạng thái 'Đã xác nhận'.");
+            return;
+        }
         const newPhieuKham = {
             MaLichHen: booking.MaLichHen,
             MaKhachHang: booking.MaKhachHang,
@@ -310,7 +346,7 @@ export default function BookingView() {
         };
         console.log("Dữ liệu phiếu khám mới:", newPhieuKham);
         try {
-            const response = await axios.post( 
+            const response = await axios.post(
                 "http://localhost:5000/api/phieu-kham/create",
                 newPhieuKham
             );
@@ -328,6 +364,21 @@ export default function BookingView() {
                     border: "1px solid #10b981",
                 },
             });
+            await axios.put(`http://localhost:5000/api/lich-hen/update/${booking.MaLichHen}`, {
+                MaKhachHang: booking.MaKhachHang,
+                MaBacSi: booking.MaBacSi,
+                NgayHen: booking.NgayHen,
+                GioHen: booking.GioHen,
+                TinhTrang: "Đang khám",
+                GhiChu: booking.GhiChu
+            });
+
+            console.log("Cập nhật trạng thái lịch hẹn thành công");
+
+            // Reload danh sách lịch hẹn
+            axios.get("http://localhost:5000/api/lich-hen/get")
+                .then((response) => setbookings(response.data))
+                .catch((err) => console.error("Error fetching bookings:", err));
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || "Lỗi không xác định!";
 
@@ -353,8 +404,19 @@ export default function BookingView() {
                 <div className="flex items-center">
                     <TabsList>
                         <TabsTrigger value="all">Tất cả</TabsTrigger>
+                        {TINH_TRANG.map((status) => (
+                            <TabsTrigger key={status.value} value={status.value}>
+                                {status.label}
+                            </TabsTrigger>
+                        ))}
                     </TabsList>
                     <div className="ml-auto flex items-center gap-2">
+                        <Input
+                            placeholder="Tìm theo tên khách hàng..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-64"
+                        />
                         <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
                             <DialogTrigger asChild>
                                 <Button size="sm" className="h-7 gap-1">
@@ -447,7 +509,7 @@ export default function BookingView() {
                                             </Popover>
                                             {availableDays.length > 0 && (
                                                 <p className="text-xs text-gray-500 mt-1">
-                                                    Bác sĩ làm việc: {availableDays.map(day => 
+                                                    Bác sĩ làm việc: {availableDays.map(day =>
                                                         ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][day]
                                                     ).join(', ')}
                                                 </p>
@@ -515,7 +577,11 @@ export default function BookingView() {
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                {bookings.map((bookings: any) => (
+                                {bookings
+                                    .filter((booking: any) => 
+                                        booking.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase())
+                                    )
+                                    .map((bookings: any) => (
                                     <TableBody key={bookings.MaLichHen}>
                                         <TableRow >
                                             <TableCell className="font-medium">
@@ -552,6 +618,7 @@ export default function BookingView() {
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                         <DropdownMenuItem onClick={() => handleEditClick(bookings)}>Sửa</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleAcceptClick(bookings)}>Xác nhận</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleCreatePhieuKhamClick(bookings)}>Tạo phiếu khám</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleDeleteClick(bookings)}>Xóa</DropdownMenuItem>
                                                     </DropdownMenuContent>
@@ -564,6 +631,82 @@ export default function BookingView() {
                         </CardContent>
                     </Card>
                 </TabsContent>
+                {TINH_TRANG.map((status) => (
+                    <TabsContent key={status.value} value={status.value}>
+                        <Card x-chunk="dashboard-06-chunk-0">
+                            <CardHeader>
+                                <CardTitle>Danh sách lịch hẹn - {status.label}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Khách hàng</TableHead>
+                                            <TableHead>Bác sĩ</TableHead>
+                                            <TableHead>Ngày hẹn</TableHead>
+                                            <TableHead>Giờ hẹn</TableHead>
+                                            <TableHead>Tình trạng</TableHead>
+                                            <TableHead>Ghi chú</TableHead>
+                                            <TableHead>
+                                                <span className="sr-only">Actions</span>
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    {bookings
+                                        .filter((booking: any) => 
+                                            booking.TinhTrang === status.value &&
+                                            booking.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase())
+                                        )
+                                        .map((bookings: any) => (
+                                            <TableBody key={bookings.MaLichHen}>
+                                                <TableRow>
+                                                    <TableCell className="font-medium">
+                                                        {bookings.TenKhachHang}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {bookings.TenBacSi}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {bookings.NgayHen}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {bookings.GioHen}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {bookings.TinhTrang}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {bookings.GhiChu}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button
+                                                                    aria-haspopup="true"
+                                                                    size="icon"
+                                                                    variant="ghost"
+                                                                >
+                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                    <span className="sr-only">Toggle menu</span>
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                                <DropdownMenuItem onClick={() => handleEditClick(bookings)}>Sửa</DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleAcceptClick(bookings)}>Xác nhận</DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleCreatePhieuKhamClick(bookings)}>Tạo phiếu khám</DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleDeleteClick(bookings)}>Xóa</DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        ))}
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                ))}
             </Tabs>
             <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
                 <AlertDialogContent>
@@ -615,7 +758,6 @@ export default function BookingView() {
                                 className="col-span-4"
                                 defaultValue={booking.GioHen}
                             >
-                                <option value="">Chọn giờ hẹn</option>
                                 {TIME_SLOTS.map((slot) => (
                                     <option key={slot.value} value={slot.value}>
                                         {slot.label}
@@ -624,17 +766,20 @@ export default function BookingView() {
                             </select>
                         </div>
                         <div className="grid grid-cols-6 items-center gap-4">
-                            <Label htmlFor="MaBacSi" className="text-right col-span-2">
+                            <Label htmlFor="TinhTrang" className="text-right col-span-2">
                                 Tình Trạng
                             </Label>
                             <select
-                                id="TinhTrang"  // Đây là ID cho dropdown
-                                onChange={handleInputChange2}  // Gọi handleInputChange khi có sự thay đổi
+                                id="TinhTrang"
+                                onChange={handleInputChange2}
                                 className="col-span-4"
+                                defaultValue={booking.TinhTrang}
                             >
-                                <option value="">Chọn Tình Trạng</option>
-                                <option value="0">Chưa hoàn thành</option>
-                                <option value="1">Đã hoàn thành</option>
+                                {TINH_TRANG.map((status) => (
+                                    <option key={status.value} value={status.value}>
+                                        {status.label}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
