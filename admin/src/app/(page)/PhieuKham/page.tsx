@@ -5,17 +5,10 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 
 import {
     MoreHorizontal,
-    PlusCircle,
     UserIcon,
 } from "lucide-react"
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
     DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import {
@@ -57,7 +50,6 @@ import {
 } from "@/components/ui/tabs"
 import axios from "axios"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 export default function phieuKhamView() {
@@ -67,14 +59,21 @@ export default function phieuKhamView() {
     const [showAlert, setShowAlert] = useState(false);
     const [showAlertView, setShowAlertView] = useState(false);
     const [selectedphieuKham, setSelectedphieuKham] = useState<any>([]);
-    const [isDialogOpen, setDialogOpen] = useState(false);
     const [tongtien, setTongtien] = useState<number>();
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const TRANG_THAI = [
+        { value: "Chưa khám", label: "Chưa khám" },
+        { value: "Đã khám", label: "Đã khám" },
+    ];
 
 
-    const formatPrice = (price: number): string => {
-        // Kiểm tra giá trị đầu vào
-        if (isNaN(price)) {
-            throw new Error("Giá trị không hợp lệ");
+    const formatPrice = (price: any): string => {
+        // Kiểm tra và chuyển đổi giá trị đầu vào
+        const numPrice = Number(price);
+        
+        if (price === null || price === undefined || isNaN(numPrice)) {
+            return "0 VND";
         }
 
         // Định dạng giá sử dụng Intl.NumberFormat
@@ -85,32 +84,8 @@ export default function phieuKhamView() {
         });
 
         // Loại bỏ ký hiệu "₫" mặc định
-        return formatter.format(price).replace('₫', 'VND').trim();
+        return formatter.format(numPrice).replace('₫', 'VND').trim();
     };
-
-
-    const [newphieuKham, setNewphieuKham] = useState({
-        TenLoaiDV: "",
-        MoTa: "",
-    });
-    // const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    //     const { id, value } = e.target;
-    //     setNewphieuKham((prev) => ({
-    //         ...prev,
-    //         [id]: value,
-    //     }));
-    //     console.log(newphieuKham);
-    // };
-    // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    //     const { id } = e.target;
-
-    //     const { value } = e.target;
-    //     setNewphieuKham((prev) => ({
-    //         ...prev,
-    //         [id]: value,
-    //     }));
-    //     console.log(newphieuKham);
-    // };
     useEffect(() => {
         axios.get("http://localhost:5000/api/phieu-kham/get")
             .then(phieuKhams => setPhieuKhams(phieuKhams.data))
@@ -161,27 +136,6 @@ export default function phieuKhamView() {
                 });
         }
     };
-    // const handleCreatephieuKham = () => {
-    //     console.log(newphieuKham);
-    //     const phieuKhamToCreate = {
-    //         ...newphieuKham,
-    //     };
-    //     axios.post("http://localhost:5000/api/phieu-kham/create", phieuKhamToCreate)
-    //         .then(() => {
-    //             toast("phieuKham Created: New phieuKham has been added successfully.");
-    //             // Load lại danh sách sản phẩm
-    //             axios.get("http://localhost:5000/api/phieu-kham/get")
-    //                 .then((response) => setPhieuKhams(response.data))
-    //                 .catch((err) => console.error("Error fetching phieuKhams:", err));
-    //             setNewphieuKham({
-    //                 TenLoaiDV: "",
-    //                 MoTa: "",
-    //             });
-    //             setDialogOpen(false);
-    //         })
-    //         .catch((err) => console.error("Error creating phieuKham:", err));
-    // };
-
     return (
         <>
             <title>phieuKham</title>
@@ -189,7 +143,20 @@ export default function phieuKhamView() {
                 <div className="flex items-center">
                     <TabsList>
                         <TabsTrigger value="all">Tất cả</TabsTrigger>
+                        {TRANG_THAI.map((status) => (
+                            <TabsTrigger key={status.value} value={status.value}>
+                                {status.label}
+                            </TabsTrigger>
+                        ))}
                     </TabsList>
+                    <div className="ml-auto flex items-center gap-2">
+                        <Input
+                            placeholder="Tìm theo tên khách hàng..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-64"
+                        />
+                    </div>
                     {/* <div className="ml-auto flex items-center gap-2">
                         <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
                             <DialogTrigger asChild>
@@ -244,12 +211,17 @@ export default function phieuKhamView() {
                                         <TableHead>Ngày khám</TableHead>
                                         <TableHead>chuẩn đoán</TableHead>
                                         <TableHead>Ghi chú</TableHead>
+                                        <TableHead>Tình trạng</TableHead>
                                         <TableHead>
                                             <span className="sr-only">Actions</span>
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                {phieuKhams.map((phieuKhams: any) => (
+                                {phieuKhams
+                                    .filter((phieuKham: any) => 
+                                        phieuKham.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase())
+                                    )
+                                    .map((phieuKhams: any) => (
                                     <TableBody key={phieuKhams.MaPhieuKham}>
                                         <TableRow >
                                             <TableCell className="font-medium">
@@ -262,10 +234,13 @@ export default function phieuKhamView() {
                                                 {phieuKhams.NgayKham}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {phieuKhams.ChuanDoan}
+                                                {phieuKhams.ChuanDoan ? phieuKhams.ChuanDoan : "Chưa có"}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {phieuKhams.GhiChu}
+                                                {phieuKhams.GhiChu ? phieuKhams.GhiChu : "Chưa có"}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {phieuKhams.TrangThai}
                                             </TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
@@ -274,7 +249,6 @@ export default function phieuKhamView() {
                                                             aria-haspopup="true"
                                                             size="icon"
                                                             variant="ghost"
-                                                        // onClick={() => handleToggleMenuClick(product)}
                                                         >
                                                             <MoreHorizontal className="h-4 w-4" />
                                                             <span className="sr-only">Toggle menu</span>
@@ -294,6 +268,80 @@ export default function phieuKhamView() {
                         </CardContent>
                     </Card>
                 </TabsContent>
+                {TRANG_THAI.map((status) => (
+                    <TabsContent key={status.value} value={status.value}>
+                        <Card x-chunk="dashboard-06-chunk-0">
+                            <CardHeader>
+                                <CardTitle>Danh sách phiếu khám - {status.label}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Tên khách hàng</TableHead>
+                                            <TableHead>Tên bác sĩ</TableHead>
+                                            <TableHead>Ngày khám</TableHead>
+                                            <TableHead>chuẩn đoán</TableHead>
+                                            <TableHead>Ghi chú</TableHead>
+                                            <TableHead>Tình trạng</TableHead>
+                                            <TableHead>
+                                                <span className="sr-only">Actions</span>
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    {phieuKhams
+                                        .filter((phieuKham: any) => 
+                                            phieuKham.TrangThai === status.value &&
+                                            phieuKham.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase())
+                                        )
+                                        .map((phieuKhams: any) => (
+                                            <TableBody key={phieuKhams.MaPhieuKham}>
+                                                <TableRow>
+                                                    <TableCell className="font-medium">
+                                                        {phieuKhams.TenKhachHang}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {phieuKhams.TenBacSi}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {phieuKhams.NgayKham}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {phieuKhams.ChuanDoan ? phieuKhams.ChuanDoan : "Chưa có"}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {phieuKhams.GhiChu ? phieuKhams.GhiChu : "Chưa có"}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {phieuKhams.TrangThai}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button
+                                                                    aria-haspopup="true"
+                                                                    size="icon"
+                                                                    variant="ghost"
+                                                                >
+                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                    <span className="sr-only">Toggle menu</span>
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                                <DropdownMenuItem onClick={() => handleViewClick(phieuKhams)}>Xem chi tiết</DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleDeleteClick(phieuKhams)}>Xóa</DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        ))}
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                ))}
             </Tabs>
             <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
                 <AlertDialogContent>
@@ -332,7 +380,7 @@ export default function phieuKhamView() {
                                 <p className="text-lg font-semibold leading-6 text-gray-800">
                                     Các Dịch Vụ Đã Thực Hiện
                                 </p>
-                                <ScrollArea className="h-60 w-auto rounded-md border p-3 mt-2">
+                                <ScrollArea className="h-60 w-full rounded-md border p-3 mt-2">
                                     <Table>
                                         <TableHeader>
                                             <TableRow className="sticky top-0 bg-gray-200 text-black">

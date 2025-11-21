@@ -6,9 +6,9 @@ router.get('/get', lichHenController.getAllLichHen);
 
 router.get('/get/:id', lichHenController.getLichHenById);
 
-router.get('/get/bacsi/:id', lichHenController.getLichHenByBacSiId);
+router.get('/getByBacSiID/:id', lichHenController.getLichHenByBacSiId);
 
-router.get('/get/khachhang/:id', lichHenController.getLichHenByKhachHangId);
+router.get('/getByKhachHangID/:id', lichHenController.getLichHenByKhachHangId);
 
 router.post('/create', lichHenController.createLichHen);
 

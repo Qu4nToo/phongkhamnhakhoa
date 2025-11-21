@@ -47,18 +47,17 @@ const ChiTietPhieuKhamController = {
   // 🔹 Thêm chi tiết phiếu khám mới
   createChiTietPhieuKham: async (req, res) => {
     try {
-      const { ThanhTien, DonGia, SoLuong, MaPhieuKham, MaDichVu } = req.body;
+      const { ThanhTien, SoLuong, MaPhieuKham, MaDichVu } = req.body;
 
       // Kiểm tra các trường bắt buộc
-      if (!ThanhTien || !DonGia || !SoLuong || !MaPhieuKham || !MaDichVu) {
+      if (!ThanhTien || !SoLuong || !MaPhieuKham || !MaDichVu) {
         return res.status(400).json({
-          message: "Các trường ThanhTien, DonGia, SoLuong, MaPhieuKham, MaDichVu là bắt buộc!",
+          message: "Các trường ThanhTien, SoLuong, MaPhieuKham, MaDichVu là bắt buộc!",
         });
       }
 
       const result = await ChiTietPhieuKham.create({
         ThanhTien,
-        DonGia,
         SoLuong,
         MaPhieuKham,
         MaDichVu,
@@ -78,17 +77,16 @@ const ChiTietPhieuKhamController = {
   updateChiTietPhieuKham: async (req, res) => {
     try {
       const { id } = req.params;
-      const { ThanhTien, DonGia, SoLuong, MaPhieuKham, MaDichVu } = req.body;
+      const { ThanhTien, SoLuong, MaPhieuKham, MaDichVu } = req.body;
 
-      if (!ThanhTien || !DonGia || !SoLuong || !MaPhieuKham || !MaDichVu) {
+      if (!ThanhTien || !SoLuong || !MaPhieuKham || !MaDichVu) {
         return res.status(400).json({
-          message: "Các trường ThanhTien, DonGia, SoLuong, MaPhieuKham, MaDichVu là bắt buộc!",
+          message: "Các trường ThanhTien, SoLuong, MaPhieuKham, MaDichVu là bắt buộc!",
         });
       }
 
       const result = await ChiTietPhieuKham.update(id, {
         ThanhTien,
-        DonGia,
         SoLuong,
         MaPhieuKham,
         MaDichVu,

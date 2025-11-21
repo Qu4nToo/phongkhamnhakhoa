@@ -106,8 +106,14 @@ export default function BookingView() {
         if (storedUserInfo) {
 
             const doctorsinfo = JSON.parse(storedUserInfo);
-            axios.get(`http://localhost:5000/api/lich-hen/get/bacsi/${doctorsinfo.bacSi.MaBacSi}`)
-                .then(bookings => setbookings(bookings.data))
+            axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${doctorsinfo.bacSi.MaBacSi}`)
+                .then(response => {
+                    // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
+                    const filteredBookings = response.data.filter((booking: any) => 
+                        booking.TinhTrang === "Đã xác nhận"
+                    );
+                    setbookings(filteredBookings);
+                })
                 .catch(err => console.log(err))
             
             // Fetch lịch làm việc của bác sĩ
@@ -137,7 +143,7 @@ export default function BookingView() {
     useEffect(() => {
         if (newbooking.NgayHen && doctors?.bacSi?.MaBacSi) {
             axios
-                .get(`http://localhost:5000/api/lich-hen/get/bacsi/${doctors.bacSi.MaBacSi}`)
+                .get(`http://localhost:5000/api/lich-hen/getByBacSiID/${doctors.bacSi.MaBacSi}`)
                 .then((res) => {
                     const bookedTimes = res.data
                         .filter((booking: any) => booking.NgayHen === newbooking.NgayHen)
@@ -190,14 +196,24 @@ export default function BookingView() {
                         border: "1px solid #10b981",
                     },
                 });
-                axios.get("http://localhost:5000/api/lich-hen/get")
-                    .then((response) => setbookings(response.data))
+                // Reload lại danh sách lịch hẹn của bác sĩ
+                axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${doctors.bacSi.MaBacSi}`)
+                    .then((response) => {
+                        // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
+                        const filteredBookings = response.data.filter((booking: any) => 
+                            booking.TinhTrang === "Đã xác nhận"
+                        );
+                        setbookings(filteredBookings);
+                    })
                     .catch((err) => console.error("Error fetching bookings:", err));
+                
+                // Reset form
                 setNewbooking({
                     GhiChu: "",
                     NgayHen: "",
                     GioHen: "",
                 });
+                setBookedSlots([]);
 
                 setDialogOpen(false);
             })
@@ -234,7 +250,6 @@ export default function BookingView() {
     };
 
     const handleCreatePhieuKhamClick = async (booking: any) => {
-        // const today = new Date();
         const newPhieuKham = {
             MaLichHen: booking.MaLichHen,
             MaKhachHang: booking.MaKhachHang,
@@ -261,10 +276,31 @@ export default function BookingView() {
                     border: "1px solid #10b981",
                 },
             });
-            router.push('/BacSi/PhieuKham');
+            await axios.put(`http://localhost:5000/api/lich-hen/update/${booking.MaLichHen}`, {
+                MaKhachHang: booking.MaKhachHang,
+                MaBacSi: booking.MaBacSi,
+                NgayHen: booking.NgayHen,
+                GioHen: booking.GioHen,
+                TinhTrang: "Đang khám",
+                GhiChu: booking.GhiChu
+            });
+            
+            console.log("Cập nhật trạng thái lịch hẹn thành công");
+            
+            // Reload danh sách lịch hẹn
+            const storedUserInfo = sessionStorage.getItem("bacsi_info");
+            if (storedUserInfo) {
+                const doctorsinfo = JSON.parse(storedUserInfo);
+                const response = await axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${doctorsinfo.bacSi.MaBacSi}`);
+                // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
+                const filteredBookings = response.data.filter((booking: any) => 
+                    booking.TinhTrang === "Đã xác nhận"
+                );
+                setbookings(filteredBookings);
+            }
+            router.push(`/BacSi/PhieuKham/`);
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || "Lỗi không xác định!";
-
             toast.error(errorMessage, {
                 action: {
                     label: "Đóng",
@@ -282,7 +318,6 @@ export default function BookingView() {
 
     return (
         <>
-            <Toaster />
             <title>booking</title>
             <Tabs defaultValue="all">
                 <div className="flex items-center">

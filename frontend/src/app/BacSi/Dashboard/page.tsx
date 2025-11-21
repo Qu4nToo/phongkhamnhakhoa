@@ -51,8 +51,10 @@ export default function AdminHome() {
   }, []);
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Trang Quản Trị</h1>
+    <>
+      <title>Bác Sĩ - Nha khoa Hoàng Quân</title>
+      <div className="p-6 space-y-6">
+        <h1 className="text-2xl font-bold">Trang Quản Trị</h1>
 
       {/* --- Thống kê tổng quan --- */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -156,6 +158,7 @@ export default function AdminHome() {
           </table>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }

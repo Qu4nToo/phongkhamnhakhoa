@@ -22,7 +22,7 @@ module.exports = {
   },
   getByPhieuKhamId: async (id) => {
     try {
-      const [rows] = await db.query('SELECT ctpk.*, dv.TenDichVu FROM chitietphieukham ctpk join dichvu dv on ctpk.MaDichVu = dv.MaDichVu WHERE ctpk.MaPhieuKham = ?', [id]);
+      const [rows] = await db.query('SELECT ctpk.*, dv.TenDichVu, dv.Gia as DonGia FROM chitietphieukham ctpk join dichvu dv on ctpk.MaDichVu = dv.MaDichVu WHERE ctpk.MaPhieuKham = ?', [id]);
       return rows;
     } catch (err) {
       console.error('Query Error:', err.message);

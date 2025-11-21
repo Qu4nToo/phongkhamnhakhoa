@@ -130,7 +130,7 @@ export default function DoctorProfile() {
 
     if (!doctorData) {
         return (
-            <div className="p-6"><Toaster /><p className="text-red-500">Không thể hiển thị hồ sơ.</p></div>
+            <div className="p-6"><p className="text-red-500">Không thể hiển thị hồ sơ.</p></div>
         );
     }
 
@@ -153,7 +153,6 @@ export default function DoctorProfile() {
 
     return (
         <div className="p-2">
-            <Toaster />
             <title>Thông tin Bác sĩ</title>
             <Card className="max-w-xl mx-auto shadow-xl">
                 <CardHeader className="border-b flex flex-row justify-between items-center">

@@ -3,7 +3,7 @@ const db = require('../config/server');
 module.exports = {
   getAlls: async () => {
     try {
-      const [rows] = await db.query('SELECT pk.*, kh.HoTen as TenKhachHang, bs.HoTen as TenBacSi FROM phieukham pk join khachhang kh on pk.MaKhachHang = kh.MaKhachHang join bacsi bs on pk.MaBacSi = bs.MaBacSi');
+      const [rows] = await db.query('SELECT pk.*, kh.HoTen as TenKhachHang, bs.HoTen as TenBacSi, lh.GioHen FROM phieukham pk join khachhang kh on pk.MaKhachHang = kh.MaKhachHang join bacsi bs on pk.MaBacSi = bs.MaBacSi left join lichhen lh on pk.MaLichHen = lh.MaLichHen order by pk.NgayKham asc, lh.GioHen asc');
       return rows;
     } catch (err) {
       console.error('Query Error:', err.message);
@@ -13,7 +13,7 @@ module.exports = {
 
   getById: async (id) => {
     try {
-      const [row] = await db.query('SELECT * FROM phieukham WHERE MaPhieuKham = ?', [id]);
+      const [row] = await db.query('SELECT pk.*, lh.GioHen FROM phieukham pk left join lichhen lh on pk.MaLichHen = lh.MaLichHen WHERE pk.MaPhieuKham = ?', [id]);
       return row[0];
     } catch (err) {
       console.error('Query Error:', err.message);
@@ -23,8 +23,8 @@ module.exports = {
 
   getByBacSiId: async (id) => {
     try {
-      const [row] = await db.query('SELECT pk.*, kh.HoTen as TenKhachHang FROM phieukham pk join khachhang kh on pk.MaKhachHang = kh.MaKhachHang WHERE pk.MaBacSi = ? order by pk.NgayKham asc ', [id]);
-      return row[0];
+      const [row] = await db.query('SELECT pk.*, kh.HoTen as TenKhachHang, bs.HoTen as TenBacSi, lh.GioHen FROM phieukham pk join khachhang kh on pk.MaKhachHang = kh.MaKhachHang join bacsi bs on pk.MaBacSi = bs.MaBacSi left join lichhen lh on pk.MaLichHen = lh.MaLichHen WHERE pk.MaBacSi = ? order by pk.NgayKham asc, lh.GioHen asc', [id]);
+      return row;
     } catch (err) {
       console.error('Query Error:', err.message);
       throw new Error('Database query failed');

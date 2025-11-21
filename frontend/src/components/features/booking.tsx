@@ -75,7 +75,7 @@ export default function BookingForm() {
   useEffect(() => {
     if (formData.NgayHen && formData.MaBacSi) {
       axios
-        .get(`http://localhost:5000/api/lich-hen/get/bacsi/${formData.MaBacSi}`)
+        .get(`http://localhost:5000/api/lich-hen/getByBacSiID/${formData.MaBacSi}`)
         .then((res) => {
           const bookedTimes = res.data
             .filter((booking: any) => booking.NgayHen === formData.NgayHen)

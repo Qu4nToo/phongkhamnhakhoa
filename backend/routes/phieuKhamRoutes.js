@@ -8,7 +8,7 @@ router.get('/get/:id', phieuKhamController.getPhieuKhamById);
 
 router.post('/create', phieuKhamController.createPhieuKham);
 
-router.post('/getByBacSi/:id', phieuKhamController.getPhieuKhamByIdBacSi);
+router.get('/getByBacSiID/:id', phieuKhamController.getPhieuKhamByIdBacSi);
 
 router.put('/update/:id', phieuKhamController.updatePhieuKham);
 
