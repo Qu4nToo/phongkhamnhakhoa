@@ -12,32 +12,33 @@ import { toast, Toaster } from "sonner";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState<boolean>(true); // isLoading để kiểm tra xem có cần tải không
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
     const storedUserInfo = sessionStorage.getItem("user_info");
 
     if (!storedUserInfo) {
-      alert("Bạn chưa đăng nhập");
+      toast.error("Bạn chưa đăng nhập");
       router.push("/Login");
-    } else {
-      const user = JSON.parse(storedUserInfo);
-      console.log("User info from sessionStorage:", user);
-      if (user.nguoiDung.VaiTro !== 'Quản lý') {
-        toast.error("Bạn không có quyền truy cập trang này");
-        // router.push("/Login");
-      } else {
-        setIsLoading(false);
-      }
+      return;
     }
+
+    const user = JSON.parse(storedUserInfo);
+    const role = user?.nguoiDung?.VaiTro;
+    setUserRole(role);
+    setIsLoading(false);
   }, [router]);
 
   // Nếu đang tải (isLoading), hiển thị một màn hình chờ
   if (isLoading) {
     return (
-      <><Toaster /><div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="text-xl text-center text-gray-500">Đang kiểm tra quyền truy cập...</div>
-      </div></>
+      <>
+        <Toaster />
+        <div className="flex justify-center items-center min-h-screen bg-gray-100">
+          <div className="text-xl text-center text-gray-500">Đang kiểm tra quyền truy cập...</div>
+        </div>
+      </>
     );
   }
   return (

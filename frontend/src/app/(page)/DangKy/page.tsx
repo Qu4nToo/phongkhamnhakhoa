@@ -5,7 +5,7 @@ import { Sign, RSign } from '@/components/features/sign';
 export default function Home() {
   return (
 
-    <main className="bg-green-800 h-screen flex items-center justify-center p-10">
+    <main className="bg-[#004576] h-screen flex items-center justify-center p-10">
       <title>Register</title>
       <div className="grid w-full h-full grid-cols-1 bg-white box-anim lg:grid-cols-2">
         <div className="bg-white text-black flex items-center justify-center flex-col">

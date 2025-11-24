@@ -10,7 +10,7 @@ router.get('/get', chiTietDichVuController.getAllChiTietDichVu);
 // GET chi tiet dich vu by ID
 router.get('/get/:id', chiTietDichVuController.getChiTietDichVuById);
 
-router.get('/getByBacSi/:id', chiTietDichVuController.getChiTietDichVuByBacSiId);
+router.get('/getByBacSiID/:id', chiTietDichVuController.getChiTietDichVuByBacSiId);
 
 // CREATE new chi tiet dich vu
 router.post('/create', chiTietDichVuController.createChiTietDichVu);

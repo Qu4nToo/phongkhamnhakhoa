@@ -107,7 +107,7 @@ export default function BookingForm() {
           <p>Bạn cần đăng nhập để đặt lịch hẹn.</p>
           <button
             onClick={() => router.push("/DangNhap")}
-            className="mt-4 bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+            className="mt-4 bg-[#004576] text-white px-6 py-2 rounded-md hover:bg-[#003153]"
           >
             Đăng nhập ngay
           </button>
@@ -199,7 +199,7 @@ export default function BookingForm() {
         <p>Bạn cần đăng nhập để đặt lịch hẹn.</p>
         <button
           onClick={() => router.push("/DangNhap")}
-          className="mt-4 bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+          className="mt-4 bg-[#004576] text-white px-6 py-2 rounded-md hover:bg-[#003153]"
         >
           Đăng nhập ngay
         </button>
@@ -231,7 +231,7 @@ export default function BookingForm() {
     <>
       <Toaster position="bottom-right" />
       <Card className="shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-200">
-        <CardHeader className="bg-gradient-to-r from-green-600 to-green-500 text-white rounded-t-xl p-5">
+        <CardHeader className="bg-gradient-to-r from-[#004576] to-[#003153] text-white rounded-t-xl p-5">
           <CardDescription className="text-blue-50">
             Vui lòng điền thông tin của bạn để đặt lịch
           </CardDescription>
@@ -426,7 +426,7 @@ export default function BookingForm() {
           <button
             type="submit"
             onClick={handleSubmit}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-md transition duration-200"
+            className="w-full bg-[#004576] hover:bg-[#003153] text-white font-medium py-2 rounded-md transition duration-200"
           >
             Đặt lịch hẹn
           </button>

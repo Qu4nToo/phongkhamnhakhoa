@@ -113,7 +113,7 @@ export function Login() {
                     </div>
                     <center>
                         <Button
-                            className="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded"
+                            className="bg-[#004576] hover:bg-[#003557] text-white font-bold py-2 px-4 rounded"
                             type="submit"
                         >
                             Đăng nhập
@@ -203,10 +203,10 @@ export function Sign() {
                     onClick: () => toast.dismiss(),
                 },
                 style: {
-                    background: "#ecfdf5",
-                    color: "#065f46",
+                    background: "#fee2e2",
+                    color: "#991b1b",
                     borderRadius: "10px",
-                    border: "1px solid #10b981",
+                    border: "1px solid #ef4444",
                 },
             });
         }
@@ -332,7 +332,7 @@ export function Sign() {
                         {/* Nút đăng ký */}
                         <Button
                             type="submit"
-                            className="w-full bg-green-600 hover:bg-green-800 text-white font-bold py-2 rounded mt-2 col-span-1 sm:col-span-2"
+                            className="w-full bg-[#004576] hover:bg-[#003557] text-white font-bold py-2 rounded mt-2 col-span-1 sm:col-span-2"
                         >
                             Đăng ký
                         </Button>
