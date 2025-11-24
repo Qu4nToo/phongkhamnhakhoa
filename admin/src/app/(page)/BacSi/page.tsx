@@ -335,7 +335,7 @@ export default function User() {
     try {
       const dataToSend = {
         MaBacSi: selectedUser.MaBacSi,
-        ThuTrongTuan: parseInt(newSchedule.ThuTrongTuan)
+        ThuTrongTuan: newSchedule.ThuTrongTuan
       };
       await axios.post("http://localhost:5000/api/lich-lam-viec/create", dataToSend);
       toast.success("Thêm lịch làm việc thành công!");
