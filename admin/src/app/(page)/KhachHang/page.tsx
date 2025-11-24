@@ -7,6 +7,7 @@ import {
   PlusCircle,
   Search,
 } from "lucide-react"
+import { RoleGuard } from "@/components/features/role-guard"
 import {
   Dialog,
   DialogContent,
@@ -203,7 +204,7 @@ export default function User() {
   };
 
   return (
-    <>
+    <RoleGuard allowedRoles={["Quản lý"]}>
       <title>User</title>
       <Tabs defaultValue="all">
         <div className="flex items-center">
@@ -409,6 +410,6 @@ export default function User() {
         </AlertDialogContent>
       </AlertDialog>
       <Toaster />
-    </>
+    </RoleGuard>
   )
 }

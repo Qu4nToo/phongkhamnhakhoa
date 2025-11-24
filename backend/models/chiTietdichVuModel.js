@@ -22,10 +22,24 @@ module.exports = {
 
   getByBacSiId: async (id) => {
     try {
-      const [row] = await db.query('SELECT * FROM chitietdichvu WHERE MaBacSi = ?', [id]);
-      return row[0];
+      const [rows] = await db.query('SELECT ctdv.*, dv.TenDichVu , dv.Gia, dv.DonVi, bs.HoTen FROM chitietdichvu ctdv join dichvu dv on dv.MaDichVu = ctdv.MaDichVu join bacsi bs on bs.MaBacSi = ctdv.MaBacSi WHERE ctdv.MaBacSi = ?', [id]);
+      return rows;
     } catch (err) {
       console.error('Query Error:', err.message);
+      throw new Error('Database query failed');
+    }
+  },
+
+  // Kiểm tra xem bác sĩ và dịch vụ đã tồn tại chưa
+  checkExists: async (MaBacSi, MaDichVu) => {
+    try {
+      const [rows] = await db.query(
+        'SELECT * FROM chitietdichvu WHERE MaBacSi = ? AND MaDichVu = ?',
+        [MaBacSi, MaDichVu]
+      );
+      return rows.length > 0;
+    } catch (err) {
+      console.error('Check Exists Error:', err.message);
       throw new Error('Database query failed');
     }
   },

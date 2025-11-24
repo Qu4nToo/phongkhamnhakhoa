@@ -15,7 +15,7 @@ export default function BannerCard() {
     <Carousel>
       <CarouselContent className="mb-4">
         <CarouselItem>
-          <div className="flex flex-col items-center justify-around bg-gradient-to-r from-emerald-700 to-teal-500 p-8 pt-8 pb-8 rounded-lg shadow-lg md:flex-row w-full h-auto">
+          <div className="flex flex-col items-center justify-around bg-gradient-to-r from-sky-700 to-sky-500 p-8 pt-8 pb-8 rounded-lg shadow-lg md:flex-row w-full h-auto">
             <div className="flex flex-col justify-between p-auto lg:p-16 leading-normal md:w-1/2">
               <h1 className="text-xl md:text-4xl font-extrabold text-white mb-2">
                 NHA KHOA HOÀNG QUÂN
@@ -31,7 +31,7 @@ export default function BannerCard() {
                 HOTLINE: 1900 4775
               </p>
               <Link href="/DatLich" className="w-fit h-auto">
-                <Button className="w-40 mt-4 bg-white text-emerald-700 hover:bg-gray-100 font-bold shadow-lg">
+                <Button className="w-40 mt-4 bg-white text-sky-700 hover:bg-gray-100 font-bold shadow-lg">
                   ĐẶT LỊCH HẸN
                 </Button>
               </Link>
@@ -44,7 +44,7 @@ export default function BannerCard() {
           </div>
         </CarouselItem>
         <CarouselItem>
-          <div className="flex flex-col items-center justify-around bg-gradient-to-r from-emerald-700 to-teal-500 p-8 pt-8 pb-8 rounded-lg shadow-lg md:flex-row w-full h-auto">
+          <div className="flex flex-col items-center justify-around bg-gradient-to-r from-sky-700 to-sky-500 p-8 pt-8 pb-8 rounded-lg shadow-lg md:flex-row w-full h-auto">
             <div className="flex flex-col justify-between p-auto lg:p-16 leading-normal md:w-1/2">
               <h1 className="text-xl md:text-4xl font-extrabold text-white mb-2">
                 NHA KHOA HOÀNG QUÂN
@@ -60,7 +60,7 @@ export default function BannerCard() {
                 HOTLINE: 1900 4775
               </p>
               <Link href="/DatLich" className="w-fit h-auto">
-                <Button className="w-40 mt-4 bg-white text-emerald-700 hover:bg-gray-100 font-bold shadow-lg">
+                <Button className="w-40 mt-4 bg-white text-sky-700 hover:bg-gray-100 font-bold shadow-lg">
                   ĐẶT LỊCH HẸN
                 </Button>
               </Link>
@@ -76,7 +76,7 @@ export default function BannerCard() {
 
         {/* --- Carousel Item 3: Cần sửa tương tự Item 1 --- */}
         <CarouselItem>
-          <div className="flex flex-col items-center justify-around bg-gradient-to-r from-emerald-700 to-teal-500 p-8 pt-8 pb-8 rounded-lg shadow-lg md:flex-row w-full h-auto">
+          <div className="flex flex-col items-center justify-around bg-gradient-to-r from-sky-700 to-sky-500 p-8 pt-8 pb-8 rounded-lg shadow-lg md:flex-row w-full h-auto">
             <div className="flex flex-col justify-between p-auto lg:p-16 leading-normal md:w-1/2">
               <h1 className="text-xl md:text-4xl font-extrabold text-white mb-2">
                 NHA KHOA HOÀNG QUÂN
@@ -92,7 +92,7 @@ export default function BannerCard() {
                 HOTLINE: 1900 4775
               </p>
               <Link href="/DatLich" className="w-fit h-auto">
-                <Button className="w-40 mt-4 bg-white text-emerald-700 hover:bg-gray-100 font-bold shadow-lg">
+                <Button className="w-40 mt-4 bg-white text-sky-700 hover:bg-gray-100 font-bold shadow-lg">
                   ĐẶT LỊCH HẸN
                 </Button>
               </Link>

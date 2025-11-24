@@ -157,45 +157,6 @@ export default function phieuKhamView() {
                             className="w-64"
                         />
                     </div>
-                    {/* <div className="ml-auto flex items-center gap-2">
-                        <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
-                            <DialogTrigger asChild>
-                                <Button size="sm" className="h-7 gap-1">
-                                    <PlusCircle className="h-3.5 w-3.5" />
-                                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                        Thêm phiếu khám
-                                    </span>
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[425px]">
-                                <DialogHeader>
-                                    <DialogTitle>Thêm phiếu khám</DialogTitle>
-                                    <DialogDescription>
-                                        Thêm phiếu khám mới vào danh sách.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="TenLoaiDV" className="text-right col-span-2">
-                                            Tên loại dịch vụ
-                                        </Label>
-                                        <Input onChange={handleInputChange} id="TenLoaiDV" type="text" className="col-span-4" />
-                                    </div>
-                                    <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="MoTa" className="text-right col-span-2">
-                                            Mô tả
-                                        </Label>
-                                        <Input onChange={handleInputChange} id="MoTa" type="text" className="col-span-4" />
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button type="button" onClick={handleCreatephieuKham}>
-                                        Confirm
-                                    </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
-                    </div> */}
                 </div>
                 <TabsContent value="all">
                     <Card x-chunk="dashboard-06-chunk-0">

@@ -50,9 +50,17 @@ const ChiTietDichVuController = {
       const { GhiChu, MaBacSi, MaDichVu } = req.body;
 
       // Kiểm tra bắt buộc
-      if (!MaBacSi || !MaDichVu || !GhiChu) {
+      if (!MaBacSi || !MaDichVu) {
         return res.status(400).json({
-          message: "Các trường MaBacSi, MaDichVu và GhiChu là bắt buộc!",
+          message: "Các trường MaBacSi và MaDichVu là bắt buộc!",
+        });
+      }
+
+      // Kiểm tra xem bác sĩ và dịch vụ đã tồn tại chưa
+      const exists = await ChiTietDichVu.checkExists(MaBacSi, MaDichVu);
+      if (exists) {
+        return res.status(409).json({
+          message: "Bác sĩ này đã có dịch vụ này rồi!",
         });
       }
 

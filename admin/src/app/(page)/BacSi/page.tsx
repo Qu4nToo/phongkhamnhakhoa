@@ -7,7 +7,10 @@ import {
   MoreHorizontal,
   PlusCircle,
   Search,
+  Trash2,
+  UserIcon,
 } from "lucide-react"
+import { RoleGuard } from "@/components/features/role-guard"
 import {
   Dialog,
   DialogContent,
@@ -62,6 +65,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 
@@ -73,6 +77,21 @@ export default function User() {
   const [selectedUser, setSelectedUser] = useState<any>([]);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showAlertService, setShowAlertService] = useState(false);
+  const [showAddServiceDialog, setShowAddServiceDialog] = useState(false);
+  const [showDeleteServiceDialog, setShowDeleteServiceDialog] = useState(false);
+  const [serviceList, setServiceList] = useState<any[]>([]);
+  const [selectedDichVu, setSelectedDichVu] = useState("");
+  const [selectedServiceToDelete, setSelectedServiceToDelete] = useState<string>("");
+  const [dichVuList, setDichVuList] = useState<any[]>([]);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [showAddScheduleDialog, setShowAddScheduleDialog] = useState(false);
+  const [showDeleteScheduleDialog, setShowDeleteScheduleDialog] = useState(false);
+  const [scheduleList, setScheduleList] = useState<any[]>([]);
+  const [selectedScheduleToDelete, setSelectedScheduleToDelete] = useState<string>("");
+  const [newSchedule, setNewSchedule] = useState({
+    ThuTrongTuan: ""
+  });
 
   const [newUser, setNewUser] = useState({
     HoTen: "",
@@ -84,17 +103,36 @@ export default function User() {
     DiaChi: ""
   });
 
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchTerm(e.target.value);
-    };
-  
-    const filteredUsers = users.filter((user: any) => {
-      const term = searchTerm.toLowerCase();
-      const hoTen = user.HoTen?.toLowerCase() || "";
-      const email = user.Email?.toLowerCase() || "";
-  
-      return hoTen.includes(term) || email.includes(term);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const formatPrice = (price: any): string => {
+    // Kiểm tra và chuyển đổi giá trị đầu vào
+    const numPrice = Number(price);
+
+    if (price === null || price === undefined || isNaN(numPrice)) {
+      return "0 VND";
+    }
+
+    // Định dạng giá sử dụng Intl.NumberFormat
+    const formatter = new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      maximumFractionDigits: 0, // Không có phần thập phân
     });
+
+    // Loại bỏ ký hiệu "₫" mặc định
+    return formatter.format(numPrice).replace('₫', 'VND').trim();
+  };
+
+  const filteredUsers = users.filter((user: any) => {
+    const term = searchTerm.toLowerCase();
+    const hoTen = user.HoTen?.toLowerCase() || "";
+    const email = user.Email?.toLowerCase() || "";
+
+    return hoTen.includes(term) || email.includes(term);
+  });
 
   const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { id, value } = e.target;
@@ -120,11 +158,30 @@ export default function User() {
     axios.get("http://localhost:5000/api/bac-si/get")
       .then(users => setUsers(users.data))
       .catch(err => console.log(err))
+    axios.get("http://localhost:5000/api/dich-vu/get")
+      .then(response => setDichVuList(response.data))
+      .catch(err => console.error("Error fetching services:", err));
   }, []);
-  // const handleToggleMenuClick = (product: React.SetStateAction<null>)=>{
-  //     setSelectedProduct(product);
-  //     a = selectedProduct;
-  // }
+  const handleServiceClick = (user: any) => {
+    console.log("🔍 Selected User:", user);
+    console.log("🔍 MaBacSi:", user.MaBacSi);
+    setSelectedUser(user);
+
+    const apiUrl = `http://localhost:5000/api/chi-tiet-dich-vu/getByBacSiId/${user.MaBacSi}`;
+    console.log("🔍 API URL:", apiUrl);
+
+    axios.get(apiUrl)
+      .then(response => {
+        const data = Array.isArray(response.data) ? response.data : [];
+        setServiceList(data);
+      })
+      .catch(err => {
+        console.error("API Error:", err);
+        console.error("Error Response:", err.response);
+        setServiceList([]);
+      });
+    setShowAlertService(true);
+  }
   const handleDeleteClick = (user: React.SetStateAction<null>) => {
     console.log(user);
     setSelectedUser(user);
@@ -146,11 +203,6 @@ export default function User() {
     axios.put(`http://localhost:5000/api/bac-si/update/${user.MaBacSi}`, newUser)
       .then(() => {
         toast("User Edit: User has been edit.");
-        // toast({
-        //     title: "User Edit",
-        //     description: `User has been edit.`,
-        // });
-        // Reload the users or update state after deletion
         axios.get("http://localhost:5000/api/bac-si/get")
           .then((response) => setUsers(response.data))
           .catch((err) => console.error("Error fetching users:", err));
@@ -160,11 +212,7 @@ export default function User() {
       .catch((err) => {
         console.error("Error deleting user:", err);
         toast("Edit Failed: There was an error edit the user.");
-        // toast({
-        //     title: "Edit Failed",
-        //     description: `There was an error edit the user.`,
-        //     variant: "destructive",
-        // });
+
       });
   }
 
@@ -187,14 +235,9 @@ export default function User() {
   };
   const handleCreateUser = () => {
     console.log(newUser);
-    const userToCreate = {
-      ...newUser,
-      MatKhau: sha3_512(newUser.MatKhau) // hash mật khẩu
-    };
-    axios.post("http://localhost:5000/api/bac-si/create", userToCreate)
+    axios.post("http://localhost:5000/api/bac-si/create", newUser)
       .then(() => {
         toast("User Created: New User has been added successfully.");
-        // Load lại danh sách sản phẩm
         axios.get("http://localhost:5000/api/bac-si/get")
           .then((response) => setUsers(response.data))
           .catch((err) => console.error("Error fetching users:", err));
@@ -211,8 +254,135 @@ export default function User() {
       })
       .catch((err) => console.error("Error creating userduct:", err));
   };
+
+  const handleAddService = async () => {
+    if (!selectedDichVu) {
+      toast.error("Vui lòng chọn dịch vụ!");
+      return;
+    }
+
+    if (!selectedUser?.MaBacSi) {
+      toast.error("Không tìm thấy thông tin bác sĩ!");
+      return;
+    }
+
+    try {
+      const dataToSend = {
+        MaBacSi: selectedUser.MaBacSi,
+        MaDichVu: selectedDichVu,
+        GhiChu: "", 
+      };
+      console.log("📤 Sending data:", dataToSend);
+      await axios.post("http://localhost:5000/api/chi-tiet-dich-vu/create", dataToSend);
+
+      toast.success("Thêm dịch vụ thành công!");
+      const response = await axios.get(`http://localhost:5000/api/chi-tiet-dich-vu/getByBacSiId/${selectedUser.MaBacSi}`);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setServiceList(data);
+      setSelectedDichVu("");
+      setShowAddServiceDialog(false);
+    } catch (err: any) {
+      console.error("❌ Error adding service:", err);
+      if (err.response?.status === 409) {
+        toast.error("Bác sĩ này đã có dịch vụ này rồi!");
+      } else {
+        toast.error(err.response?.data?.message || "Có lỗi xảy ra khi thêm dịch vụ!");
+      }
+    }
+  };
+
+  const handleDeleteServiceClick = (maBSDV: string) => {
+    setSelectedServiceToDelete(maBSDV);
+    setShowDeleteServiceDialog(true);
+  };
+
+  const handleConfirmDeleteService = async () => {
+    try {
+      await axios.delete(`http://localhost:5000/api/chi-tiet-dich-vu/delete/${selectedServiceToDelete}`);
+      toast.success("Xóa dịch vụ thành công!");
+      const response = await axios.get(`http://localhost:5000/api/chi-tiet-dich-vu/getByBacSiId/${selectedUser.MaBacSi}`);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setServiceList(data);
+      setShowDeleteServiceDialog(false);
+      setSelectedServiceToDelete("");
+    } catch (err: any) {
+      console.error("❌ Error deleting service:", err);
+      toast.error("Có lỗi xảy ra khi xóa dịch vụ!");
+    }
+  };
+
+  // Lịch làm việc handlers
+  const handleScheduleClick = async (user: any) => {
+    setSelectedUser(user);
+    try {
+      const response = await axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${user.MaBacSi}`);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setScheduleList(data);
+      setShowScheduleDialog(true);
+    } catch (err) {
+      console.error("Error fetching schedule:", err);
+      setScheduleList([]);
+      setShowScheduleDialog(true);
+    }
+  };
+
+  const handleAddSchedule = async () => {
+    if (!newSchedule.ThuTrongTuan) {
+      toast.error("Vui lòng chọn ngày làm việc!");
+      return;
+    }
+
+    try {
+      const dataToSend = {
+        MaBacSi: selectedUser.MaBacSi,
+        ThuTrongTuan: newSchedule.ThuTrongTuan
+      };
+      await axios.post("http://localhost:5000/api/lich-lam-viec/create", dataToSend);
+      toast.success("Thêm lịch làm việc thành công!");
+      
+      const response = await axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${selectedUser.MaBacSi}`);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setScheduleList(data);
+      setNewSchedule({ ThuTrongTuan: "" });
+      setShowAddScheduleDialog(false);
+    } catch (err: any) {
+      console.error("Error adding schedule:", err);
+      toast.error("Có lỗi xảy ra khi thêm lịch làm việc!");
+    }
+  };
+
+  const handleDeleteScheduleClick = (maLichLamViec: string) => {
+    setSelectedScheduleToDelete(maLichLamViec);
+    setShowDeleteScheduleDialog(true);
+  };
+
+  const handleConfirmDeleteSchedule = async () => {
+    try {
+      await axios.delete(`http://localhost:5000/api/lich-lam-viec/delete/${selectedScheduleToDelete}`);
+      toast.success("Xóa lịch làm việc thành công!");
+      const response = await axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${selectedUser.MaBacSi}`);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setScheduleList(data);
+      setShowDeleteScheduleDialog(false);
+      setSelectedScheduleToDelete("");
+    } catch (err: any) {
+      console.error("Error deleting schedule:", err);
+      toast.error("Có lỗi xảy ra khi xóa lịch làm việc!");
+    }
+  };
+
+  const days = [
+    { value: "Chủ Nhật", label: "Chủ Nhật" },
+    { value: "Thứ Hai", label: "Thứ Hai" },
+    { value: "Thứ Ba", label: "Thứ Ba" },
+    { value: "Thứ Tư", label: "Thứ Tư" },
+    { value: "Thứ Năm", label: "Thứ Năm" },
+    { value: "Thứ Sáu", label: "Thứ Sáu" },
+    { value: "Thứ Bảy", label: "Thứ Bảy" }
+  ];
+
   return (
-    <>
+    <RoleGuard allowedRoles={["Quản lý"]}>
       <title>User</title>
       <Tabs defaultValue="all">
         <div className="flex items-center">
@@ -351,6 +521,8 @@ export default function User() {
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem onClick={() => handleEditClick(users)}>Sửa</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDeleteClick(users)}>Xóa</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleServiceClick(users)}>Thêm dịch vụ</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleScheduleClick(users)}>Lịch làm việc</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -437,7 +609,303 @@ export default function User() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <AlertDialog open={showAlertService} onOpenChange={setShowAlertService} >
+        <AlertDialogContent className="max-w-4xl">
+          <AlertDialogTitle>
+            <div className="flex justify-start item-start space-y-1 flex-col ">
+              <h1 className="text-3xl font-semibold leading-7 lg:leading-9 text-gray-800">
+                Thêm dịch vụ
+              </h1>
+            </div>
+          </AlertDialogTitle>
+
+          <div className="mt-4 flex flex-col md:flex-row gap-8">
+
+            <div className="w-full md:w-2/3 flex flex-col gap-6">
+
+              <div className="flex flex-col justify-start items-start bg-gray-50 px-4 py-4 w-full">
+                <div className="flex justify-between items-center w-full">
+                  <p className="text-lg font-semibold leading-6 text-gray-800">
+                    Các Dịch Vụ Đã Có
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={() => setShowAddServiceDialog(true)}
+                    className="bg-black border text-white flex items-center gap-2 hover:bg-gray-200 hover:text-black border-black"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    Thêm dịch vụ
+                  </Button>
+                </div>
+                <ScrollArea className="h-60 w-full rounded-md border p-3 mt-2">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="sticky top-0 bg-gray-200 text-black">
+                        <TableHead>Tên Dịch Vụ</TableHead>
+                        <TableHead>Đơn Giá</TableHead>
+                        <TableHead>Đơn Vị Tính</TableHead>
+                        <TableHead className="w-[50px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {serviceList && serviceList.length > 0 ? (
+                        serviceList.map((item: any, index: number) => (
+                          <TableRow key={item.MaBSDV || index} className="bg-white">
+                            <TableCell className="font-medium">{item.TenDichVu || "N/A"}</TableCell>
+                            <TableCell>{formatPrice(item.Gia)}</TableCell>
+                            <TableCell>{item.DonVi || "N/A"}</TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteServiceClick(item.MaBSDV)}
+                                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center text-gray-500 py-8">
+                            Không có dịch vụ nào
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </div>
+            </div>
+
+            <div className="w-full md:w-1/3 bg-gray-50 px-4 py-6 md:p-6 flex flex-col gap-6">
+
+              <div>
+                <h3 className="text-xl font-semibold leading-5 text-gray-800">Bác sĩ</h3>
+                <div className="flex flex-col justify-start items-start mt-4 space-y-4">
+                  <div className="flex justify-start items-center space-x-4 w-full border-b border-gray-200 pb-4">
+
+                    <UserIcon className="w-6 h-6" />
+                    <p className="text-base font-semibold leading-4 text-gray-800">
+                      {selectedUser?.HoTen || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="mt-4 flex gap-2">
+            <Button className="hover:bg-gray-300" variant="outline" onClick={() => setShowAlertService(false)}>Đóng</Button>
+          </DialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog thêm dịch vụ */}
+      <Dialog open={showAddServiceDialog} onOpenChange={setShowAddServiceDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Thêm Dịch Vụ</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={selectedDichVu}
+                onChange={(e) => setSelectedDichVu(e.target.value)}
+              >
+                <option value="">Chọn dịch vụ</option>
+                {dichVuList
+                  .filter((dv: any) => !serviceList.some((s: any) => s.MaDichVu === dv.MaDichVu)) // hàm some để kiểm tra trong list đã có chưa nếu có trả về true và !array.some để đảo ngược kết quả nếu chưa có trong list thì xuất ra
+                  .map((dv: any) => (
+                    <option key={dv.MaDichVu} value={dv.MaDichVu}>
+                      {dv.TenDichVu} - {formatPrice(dv.Gia)} - {dv.DonVi}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button className="hover:bg-gray-300" variant="outline" onClick={() => setShowAddServiceDialog(false)}>
+              Hủy
+            </Button>
+            <Button className="bg-black text-white border hover:text-black hover:bg-white border-black" onClick={handleAddService}>
+              Thêm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Service Confirmation Dialog */}
+      <AlertDialog open={showDeleteServiceDialog} onOpenChange={setShowDeleteServiceDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa dịch vụ</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa dịch vụ này khỏi bác sĩ không? 
+              Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteServiceDialog(false)}>
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDeleteService}
+              className="bg-black text-white hover:bg-white hover:text-black border border-black"
+            >
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog Lịch Làm Việc */}
+      <AlertDialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
+        <AlertDialogContent className="max-w-4xl">
+          <AlertDialogTitle>
+            <div className="flex justify-start item-start space-y-1 flex-col">
+              <h1 className="text-3xl font-semibold leading-7 lg:leading-9 text-gray-800">
+                Lịch Làm Việc
+              </h1>
+            </div>
+          </AlertDialogTitle>
+
+          <div className="mt-4 flex flex-col md:flex-row gap-8">
+            <div className="w-full md:w-2/3 flex flex-col gap-6">
+              <div className="flex flex-col justify-start items-start bg-gray-50 px-4 py-4 w-full">
+                <div className="flex justify-between items-center w-full">
+                  <p className="text-lg font-semibold leading-6 text-gray-800">
+                    Lịch Làm Việc Trong Tuần
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={() => setShowAddScheduleDialog(true)}
+                    className="bg-black border text-white flex items-center gap-2 hover:bg-gray-200 hover:text-black border-black"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    Thêm lịch
+                  </Button>
+                </div>
+                <ScrollArea className="h-60 w-full rounded-md border p-3 mt-2">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="sticky top-0 bg-gray-200 text-black">
+                        <TableHead>Thứ</TableHead>
+                        <TableHead className="w-[50px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {scheduleList && scheduleList.length > 0 ? (
+                        scheduleList.map((item: any, index: number) => (
+                          <TableRow key={item.MaLichLamViec || index} className="bg-white">
+                            <TableCell className="font-medium">{item.ThuTrongTuan}</TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteScheduleClick(item.MaLichLamViec)}
+                                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={2} className="text-center text-gray-500 py-8">
+                            Chưa có lịch làm việc
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </div>
+            </div>
+
+            <div className="w-full md:w-1/3 bg-gray-50 px-4 py-6 md:p-6 flex flex-col gap-6">
+              <div>
+                <h3 className="text-xl font-semibold leading-5 text-gray-800">Bác sĩ</h3>
+                <div className="flex flex-col justify-start items-start mt-4 space-y-4">
+                  <div className="flex justify-start items-center space-x-4 w-full border-b border-gray-200 pb-4">
+                    <UserIcon className="w-6 h-6" />
+                    <p className="text-base font-semibold leading-4 text-gray-800">
+                      {selectedUser?.HoTen || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="mt-4 flex gap-2">
+            <Button className="hover:bg-gray-300" variant="outline" onClick={() => setShowScheduleDialog(false)}>Đóng</Button>
+          </DialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog Thêm Lịch Làm Việc */}
+      <Dialog open={showAddScheduleDialog} onOpenChange={setShowAddScheduleDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Thêm Lịch Làm Việc</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Thứ trong tuần</Label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={newSchedule.ThuTrongTuan}
+                onChange={(e) => setNewSchedule({ ...newSchedule, ThuTrongTuan: e.target.value })}
+              >
+                <option value="">Chọn ngày</option>
+                {days
+                  .filter((day) => !scheduleList.some((s: any) => s.ThuTrongTuan === day.value))
+                  .map((day) => (
+                    <option key={day.value} value={day.value}>
+                      {day.label}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button className="hover:bg-gray-300" variant="outline" onClick={() => setShowAddScheduleDialog(false)}>
+              Hủy
+            </Button>
+            <Button className="bg-black text-white border hover:text-black hover:bg-white border-black" onClick={handleAddSchedule}>
+              Thêm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Schedule Confirmation Dialog */}
+      <AlertDialog open={showDeleteScheduleDialog} onOpenChange={setShowDeleteScheduleDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa lịch làm việc</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa lịch làm việc này không? 
+              Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteScheduleDialog(false)}>
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDeleteSchedule}
+              className="bg-black text-white hover:bg-white hover:text-black border border-black"
+            >
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
       <Toaster />
-    </>
+    </RoleGuard>
   )
 }

@@ -46,7 +46,7 @@ const Footer = () => {
 
   return (
     // Container chính với màu nền Dark Blue (#3A3D62 hoặc tương tự)
-    <footer className="bg-[#003153] text-white">
+    <footer className="bg-[#004576] text-white">
       {/* ĐIỀU CHỈNH LẦN 2: Giảm padding dọc từ py-8 lg:py-10 xuống py-6 lg:py-8 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         

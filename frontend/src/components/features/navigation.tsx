@@ -17,6 +17,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useTitle } from "./TitleContext";
+import axios from "axios";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -29,18 +30,14 @@ const navigation = [
   { name: "Đặt lịch", href: "/DatLich", current: false },
 ];
 
-const dichVuList = [
-  { name: "Khám tổng quát", href: "/DichVu/TongQuat" },
-  { name: "Niềng răng", href: "/DichVu/NiengRang" },
-  { name: "Tẩy trắng răng", href: "/DichVu/TayTrang" },
-  { name: "Cấy ghép Implant", href: "/DichVu/Implant" },
-];
+
 
 export default function Navbar() {
   const { setTitle } = useTitle();
   const router = useRouter();
   const [userInfo, setUserInfo] = useState<any>(null);
   const [openDichVu, setOpenDichVu] = useState(false); // dropdown mobile
+  const [loaiDichVuList, setLoaiDichVuList] = useState([]);
 
   useEffect(() => {
     const storedUserInfo = sessionStorage.getItem("user_info");
@@ -48,8 +45,17 @@ export default function Navbar() {
       const user = JSON.parse(storedUserInfo);
       setUserInfo(user);
     }
-  }, []);
+    axios.get("http://localhost:5000/api/loai-dich-vu/get")
+      .then(response => setLoaiDichVuList(response.data))
+      .catch(err => console.error("Error fetching services:", err));
 
+  }, []);
+  const dichVuList = loaiDichVuList
+    .filter((dv: any) => dv?.TenLoaiDV)
+    .map((dv: any) => ({
+      name: dv.TenLoaiDV,
+      href: `/DichVu/${dv.TenLoaiDV.replace(/\s+/g, "")}`,
+    }));
   const handleSignOut = () => {
     sessionStorage.removeItem("user_info");
     globalThis.location.reload();
@@ -83,42 +89,30 @@ export default function Navbar() {
               <div className="hidden md:flex space-x-4 lg:space-x-8">
                 {navigation.map((item) =>
                   item.name === "Dịch vụ" ? (
-                    <Menu as="div" className="relative" key={item.name}>
-                      <MenuButton className="inline-flex items-center text-blue-950 px-4 py-1.5 text-[16px] font-medium hover:text-sky-600 hover:border-sky-600 border-b-2 border-b-white transition-all">
+                    <div 
+                      key={item.name} 
+                      className="relative group"
+                    >
+                      <div className="inline-flex items-center text-blue-950 px-4 py-1.5 text-[16px] font-medium hover:text-sky-600 hover:border-sky-600 border-b-2 border-b-white transition-all cursor-pointer">
                         Dịch vụ
                         <ChevronDownIcon className="ml-1 h-5 w-5" />
-                      </MenuButton>
+                      </div>
 
-                      <Transition
-                        as={Fragment}
-                        enter="transition ease-out duration-100"
-                        enterFrom="transform opacity-0 scale-95"
-                        enterTo="transform opacity-100 scale-100"
-                        leave="transition ease-in duration-75"
-                        leaveFrom="transform opacity-100 scale-100"
-                        leaveTo="transform opacity-0 scale-95"
-                      >
-                        <MenuItems className="absolute left-0 mt-2 w-48 origin-top-left bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      {/* Dropdown menu on hover */}
+                      <div className="absolute left-0 mt-2 w-64 origin-top-left bg-white rounded-lg shadow-xl overflow-hidden border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                        <div className="py-2">
                           {dichVuList.map((dv) => (
-                            <MenuItem key={dv.name}>
-                              {({ active }) => (
-                                <Link
-                                  href={dv.href}
-                                  className={classNames(
-                                    active
-                                      ? "bg-gray-100 text-blue-950"
-                                      : "text-gray-700",
-                                    "block px-4 py-2 text-sm"
-                                  )}
-                                >
-                                  {dv.name}
-                                </Link>
-                              )}
-                            </MenuItem>
+                            <Link
+                              key={dv.name}
+                              href={dv.href}
+                              className="block px-5 py-3 text-[15px] font-bold text-blue-600 hover:bg-[#013f6b] hover:text-white transition-colors"
+                            >
+                              {dv.name}
+                            </Link>
                           ))}
-                        </MenuItems>
-                      </Transition>
-                    </Menu>
+                        </div>
+                      </div>
+                    </div>
                   ) : (
                     <Link
                       key={item.name}
@@ -126,7 +120,7 @@ export default function Navbar() {
                       onClick={() => setTitle("ALL")}
                       className={classNames(
                         "text-blue-950 px-4 py-1.5 text-[16px] font-medium transition-all duration-200",
-                        "hover:text-sky-600 hover:border-sky-600 border-b-2 border-b-white" // Đã thay đổi
+                        "hover:text-sky-600 hover:border-sky-600 border-b-2 border-b-white"
                       )}
                     >
                       {item.name}
