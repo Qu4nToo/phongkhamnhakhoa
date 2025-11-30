@@ -26,13 +26,13 @@ const DichVuController = {
     },
     createDichVu: async (req, res) => {
         try {
-            const { TenDichVu, Gia, MoTa, DonVi, MaLoaiDV } = req.body;
+            const { TenDichVu, Gia, MoTa, DonVi, MaLoaiDV, ThoiLuong } = req.body;
 
-            if (!TenDichVu || !Gia || !MoTa || !DonVi || !MaLoaiDV) {
+            if (!TenDichVu || !Gia || !MoTa || !DonVi || !MaLoaiDV || !ThoiLuong) {
                 return res.status(400).json({ message: "Thiếu trường dữ liệu" });
             }
 
-            const result = await DichVu.create({ TenDichVu, Gia, MoTa, DonVi, MaLoaiDV });
+            const result = await DichVu.create({ TenDichVu, Gia, MoTa, DonVi, MaLoaiDV, ThoiLuong });
             res.status(201).json({ message: "Thêm dịch vụ thành công!", data: result });
         } catch (error) {
             console.error("Lỗi khi thêm dịch vụ:", error);
@@ -43,17 +43,13 @@ const DichVuController = {
     updateDichVu: async (req, res) => {
         try {
             const { id } = req.params;
-            const { TenDichVu, Gia, MoTa, DonVi, MaLoaiDV } = req.body;
+            const { TenDichVu, Gia, MoTa, DonVi, MaLoaiDV, ThoiLuong } = req.body;
 
-            if (!TenDichVu || !Gia || !MoTa || !DonVi || !MaLoaiDV) {
-                return res.status(400).json({ message: "Các trường TenDichVu, Gia, MoTa, DonVi, MaLoaiDV là bắt buộc!" });
+            if (!TenDichVu || !Gia || !MoTa || !DonVi || !MaLoaiDV || !ThoiLuong) {
+                return res.status(400).json({ message: "Các trường TenDichVu, Gia, MoTa, DonVi, MaLoaiDV, ThoiLuong là bắt buộc!" });
             }
 
-            const result = await DichVu.update(id, { TenDichVu, Gia, MoTa, DonVi, MaLoaiDV });
-
-            if (!TenDichVu || !Gia || !MoTa || !DonVi || !MaLoaiDV) {
-                return res.status(400).json({ message: "Các trường TenDichVu, Gia, MoTa, DonVi, MaLoaiDV là bắt buộc!" });
-            }
+            const result = await DichVu.update(id, { TenDichVu, Gia, MoTa, DonVi, MaLoaiDV, ThoiLuong });
 
             if (result.affectedRows === 0) {
                 return res.status(404).json({ message: "Không tìm thấy dịch vụ để cập nhật!" });

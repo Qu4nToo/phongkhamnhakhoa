@@ -119,7 +119,8 @@ export default function User() {
     const formatter = new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',
-      maximumFractionDigits: 0, // Không có phần thập phân
+      maximumFractionDigits: 0, // Không cólp=
+      // -n thập phân
     });
 
     // Loại bỏ ký hiệu "₫" mặc định

@@ -72,7 +72,8 @@ export default function ServiceView() {
         MoTa: "",
         Gia: "",
         DonVi: "",
-        MaLoaiDV: ""
+        MaLoaiDV: "",
+        ThoiLuong: ""
     });
     const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { id, value } = e.target;
@@ -117,6 +118,7 @@ export default function ServiceView() {
     const handleEditClick = (service: any) => {
         setService(service);
         setNewService(service);
+        console.log(newService);
         setShowAlertEdit(true);
     }
     const handleAlertEditClose = () => {
@@ -184,7 +186,8 @@ export default function ServiceView() {
                     MoTa: "",
                     Gia: "",
                     DonVi: "",
-                    MaLoaiDV: ""
+                    MaLoaiDV: "",
+                    ThoiLuong: ""
                 });
                 setDialogOpen(false);
             })
@@ -265,6 +268,12 @@ export default function ServiceView() {
                                         </Label>
                                         <Input onChange={handleInputChange} id="Gia" type="number" className="col-span-4" />
                                     </div>
+                                    <div className="grid grid-cols-6 items-center gap-4">
+                                        <Label htmlFor="ThoiLuong" className="text-right col-span-2">
+                                            Thời lượng (phút)
+                                        </Label>
+                                        <Input onChange={handleInputChange} id="ThoiLuong" type="number" className="col-span-4" placeholder="VD: 30, 60, 90" />
+                                    </div>
                                 </div>
                                 <DialogFooter>
                                     <Button type="button" onClick={handleCreateservice}>
@@ -289,6 +298,7 @@ export default function ServiceView() {
                                         <TableHead>Mô tả</TableHead>
                                         <TableHead>Đơn vị</TableHead>
                                         <TableHead>Giá</TableHead>
+                                        <TableHead>Thời lượng</TableHead>
                                         <TableHead>
                                             <span className="sr-only">Actions</span>
                                         </TableHead>
@@ -315,6 +325,9 @@ export default function ServiceView() {
                                                     style: 'currency',
                                                     currency: 'VND'
                                                 }).format(services.Gia)}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {services.ThoiLuong} phút
                                             </TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
@@ -404,6 +417,12 @@ export default function ServiceView() {
                                 Giá
                             </Label>
                             <Input onChange={handleInputChange} id="Gia" type="text" className="col-span-4" defaultValue={service.Gia} />
+                        </div>
+                        <div className="grid grid-cols-6 items-center gap-4">
+                            <Label htmlFor="ThoiLuong" className="text-right col-span-2">
+                                Thời lượng (phút)
+                            </Label>
+                            <Input onChange={handleInputChange} id="ThoiLuong" type="number" className="col-span-4" defaultValue={service.ThoiLuong} />
                         </div>
 
                     </div>

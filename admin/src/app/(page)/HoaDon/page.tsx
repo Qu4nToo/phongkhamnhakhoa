@@ -66,10 +66,18 @@ export default function hoaDonView() {
     const [chitiethoadons, setChiTietHoaDons] = useState<any>([]);
     const [showAlert, setShowAlert] = useState(false);
     const [showAlertView, setShowAlertView] = useState(false);
+    const [showAlertUpdateStatus, setShowAlertUpdateStatus] = useState(false);
     const [selectedhoaDon, setSelectedhoaDon] = useState<any>([]);
     const [isDialogOpen, setDialogOpen] = useState(false);
     const [tongtien, setTongtien] = useState<number>();
+    const [selectedStatus, setSelectedStatus] = useState("");
 
+
+    const TRANG_THAI = [
+        { value: "Chưa thanh toán", label: "Chưa thanh toán" },
+        { value: "Đã thanh toán", label: "Đã thanh toán" },
+        { value: "Đã hủy", label: "Đã hủy" },
+    ];
 
     const formatPrice = (price: number): string => {
         // Kiểm tra giá trị đầu vào
@@ -88,29 +96,6 @@ export default function hoaDonView() {
         return formatter.format(price).replace('₫', 'VND').trim();
     };
 
-
-    const [newhoaDon, setNewhoaDon] = useState({
-        TenLoaiDV: "",
-        MoTa: "",
-    });
-    // const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    //     const { id, value } = e.target;
-    //     setNewhoaDon((prev) => ({
-    //         ...prev,
-    //         [id]: value,
-    //     }));
-    //     console.log(newhoaDon);
-    // };
-    // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    //     const { id } = e.target;
-
-    //     const { value } = e.target;
-    //     setNewhoaDon((prev) => ({
-    //         ...prev,
-    //         [id]: value,
-    //     }));
-    //     console.log(newhoaDon);
-    // };
     useEffect(() => {
         axios.get("http://localhost:5000/api/hoa-don/get")
             .then(hoaDons => setHoaDons(hoaDons.data))
@@ -121,6 +106,36 @@ export default function hoaDonView() {
         setSelectedhoaDon(hoaDon);
         setShowAlert(true);
     }
+    const handleUpdateStatusClick = (hoaDon: any) => {
+        setSelectedhoaDon(hoaDon);
+        setSelectedStatus(hoaDon.TrangThai);
+        setShowAlertUpdateStatus(true);
+    }
+
+    const handleConfirmUpdateStatus = async () => {
+        if (selectedhoaDon && selectedStatus) {
+            try {
+                await axios.put(`http://localhost:5000/api/hoa-don/update/${selectedhoaDon.MaHoaDon}`, {
+                    MaPhieuKham: selectedhoaDon.MaPhieuKham,
+                    MaKhachHang: selectedhoaDon.MaKhachHang,
+                    MaNguoiDung: selectedhoaDon.MaNguoiDung,
+                    NgayThanhToan: new Date().toISOString().split('T')[0],
+                    TongTien: selectedhoaDon.TongTien,
+                    PhuongThuc: selectedhoaDon.PhuongThuc,
+                    TrangThai: selectedStatus,
+                });
+                toast.success("Cập nhật trạng thái thành công!");
+                axios.get("http://localhost:5000/api/hoa-don/get")
+                    .then((response) => setHoaDons(response.data))
+                    .catch((err) => console.error("Error fetching hoaDons:", err));
+                setShowAlertUpdateStatus(false);
+            } catch (error) {
+                console.error("Error updating status:", error);
+                toast.error("Lỗi khi cập nhật trạng thái!");
+            }
+        }
+    }
+
     const handleViewClick = (hoaDon: any) => {
         setHoaDon(hoaDon);
         axios.get("http://localhost:5000/api/chi-tiet-phieu-kham/getByPhieuKhamID/" + hoaDon.MaPhieuKham)
@@ -182,6 +197,7 @@ export default function hoaDonView() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Tên khách hàng</TableHead>
+                                        <TableHead>Ngày Tạo</TableHead>
                                         <TableHead>Ngày Thanh Toán</TableHead>
                                         <TableHead>Tổng tiền</TableHead>
                                         <TableHead>Phương thức</TableHead>
@@ -198,10 +214,13 @@ export default function hoaDonView() {
                                                 {hoaDons.HoTen}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {hoaDons.NgayThanhToan}
+                                                {hoaDons.NgayTao || "Chưa có"}
                                             </TableCell>
                                             <TableCell className="font-medium">
-                                                {hoaDons.TongTien}
+                                                {hoaDons.NgayThanhToan || "Chưa có"}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {formatPrice(hoaDons.TongTien)}
                                             </TableCell>
                                             <TableCell className="font-medium">
                                                 {hoaDons.PhuongThuc}
@@ -225,7 +244,9 @@ export default function hoaDonView() {
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                         <DropdownMenuItem onClick={() => handleViewClick(hoaDons)}>Xem chi tiết</DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleDeleteClick(hoaDons)}>Xóa</DropdownMenuItem>
+                                                        {hoaDons.TrangThai !== "Đã thanh toán" && (
+                                                            <DropdownMenuItem onClick={() => handleUpdateStatusClick(hoaDons)}>Cập nhật trạng thái</DropdownMenuItem>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
@@ -265,7 +286,10 @@ export default function hoaDonView() {
                                     Hóa Đơn
                                 </h1>
                                 <p className="text-base font-medium leading-6 text-gray-600">
-                                    Ngày Thanh Toán: {hoaDon.NgayThanhToan}
+                                    Ngày Tạo: {hoaDon.NgayTao || "Chưa có"}
+                                </p>
+                                <p className="text-base font-medium leading-6 text-gray-600">
+                                    Ngày Thanh Toán: {hoaDon.NgayThanhToan || "Chưa có"}
                                 </p>
                             </div>
                             {/* LÀM ĐẸP 1: Thêm "Trạng Thái" cho nó xịn! */}
@@ -366,6 +390,41 @@ export default function hoaDonView() {
                             In Hóa Đơn
                         </Button>
                     </DialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            <AlertDialog open={showAlertUpdateStatus} onOpenChange={setShowAlertUpdateStatus}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Cập nhật trạng thái thanh toán</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Chọn trạng thái thanh toán mới cho hóa đơn này.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="status" className="text-right">
+                                Trạng thái
+                            </Label>
+                            <select
+                                id="status"
+                                value={selectedStatus}
+                                onChange={(e) => setSelectedStatus(e.target.value)}
+                                className="col-span-3 border rounded px-3 py-2"
+                            >
+                                {TRANG_THAI.map((status) => (
+                                    <option key={status.value} value={status.value}>
+                                        {status.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setShowAlertUpdateStatus(false)}>Hủy</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmUpdateStatus}>
+                            Xác nhận
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
             <Toaster />

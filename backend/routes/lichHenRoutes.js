@@ -10,6 +10,8 @@ router.get('/getByBacSiID/:id', lichHenController.getLichHenByBacSiId);
 
 router.get('/getByKhachHangID/:id', lichHenController.getLichHenByKhachHangId);
 
+router.get('/available-slots', lichHenController.getAvailableTimeSlots);
+
 router.post('/create', lichHenController.createLichHen);
 
 router.put('/update/:id', lichHenController.updateLichHen);

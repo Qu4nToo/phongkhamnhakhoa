@@ -145,20 +145,21 @@ export default function phieuKhamView() {
 
             // Cập nhật tình trạng lịch hẹn thành "Hoàn thành"
             if (phieuKham.MaLichHen) {
-                const lichHenResponse = await axios.get(`http://localhost:5000/api/lich-hen/getById/${phieuKham.MaLichHen}`);
+                const lichHenResponse = await axios.get(`http://localhost:5000/api/lich-hen/get/${phieuKham.MaLichHen}`);
+                console.log("LichHen response:", lichHenResponse.data);
                 const lichHen = lichHenResponse.data;
-                
-                await axios.put(`http://localhost:5000/api/lich-hen/update/${phieuKham.MaLichHen}`, {
-                    MaKhachHang: lichHen.MaKhachHang,
-                    MaBacSi: lichHen.MaBacSi,
-                    NgayHen: lichHen.NgayHen,
-                    GioHen: lichHen.GioHen,
-                    TinhTrang: "Hoàn thành",
-                    GhiChu: lichHen.GhiChu
-                });
-            }
+                if (lichHen) {
+                    const updatedLichHen = {
+                        NgayHen: lichHen[0].NgayHen,
+                        GioHen: lichHen[0].GioHen,
+                        TinhTrang: "Hoàn thành",
+                        GhiChu: lichHen[0].GhiChu || ""
+                    };
+                    console.log("Updating lich hen with:", updatedLichHen);
 
-            // Cập nhật state local
+                    await axios.put(`http://localhost:5000/api/lich-hen/update/${phieuKham.MaLichHen}`, updatedLichHen);
+                }
+            }            // Cập nhật state local
             setPhieuKham({
                 ...phieuKham,
                 ChuanDoan: editedChuanDoan,

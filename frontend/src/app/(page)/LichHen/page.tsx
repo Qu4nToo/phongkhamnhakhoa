@@ -62,7 +62,7 @@ export default function OrderView() {
             if (user.khachHang.MaKhachHang) {
                 axios
                     .get(
-                        `http://localhost:5000/api/lich-hen/get/khachhang/${user.khachHang.MaKhachHang}`
+                        `http://localhost:5000/api/lich-hen/getByKhachHangID/${user.khachHang.MaKhachHang}`
                     )
                     .then((res) => {
                         // Đảm bảo dữ liệu luôn là array
@@ -160,13 +160,7 @@ export default function OrderView() {
                                                     className={`text-xs ${getStatusColor(lh.TinhTrang)}`}
                                                     variant="outline"
                                                 >
-                                                    {lh.TinhTrang === 0
-                                                        ? "Chưa xác nhận"
-                                                        : lh.TinhTrang === 1
-                                                            ? "Hủy"
-                                                            : lh.TinhTrang === 2
-                                                                ? "Đã xác nhận"
-                                                                : "Không xác định"}
+                                                    {lh.TinhTrang}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>{lh.GhiChu || "-"}</TableCell>
