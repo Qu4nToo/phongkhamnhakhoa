@@ -118,6 +118,81 @@ const BacSiController = {
             console.error("Lỗi khi xóa bác sĩ:", error);
             res.status(500).json({ message: "Lỗi server", error: error.message });
         }
+    },
+
+    // Lấy danh sách bác sĩ có thể làm dịch vụ
+    getBacSiByDichVu: async (req, res) => {
+        try {
+            const { dichVuId } = req.params;
+            if (!dichVuId) {
+                return res.status(400).json({ message: "Thiếu mã dịch vụ" });
+            }
+            const bacSiList = await BacSi.getByDichVu(dichVuId);
+            res.status(200).json(bacSiList);
+        } catch (error) {
+            console.error("Lỗi khi lấy danh sách bác sĩ theo dịch vụ:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    // Thống kê cho bác sĩ
+    getDoctorStats: async (req, res) => {
+        try {
+            const { doctorId } = req.params;
+            const stats = await BacSi.getDoctorStats(doctorId);
+            res.status(200).json(stats);
+        } catch (error) {
+            console.error("Lỗi khi lấy thống kê bác sĩ:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    // Lịch hẹn hôm nay
+    getTodayAppointments: async (req, res) => {
+        try {
+            const { doctorId } = req.params;
+            const appointments = await BacSi.getTodayAppointments(doctorId);
+            res.status(200).json(appointments);
+        } catch (error) {
+            console.error("Lỗi khi lấy lịch hẹn hôm nay:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    // Lịch hẹn sắp tới
+    getUpcomingAppointments: async (req, res) => {
+        try {
+            const { doctorId } = req.params;
+            const appointments = await BacSi.getUpcomingAppointments(doctorId);
+            res.status(200).json(appointments);
+        } catch (error) {
+            console.error("Lỗi khi lấy lịch hẹn sắp tới:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    // Thống kê theo trạng thái
+    getAppointmentsByStatus: async (req, res) => {
+        try {
+            const { doctorId } = req.params;
+            const stats = await BacSi.getAppointmentsByStatus(doctorId);
+            res.status(200).json(stats);
+        } catch (error) {
+            console.error("Lỗi khi lấy thống kê trạng thái:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    // Biểu đồ lịch hẹn
+    getAppointmentsChart: async (req, res) => {
+        try {
+            const { doctorId } = req.params;
+            const chartData = await BacSi.getAppointmentsChart(doctorId);
+            res.status(200).json(chartData);
+        } catch (error) {
+            console.error("Lỗi khi lấy biểu đồ:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
     }
 };
 

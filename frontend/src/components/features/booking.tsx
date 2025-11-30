@@ -33,23 +33,34 @@ export default function BookingForm() {
     ThuTrongTuan: string;
   }
 
-  const TIME_SLOTS = [
-    { value: "08:00 - 10:00", label: "08:00 - 10:00" },
-    { value: "10:00 - 12:00", label: "10:00 - 12:00" },
-    { value: "13:00 - 15:00", label: "13:00 - 15:00" },
-    { value: "15:00 - 17:00", label: "15:00 - 17:00" },
-  ];
+  interface DichVu {
+    MaDichVu: string;
+    TenDichVu: string;
+    Gia: number;
+    MoTa: string;
+    ThoiLuong: number;
+    DonVi: string;
+    MaLoaiDV: string;
+  }
+
+  interface TimeSlot {
+    value: string;
+    label: string;
+    available: boolean;
+  }
 
   const router = useRouter();
   const [userInfo, setUserInfo] = useState<any>(null);
   const [bacsi, setBacsi] = useState<BacSi[]>([]);
   const [selectedBacSi, setSelectedBacSi] = useState<BacSi | null>(null);
   const [lichlamviec, setLichLamViec] = useState<LichLamViec[]>([]);
-  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [dichVuList, setDichVuList] = useState<DichVu[]>([]);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
   const [formData, setFormData] = useState({
     MaKhachHang: "",
     MaBacSi: "",
+    MaDichVu: "",
     NgayHen: "",
     GioHen: "",
     GhiChu: "",
@@ -63,30 +74,65 @@ export default function BookingForm() {
 
     const user = JSON.parse(storedUser);
     setUserInfo(user);
-    setFormData((prev) => ({ ...prev, MaKhachHang: user.MaKhachHang }));
+    setFormData((prev) => ({ ...prev, MaKhachHang: user.khachHang.MaKhachHang }));
 
+    // Lấy danh sách dịch vụ ngay từ đầu
     axios
-      .get("http://localhost:5000/api/bac-si/get")
-      .then((res) => setBacsi(res.data))
+      .get("http://localhost:5000/api/dich-vu/get")
+      .then((res) => setDichVuList(res.data))
       .catch((error) => console.log(error));
   }, [router]);
 
-  // Fetch giờ đã đặt khi thay đổi ngày hoặc bác sĩ
+  // Lấy danh sách bác sĩ khi chọn dịch vụ
   useEffect(() => {
-    if (formData.NgayHen && formData.MaBacSi) {
+    if (formData.MaDichVu) {
+      // Reset bác sĩ, ngày, giờ khi thay đổi dịch vụ
+      setFormData(prev => ({ ...prev, MaBacSi: "", NgayHen: "", GioHen: "" }));
+      setSelectedBacSi(null);
+      setLichLamViec([]);
+      setTimeSlots([]);
+
       axios
-        .get(`http://localhost:5000/api/lich-hen/getByBacSiID/${formData.MaBacSi}`)
+        .get(`http://localhost:5000/api/bac-si/getBacSiByDichVu/${formData.MaDichVu}`)
         .then((res) => {
-          const bookedTimes = res.data
-            .filter((booking: any) => booking.NgayHen === formData.NgayHen)
-            .map((booking: any) => booking.GioHen);
-          setBookedSlots(bookedTimes);
+          setBacsi(res.data);
         })
-        .catch((error) => console.log(error));
+        .catch((error) => {
+          console.log(error);
+          setBacsi([]);
+          toast.error("Đã có lỗi khi lấy danh sách bác sĩ!");
+        });
     } else {
-      setBookedSlots([]);
+      setBacsi([]);
+      setFormData(prev => ({ ...prev, MaBacSi: "", NgayHen: "", GioHen: "" }));
+      setSelectedBacSi(null);
+      setLichLamViec([]);
+      setTimeSlots([]);
     }
-  }, [formData.NgayHen, formData.MaBacSi]);
+  }, [formData.MaDichVu]);
+
+  // Lấy các slot thời gian khả dụng khi thay đổi ngày, bác sĩ hoặc dịch vụ
+  useEffect(() => {
+    if (formData.NgayHen && formData.MaBacSi && formData.MaDichVu) {
+      axios
+        .get(`http://localhost:5000/api/lich-hen/available-slots`, {
+          params: {
+            bacSiId: formData.MaBacSi,
+            ngayHen: formData.NgayHen,
+            dichVuId: formData.MaDichVu,
+          },
+        })
+        .then((res) => {
+          setTimeSlots(res.data);
+        })
+        .catch((error) => {
+          console.log(error);
+          setTimeSlots([]);
+        });
+    } else {
+      setTimeSlots([]);
+    }
+  }, [formData.NgayHen, formData.MaBacSi, formData.MaDichVu]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -115,8 +161,8 @@ export default function BookingForm() {
       );
     }
 
-    if (!formData.MaBacSi || !formData.NgayHen) {
-      toast.error("Vui lòng chọn bác sĩ và ngày hẹn!", {
+    if (!formData.MaBacSi || !formData.NgayHen || !formData.MaDichVu) {
+      toast.error("Vui lòng chọn bác sĩ, dịch vụ và ngày hẹn!", {
         action: {
           label: "Đóng",
           onClick: () => toast.dismiss(),
@@ -130,13 +176,7 @@ export default function BookingForm() {
       });
       return;
     }
-    setFormData({
-      MaKhachHang: userInfo.khachHang.MaKhachHang,
-      MaBacSi: "",
-      NgayHen: "",
-      GioHen: "",
-      GhiChu: "",
-    })
+
     try {
       await axios.post("http://localhost:5000/api/lich-hen/create", formData);
       toast.success("Đặt lịch thành công!", {
@@ -152,12 +192,13 @@ export default function BookingForm() {
         },
       });
       setFormData({
-        MaKhachHang: "",
+        MaKhachHang: userInfo.khachHang.MaKhachHang,
         MaBacSi: "",
+        MaDichVu: "",
         NgayHen: "",
         GioHen: "",
         GhiChu: "",
-      })
+      });
       router.push("/LichHen");
     } catch (error) {
       console.error("Lỗi đặt lịch:", error);
@@ -238,7 +279,6 @@ export default function BookingForm() {
         </CardHeader>
         <CardContent className="pt-6 space-y-5">
           <input
-
             name="MaKhachHang"
             value={userInfo.khachHang.MaKhachHang}
             onChange={handleChange}
@@ -267,24 +307,50 @@ export default function BookingForm() {
             />
           </div>
 
+          {/* Dịch vụ */}
+          <div>
+            <Label>Chọn dịch vụ</Label>
+            <select
+              name="MaDichVu"
+              value={formData.MaDichVu}
+              onChange={handleChange}
+              className="w-full border border-gray-300 text-black rounded-md p-2 mt-1 bg-white focus:ring-2 focus:ring-blue-400 outline-none"
+              required
+            >
+              <option value="">-- Chọn dịch vụ --</option>
+              {dichVuList.map((dv) => (
+                <option key={dv.MaDichVu} value={dv.MaDichVu}>
+                  {dv.TenDichVu} ({dv.ThoiLuong} phút)
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Bác sĩ */}
           <div>
-            <Label>Chọn bác sĩ </Label>
+            <Label>Chọn bác sĩ</Label>
             <select
               name="MaBacSi"
               value={formData.MaBacSi}
               onChange={(e) => {
-                handleChange(e); // cập nhật formData.MaBacSi
+                handleChange(e);
                 const selected = bacsi.find(
                   (bs) => bs.MaBacSi === e.target.value
                 );
                 setSelectedBacSi(selected || null);
                 handleCalendar(selected || null);
               }}
-              className="w-full border border-gray-300 text-black rounded-md p-2 mt-1 bg-white focus:ring-2 focus:ring-blue-400 outline-none"
+              className="w-full border border-gray-300 text-black rounded-md p-2 mt-1 bg-white focus:ring-2 focus:ring-blue-400 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
               required
+              disabled={!formData.MaDichVu}
             >
-              <option value="">-- Chọn bác sĩ --</option>
+              <option value="">
+                {!formData.MaDichVu
+                  ? "Vui lòng chọn dịch vụ trước"
+                  : bacsi.length === 0
+                  ? "Không có bác sĩ cho dịch vụ này"
+                  : "-- Chọn bác sĩ --"}
+              </option>
               {bacsi.map((bs: any) => (
                 <option key={bs.MaBacSi} value={bs.MaBacSi}>
                   {bs.HoTen}
@@ -292,6 +358,7 @@ export default function BookingForm() {
               ))}
             </select>
           </div>
+
           <div className="flex flex-col">
             <Label className="mb-1">Ngày hẹn</Label>
             <Popover>
@@ -393,22 +460,31 @@ export default function BookingForm() {
               onChange={handleChange}
               className="w-full border border-gray-300 text-black rounded-md p-2 mt-1 bg-white focus:ring-2 focus:ring-blue-400 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
               required
-              disabled={!formData.NgayHen || !formData.MaBacSi}
+              disabled={!formData.NgayHen || !formData.MaBacSi || !formData.MaDichVu}
             >
               <option value="">
-                {!formData.NgayHen || !formData.MaBacSi
-                  ? "Vui lòng chọn ngày và bác sĩ trước"
+                {!formData.NgayHen || !formData.MaBacSi || !formData.MaDichVu
+                  ? "Vui lòng chọn bác sĩ, dịch vụ và ngày hẹn trước"
+                  : timeSlots.length === 0
+                  ? "Không có thời gian khả dụng"
                   : "-- Chọn giờ --"}
               </option>
-              {TIME_SLOTS.map((slot) => {
-                const isBooked = bookedSlots.includes(slot.value);
-                return (
-                  <option key={slot.value} value={slot.value} disabled={isBooked}>
-                    {slot.label} {isBooked ? "(Đã đặt)" : ""}
-                  </option>
-                );
-              })}
+              {timeSlots.map((slot) => (
+                <option 
+                  key={slot.value} 
+                  value={slot.value} 
+                  disabled={!slot.available}
+                  className={!slot.available ? "text-gray-400 bg-gray-100" : "text-black"}
+                >
+                  {slot.label} {!slot.available ? "❌ (Đã đặt)" : "✅"}
+                </option>
+              ))}
             </select>
+            {timeSlots.length > 0 && timeSlots.filter(s => s.available).length === 0 && (
+              <p className="text-sm text-red-500 mt-1">
+                ⚠️ Tất cả các khung giờ đã được đặt. Vui lòng chọn ngày khác.
+              </p>
+            )}
           </div>
 
           {/* Ghi chú */}

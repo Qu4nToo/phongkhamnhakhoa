@@ -67,11 +67,11 @@ const LichHenController = {
   createLichHen: async (req, res) => {
     try {
       console.log("📥 Body nhận được từ client:", req.body);
-      const { GhiChu, NgayHen, GioHen, MaKhachHang, MaBacSi } = req.body;
+      const { GhiChu, NgayHen, GioHen, MaKhachHang, MaBacSi, MaDichVu } = req.body;
 
-      if (!NgayHen || !GioHen || !MaKhachHang || !MaBacSi) {
+      if (!NgayHen || !GioHen || !MaKhachHang || !MaDichVu) {
         return res.status(400).json({
-          message: "Các trường NgayHen, GioHen, MaKhachHang, MaBacSi là bắt buộc!",
+          message: "Các trường NgayHen, GioHen, MaKhachHang, MaDichVu là bắt buộc!",
         });
       }
 
@@ -104,7 +104,8 @@ const LichHenController = {
         NgayHen,
         GioHen,
         MaKhachHang,
-        MaBacSi,
+        MaBacSi: MaBacSi || null,
+        MaDichVu,
       });
 
       return res.status(201).json({
@@ -121,11 +122,11 @@ const LichHenController = {
   updateLichHen: async (req, res) => {
     try {
       const { id } = req.params;
-      const { GhiChu, NgayHen, GioHen, MaKhachHang, MaBacSi, TinhTrang } = req.body;
+      const { GhiChu, NgayHen, GioHen, TinhTrang } = req.body;
 
-      if (!NgayHen || !GioHen || !MaKhachHang || !MaBacSi) {
+      if (!NgayHen || !GioHen || !TinhTrang) {
         return res.status(400).json({
-          message: "Các trường NgayHen, GioHen, MaKhachHang, MaBacSi là bắt buộc!",
+          message: "Các trường NgayHen, GioHen, TinhTrang là bắt buộc!",
         });
       }
 
@@ -139,8 +140,6 @@ const LichHenController = {
         GhiChu,
         NgayHen,
         GioHen,
-        MaKhachHang,
-        MaBacSi,
         TinhTrang,
       });
 
@@ -168,6 +167,25 @@ const LichHenController = {
       return res.status(200).json({ message: "Xóa lịch hẹn thành công!" });
     } catch (error) {
       console.error("Lỗi khi xóa lịch hẹn:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  // 🔹 Lấy các slot thời gian khả dụng cho bác sĩ trong ngày
+  getAvailableTimeSlots: async (req, res) => {
+    try {
+      const { bacSiId, ngayHen, dichVuId } = req.query;
+
+      if (!bacSiId || !ngayHen || !dichVuId) {
+        return res.status(400).json({ 
+          message: "Cần có bacSiId, ngayHen và dichVuId" 
+        });
+      }
+
+      const availableSlots = await LichHen.getAvailableSlots(bacSiId, ngayHen, dichVuId);
+      res.status(200).json(availableSlots);
+    } catch (error) {
+      console.error("Lỗi khi lấy slot khả dụng:", error);
       res.status(500).json({ message: "Lỗi server", error: error.message });
     }
   },

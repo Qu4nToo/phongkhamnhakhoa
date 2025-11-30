@@ -13,7 +13,7 @@ module.exports = {
 
   getById: async (id) => {
     try {
-      const [row] = await db.query('SELECT pk.*, lh.GioHen FROM phieukham pk left join lichhen lh on pk.MaLichHen = lh.MaLichHen WHERE pk.MaPhieuKham = ?', [id]);
+      const [row] = await db.query('SELECT pk.*, kh.HoTen as TenKhachHang, bs.HoTen as TenBacSi, lh.GioHen FROM phieukham pk join khachhang kh on pk.MaKhachHang = kh.MaKhachHang join bacsi bs on pk.MaBacSi = bs.MaBacSi left join lichhen lh on pk.MaLichHen = lh.MaLichHen WHERE pk.MaPhieuKham = ?', [id]);
       return row[0];
     } catch (err) {
       console.error('Query Error:', err.message);

@@ -61,6 +61,9 @@ export default function phieuKhamView() {
     const [selectedphieuKham, setSelectedphieuKham] = useState<any>([]);
     const [tongtien, setTongtien] = useState<number>();
     const [searchTerm, setSearchTerm] = useState("");
+    const [showCreateInvoiceDialog, setShowCreateInvoiceDialog] = useState(false);
+    const [selectedPhieuKhamForInvoice, setSelectedPhieuKhamForInvoice] = useState<any>(null);
+    const [paymentMethod, setPaymentMethod] = useState("Tiền mặt");
 
     const TRANG_THAI = [
         { value: "Chưa khám", label: "Chưa khám" },
@@ -134,6 +137,107 @@ export default function phieuKhamView() {
                     console.error("Error deleting phieuKham:", err);
                     toast("Delete Failed: There was an error deleting the phieuKham.");
                 });
+        }
+    };
+
+    const handleCreateInvoiceClick = async (phieuKham: any) => {
+        // Kiểm tra xem phiếu khám đã có hóa đơn chưa
+        try {
+            const hoaDonResponse = await axios.get("http://localhost:5000/api/hoa-don/get");
+            const existingInvoice = hoaDonResponse.data.find((hd: any) => hd.MaPhieuKham === phieuKham.MaPhieuKham);
+            
+            if (existingInvoice) {
+                toast.error("Phiếu khám này đã có hóa đơn!", {
+                    style: {
+                        background: "#fef2f2",
+                        color: "#991b1b",
+                        borderRadius: "10px",
+                        border: "1px solid #f87171",
+                    },
+                });
+                return;
+            }
+            
+            // Lấy chi tiết phiếu khám để tính tổng tiền
+            const chiTietResponse = await axios.get(`http://localhost:5000/api/chi-tiet-phieu-kham/getByPhieuKhamID/${phieuKham.MaPhieuKham}`);
+            const chiTiet = chiTietResponse.data;
+            
+            if (!chiTiet || chiTiet.length === 0) {
+                toast.error("Phiếu khám chưa có dịch vụ nào!", {
+                    style: {
+                        background: "#fef2f2",
+                        color: "#991b1b",
+                        borderRadius: "10px",
+                        border: "1px solid #f87171",
+                    },
+                });
+                return;
+            }
+            
+            const tong = chiTiet.reduce((acc: number, item: { DonGia: number; SoLuong: number }) => acc + (item.DonGia * item.SoLuong), 0);
+            
+            setSelectedPhieuKhamForInvoice({...phieuKham, tongTien: tong});
+            setShowCreateInvoiceDialog(true);
+        } catch (error) {
+            console.error("Error checking invoice:", error);
+            toast.error("Lỗi khi kiểm tra hóa đơn!");
+        }
+    };
+
+    const handleConfirmCreateInvoice = async () => {
+        if (!selectedPhieuKhamForInvoice) return;
+        
+        try {
+            // Lấy thông tin người dùng đang đăng nhập
+            const storedUserInfo = sessionStorage.getItem("user_info");
+            if (!storedUserInfo) {
+                toast.error("Phiên đăng nhập đã hết hạn!");
+                return;
+            }
+            
+            const user = JSON.parse(storedUserInfo);
+            const maNguoiDung = user?.nguoiDung?.MaNguoiDung;
+            
+            if (!maNguoiDung) {
+                toast.error("Không tìm thấy thông tin người dùng!");
+                return;
+            }
+            
+            const newInvoice = {
+                MaPhieuKham: selectedPhieuKhamForInvoice.MaPhieuKham,
+                MaKhachHang: selectedPhieuKhamForInvoice.MaKhachHang,
+                MaNguoiDung: maNguoiDung,
+                TongTien: selectedPhieuKhamForInvoice.tongTien,
+                NgayThanhToan: null,
+                TrangThai: "Chưa thanh toán",
+                PhuongThuc: paymentMethod,
+                NgayTao: new Date().toISOString().split('T')[0]
+            };
+            
+            await axios.post("http://localhost:5000/api/hoa-don/create", newInvoice);
+            
+            toast.success("Tạo hóa đơn thành công!", {
+                style: {
+                    background: "#ecfdf5",
+                    color: "#065f46",
+                    borderRadius: "10px",
+                    border: "1px solid #10b981",
+                },
+            });
+            
+            setShowCreateInvoiceDialog(false);
+            setSelectedPhieuKhamForInvoice(null);
+            setPaymentMethod("Tiền mặt");
+        } catch (error) {
+            console.error("Error creating invoice:", error);
+            toast.error("Lỗi khi tạo hóa đơn!", {
+                style: {
+                    background: "#fef2f2",
+                    color: "#991b1b",
+                    borderRadius: "10px",
+                    border: "1px solid #f87171",
+                },
+            });
         }
     };
     return (
@@ -218,7 +322,9 @@ export default function phieuKhamView() {
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                         <DropdownMenuItem onClick={() => handleViewClick(phieuKhams)}>Xem chi tiết</DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleDeleteClick(phieuKhams)}>Xóa</DropdownMenuItem>
+                                                        {phieuKhams.TrangThai === "Đã khám" && (
+                                                            <DropdownMenuItem onClick={() => handleCreateInvoiceClick(phieuKhams)}>Tạo hóa đơn</DropdownMenuItem>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
@@ -291,7 +397,9 @@ export default function phieuKhamView() {
                                                             <DropdownMenuContent align="end">
                                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                                 <DropdownMenuItem onClick={() => handleViewClick(phieuKhams)}>Xem chi tiết</DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={() => handleDeleteClick(phieuKhams)}>Xóa</DropdownMenuItem>
+                                                                {phieuKhams.TrangThai === "Đã khám" && (
+                                                                    <DropdownMenuItem onClick={() => handleCreateInvoiceClick(phieuKhams)}>Tạo hóa đơn</DropdownMenuItem>
+                                                                )}
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </TableCell>
@@ -418,6 +526,55 @@ export default function phieuKhamView() {
                     <DialogFooter className="mt-4">
                         <Button onClick={() => setShowAlertView(false)}>Đóng</Button>
                     </DialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={showCreateInvoiceDialog} onOpenChange={setShowCreateInvoiceDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Tạo hóa đơn</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Tạo hóa đơn cho phiếu khám này. Vui lòng chọn phương thức thanh toán.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    {selectedPhieuKhamForInvoice && (
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <p className="text-right font-semibold">Khách hàng:</p>
+                                <p className="col-span-3">{selectedPhieuKhamForInvoice.TenKhachHang}</p>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <p className="text-right font-semibold">Ngày khám:</p>
+                                <p className="col-span-3">{selectedPhieuKhamForInvoice.NgayKham}</p>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <p className="text-right font-semibold">Tổng tiền:</p>
+                                <p className="col-span-3 text-lg font-bold text-green-600">{formatPrice(selectedPhieuKhamForInvoice.tongTien)}</p>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <p className="text-right font-semibold">Phương thức:</p>
+                                <select
+                                    value={paymentMethod}
+                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                    className="col-span-3 border rounded px-3 py-2"
+                                >
+                                    <option value="Tiền mặt">Tiền mặt</option>
+                                    <option value="Chuyển khoản">Chuyển khoản</option>
+                                    <option value="Thẻ">Thẻ</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => {
+                            setShowCreateInvoiceDialog(false);
+                            setSelectedPhieuKhamForInvoice(null);
+                            setPaymentMethod("Tiền mặt");
+                        }}>Hủy</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmCreateInvoice}>
+                            Tạo hóa đơn
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
             <Toaster />

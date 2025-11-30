@@ -81,7 +81,7 @@ const items = [
     title: "Hóa đơn",
     url: "/HoaDon",
     icon: Receipt,
-    roles: ["Quản lý", "Lễ Tân"], // Cả hai role
+    roles: ["Quản lý", "Lễ tân"], // Cả hai role
   },
   {
     title: "Loại dịch vụ",
@@ -147,7 +147,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
-                  <User2 /> Username
+                  <User2 /> {userInfo?.nguoiDung.HoTen}
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>

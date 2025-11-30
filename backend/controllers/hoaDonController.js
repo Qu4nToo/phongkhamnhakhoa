@@ -27,17 +27,35 @@ const HoaDonController = {
 
     createHoaDon: async (req, res) => {
         try {
-            const { MaPhieuKham, TongTien, NgayLap, TrangThai } = req.body;
+            const { MaPhieuKham, TongTien, TrangThai, PhuongThuc, MaKhachHang, MaNguoiDung } = req.body;
 
-            if (!MaPhieuKham || !TongTien || !NgayLap || !TrangThai) {
-                return res.status(400).json({ message: "Thiếu trường dữ liệu" });
+            if (!MaPhieuKham) {
+                return res.status(400).json({ message: "Thiếu trường MaPhieuKham" });
+            }
+            if (!TongTien) {
+                return res.status(400).json({ message: "Thiếu trường TongTien" });
+            }
+            if (!TrangThai) {
+                return res.status(400).json({ message: "Thiếu trường TrangThai" });
+            }
+            if (!PhuongThuc) {
+                return res.status(400).json({ message: "Thiếu trường PhuongThuc" });
+            }
+            if (!MaKhachHang) {
+                return res.status(400).json({ message: "Thiếu trường MaKhachHang" });
+            }
+            if (!MaNguoiDung) {
+                return res.status(400).json({ message: "Thiếu trường MaNguoiDung" });
             }
 
             const result = await HoaDon.create({
-                MaPhieuKham,
                 TongTien,
-                NgayLap,
-                TrangThai
+                PhuongThuc,
+                TrangThai,
+                MaKhachHang,
+                MaPhieuKham,
+                MaNguoiDung,
+                NgayTao: new Date().toISOString().slice(0, 19).replace('T', ' ')
             });
 
             res.status(201).json({ message: "Thêm hóa đơn thành công!", data: result });
@@ -50,17 +68,38 @@ const HoaDonController = {
     updateHoaDon: async (req, res) => {
         try {
             const { id } = req.params;
-            const { MaPhieuKham, TongTien, NgayLap, TrangThai } = req.body;
+            const { MaPhieuKham, TongTien, NgayThanhToan, TrangThai, PhuongThuc, MaKhachHang, MaNguoiDung } = req.body;
 
-              if (!MaPhieuKham || !TongTien || !NgayLap || !TrangThai) {
-                return res.status(400).json({ message: "Thiếu trường dữ liệu" });
+            if (!MaPhieuKham) {
+                return res.status(400).json({ message: "Thiếu trường MaPhieuKham" });
+            }
+            if (!TongTien) {
+                return res.status(400).json({ message: "Thiếu trường TongTien" });
+            }
+            if (!NgayThanhToan) {
+                return res.status(400).json({ message: "Thiếu trường NgayThanhToan" });
+            }
+            if (!TrangThai) {
+                return res.status(400).json({ message: "Thiếu trường TrangThai" });
+            }
+            if (!PhuongThuc) {
+                return res.status(400).json({ message: "Thiếu trường PhuongThuc" });
+            }
+            if (!MaKhachHang) {
+                return res.status(400).json({ message: "Thiếu trường MaKhachHang" });
+            }
+            if (!MaNguoiDung) {
+                return res.status(400).json({ message: "Thiếu trường MaNguoiDung" });
             }
 
             const result = await HoaDon.update(id, {
                 MaPhieuKham,
                 TongTien,
-                NgayLap,
-                TrangThai
+                NgayThanhToan,
+                TrangThai,
+                PhuongThuc,
+                MaKhachHang,
+                MaNguoiDung
             });
 
             if (result.affectedRows === 0) {

@@ -119,6 +119,7 @@ export default function User() {
       ...user,
       NgaySinh: formattedDate,
     });
+    console.log("User to edit:", user);
     setShowAlertEdit(true);
   }
 
