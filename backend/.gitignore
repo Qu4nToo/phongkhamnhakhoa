@@ -58,3 +58,9 @@ typings/
 .next/
 out/
 *.tgz
+
+node_modules/
+.env
+serviceAccountKey.json
+*.log
+*.md

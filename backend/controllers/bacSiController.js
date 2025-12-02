@@ -60,9 +60,9 @@ const BacSiController = {
         }
     },
 
-    createBacSi: async (req, res) => {
+   createBacSi: async (req, res) => {
         try {
-            const { HoTen, SoDienThoai, Email, MatKhau, KinhNghiem, NgaySinh, DiaChi } = req.body;
+            const { HoTen, SoDienThoai, Email, MatKhau, KinhNghiem, NgaySinh, DiaChi, AnhDaiDien } = req.body;
             if (!HoTen || !SoDienThoai || !Email || !MatKhau || !KinhNghiem || !NgaySinh || !DiaChi)
                 return res.status(400).json({ message: "Tất cả các trường đều là bắt buộc!" });
 
@@ -81,8 +81,32 @@ const BacSiController = {
                 return res.status(400).json({ message: "Email đã được sử dụng bởi bác sĩ khác!" });
             }
             const hashedPassword = await bcrypt.hash(MatKhau, 10);
-            const result = await BacSi.create({ HoTen, SoDienThoai, Email, MatKhau: hashedPassword, KinhNghiem, NgaySinh, DiaChi });
-            res.status(201).json({ message: "Thêm bác sĩ thành công!", data: result });
+            
+            const createData = { 
+                HoTen, 
+                SoDienThoai, 
+                Email, 
+                MatKhau: hashedPassword, 
+                KinhNghiem, 
+                NgaySinh, 
+                DiaChi 
+            };
+            
+            // Thêm AnhDaiDien nếu có
+            if (AnhDaiDien) {
+                createData.AnhDaiDien = AnhDaiDien;
+            }
+            
+            const result = await BacSi.create(createData);
+            
+            // Lấy MaBacSi vừa tạo
+            const newBacSi = await BacSi.getByEmail(Email);
+            
+            res.status(201).json({ 
+                message: "Thêm bác sĩ thành công!", 
+                data: result,
+                MaBacSi: newBacSi.MaBacSi 
+            });
         } catch (error) {
             console.error("Lỗi khi thêm bác sĩ:", error);
             res.status(500).json({ message: "Lỗi server", error: error.message });
@@ -92,16 +116,23 @@ const BacSiController = {
     updateBacSi: async (req, res) => {
         try {
             const { id } = req.params;
-            const { HoTen, SoDienThoai, Email, KinhNghiem, NgaySinh, DiaChi } = req.body;
+            const { HoTen, SoDienThoai, Email, KinhNghiem, NgaySinh, DiaChi, AnhDaiDien } = req.body;
 
             if (!HoTen || !SoDienThoai || !Email || !KinhNghiem || !NgaySinh || !DiaChi)
                 return res.status(400).json({ message: "Thiếu thông tin bắt buộc!" });
 
-            const result = await BacSi.update(id, { HoTen, SoDienThoai, Email, KinhNghiem, NgaySinh, DiaChi });
+            const updateData = { HoTen, SoDienThoai, Email, KinhNghiem, NgaySinh, DiaChi };
+            
+            // Thêm AnhDaiDien nếu có
+            if (AnhDaiDien !== undefined) {
+                updateData.AnhDaiDien = AnhDaiDien;
+            }
+
+            const result = await BacSi.update(id, updateData);
             if (result.affectedRows === 0)
                 return res.status(404).json({ message: "Không tìm thấy bác sĩ để cập nhật!" });
 
-            res.status(200).json({ message: "Cập nhật bác sĩ thành công!" });
+            res.status(200).json({ message: "Cập nhật bác sĩ thành công!", data: updateData });
         } catch (error) {
             console.error("Lỗi khi cập nhật bác sĩ:", error);
             res.status(500).json({ message: "Lỗi server", error: error.message });

@@ -165,7 +165,7 @@ export default function hoaDonView() {
         if (selectedhoaDon) {
             axios.delete(`http://localhost:5000/api/hoa-don/delete/${selectedhoaDon.MaHoaDon}`)
                 .then(() => {
-                    toast("hoaDon Deleted: hoaDon has been deleted.");
+                    toast.success("Xóa hóa đơn thành công!");
                     axios.get("http://localhost:5000/api/hoa-don/get")
                         .then((response) => setHoaDons(response.data))
                         .catch((err) => console.error("Error fetching hoaDons:", err));
@@ -173,14 +173,14 @@ export default function hoaDonView() {
                 })
                 .catch((err) => {
                     console.error("Error deleting hoaDon:", err);
-                    toast("Delete Failed: There was an error deleting the hoaDon.");
+                    toast.error("Có lỗi xảy ra khi xóa hóa đơn!");
                 });
         }
     };
 
     return (
         <>
-            <title>hoaDon</title>
+            <title>Quản Lý Hóa Đơn</title>
             <Tabs defaultValue="all">
                 <div className="flex items-center">
                     <TabsList>
@@ -242,7 +242,7 @@ export default function hoaDonView() {
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                        <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                                                         <DropdownMenuItem onClick={() => handleViewClick(hoaDons)}>Xem chi tiết</DropdownMenuItem>
                                                         {hoaDons.TrangThai !== "Đã thanh toán" && (
                                                             <DropdownMenuItem onClick={() => handleUpdateStatusClick(hoaDons)}>Cập nhật trạng thái</DropdownMenuItem>
@@ -261,15 +261,15 @@ export default function hoaDonView() {
             <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                        <AlertDialogTitle>Xác Nhận Xóa Hóa Đơn</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this hoaDon?
+                            Bạn có chắc chắn muốn xóa hóa đơn này không? Hành động này không thể hoàn tác.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleAlertClose}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={handleAlertClose}>Hủy</AlertDialogCancel>
                         <AlertDialogAction onClick={handleConfirmDelete}>
-                            Confirm
+                            Xác nhận
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
