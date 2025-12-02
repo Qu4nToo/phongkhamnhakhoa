@@ -100,8 +100,11 @@ export default function User() {
     NgaySinh: "",
     MatKhau: "",
     KinhNghiem: "",
-    DiaChi: ""
+    DiaChi: "",
+    AnhDaiDien: ""
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -154,6 +157,36 @@ export default function User() {
     console.log(newUser);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (userId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('userId', userId);
+
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/upload/by-user?folder=BacSiAvatar&prefix=avatar',
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      return response.data.url;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
+  };
+
 
   useEffect(() => {
     axios.get("http://localhost:5000/api/bac-si/get")
@@ -191,6 +224,8 @@ export default function User() {
   const handleEditClick = (user: any) => {
     setUser(user);
     setNewUser(user);
+    setImagePreview(user.AnhDaiDien || "");
+    setImageFile(null);
     setShowAlertEdit(true);
   }
   const handleAlertEditClose = () => {
@@ -200,60 +235,113 @@ export default function User() {
     setShowAlert(false);
     setSelectedUser(null);
   }
-  const handleConfirmEdit = () => {
-    axios.put(`http://localhost:5000/api/bac-si/update/${user.MaBacSi}`, newUser)
-      .then(() => {
-        toast("User Edit: User has been edit.");
-        axios.get("http://localhost:5000/api/bac-si/get")
-          .then((response) => setUsers(response.data))
-          .catch((err) => console.error("Error fetching users:", err));
+  const handleConfirmEdit = async () => {
+    try {
+      // Upload ảnh mới nếu có
+      if (imageFile) {
+        console.log("📸 Uploading new image, old URL:", user.AnhDaiDien);
 
-        setShowAlert(false);  // Close the alert dialog
-      })
-      .catch((err) => {
-        console.error("Error deleting user:", err);
-        toast("Edit Failed: There was an error edit the user.");
+        // Dùng API replace để tự động xóa file cũ
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        formData.append('userId', user.MaBacSi);
 
-      });
+        // Thêm oldFileUrl nếu đã có ảnh cũ
+        if (user.AnhDaiDien) {
+          formData.append('oldFileUrl', user.AnhDaiDien);
+        }
+
+        const uploadResponse = await axios.post(
+          'http://localhost:5000/api/upload/by-user?folder=BacSiAvatar&prefix=avatar',
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+
+        newUser.AnhDaiDien = uploadResponse.data.url;
+        console.log("✅ New image uploaded:", newUser.AnhDaiDien);
+      }
+
+      await axios.put(`http://localhost:5000/api/bac-si/update/${user.MaBacSi}`, newUser);
+      toast.success("Cập nhật bác sĩ thành công!");
+
+      const response = await axios.get("http://localhost:5000/api/bac-si/get");
+      setUsers(response.data);
+      setImageFile(null);
+      setImagePreview("");
+      setShowAlertEdit(false);
+    } catch (err: any) {
+      console.error("Error editing user:", err);
+      toast.error(err.response?.data?.message || "Có lỗi xảy ra khi cập nhật bác sĩ");
+    }
   }
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
+    if (!selectedUser) return;
 
-    if (selectedUser) {
-      axios.delete(`http://localhost:5000/api/bac-si/delete/${selectedUser.MaBacSi}`)
-        .then(() => {
-          toast("User Deleted: User has been deleted.");
-          axios.get("http://localhost:5000/api/bac-si/get")
-            .then((response) => setUsers(response.data))
-            .catch((err) => console.error("Error fetching users:", err));
-          setShowAlert(false);
-        })
-        .catch((err) => {
-          console.error("Error deleting user:", err);
-          toast("Delete Failed: There was an error deleting the user.");
-        });
+    try {
+      if (selectedUser.AnhDaiDien) {
+        try {
+          console.log("🗑️ Đang xóa ảnh:", selectedUser.AnhDaiDien);
+          console.log("📏 URL length:", selectedUser.AnhDaiDien.length);
+          console.log("🔍 URL có khoảng trắng?", selectedUser.AnhDaiDien !== selectedUser.AnhDaiDien.trim());
+          
+          const response = await axios.delete('http://localhost:5000/api/upload/delete', {
+            data: { fileUrl: selectedUser.AnhDaiDien.trim() }
+          });
+          console.log("✅ Response xóa ảnh:", response.data);
+        } catch (error: any) {
+          console.error("❌ Lỗi xóa ảnh:", error.response?.data || error.message);
+        }
+      }
+
+      await axios.delete(`http://localhost:5000/api/bac-si/delete/${selectedUser.MaBacSi}`);
+      toast.success("Xóa bác sĩ thành công!");
+
+      const response = await axios.get("http://localhost:5000/api/bac-si/get");
+      setUsers(response.data);
+      setShowAlert(false);
+      setSelectedUser(null);
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      toast.error(error.response?.data?.message || "Có lỗi xảy ra khi xóa bác sĩ");
     }
   };
-  const handleCreateUser = () => {
+  const handleCreateUser = async () => {
     console.log(newUser);
-    axios.post("http://localhost:5000/api/bac-si/create", newUser)
-      .then(() => {
-        toast("User Created: New User has been added successfully.");
-        axios.get("http://localhost:5000/api/bac-si/get")
-          .then((response) => setUsers(response.data))
-          .catch((err) => console.error("Error fetching users:", err));
-        setNewUser({
-          HoTen: "",
-          SoDienThoai: "",
-          Email: "",
-          NgaySinh: "",
-          MatKhau: "",
-          KinhNghiem: "",
-          DiaChi: ""
+    try {
+      const response = await axios.post("http://localhost:5000/api/bac-si/create", newUser);
+      const newMaBacSi = response.data.MaBacSi;
+
+      // Upload ảnh nếu có
+      if (imageFile && newMaBacSi) {
+        const imageUrl = await uploadImage(newMaBacSi, imageFile);
+        await axios.put(`http://localhost:5000/api/bac-si/update/${newMaBacSi}`, {
+          ...newUser,
+          AnhDaiDien: imageUrl
         });
-        setDialogOpen(false);
-      })
-      .catch((err) => console.error("Error creating userduct:", err));
+      }
+
+      toast.success("Thêm bác sĩ thành công!");
+      const refreshData = await axios.get("http://localhost:5000/api/bac-si/get");
+      setUsers(refreshData.data);
+
+      setNewUser({
+        HoTen: "",
+        SoDienThoai: "",
+        Email: "",
+        NgaySinh: "",
+        MatKhau: "",
+        KinhNghiem: "",
+        DiaChi: "",
+        AnhDaiDien: ""
+      });
+      setImageFile(null);
+      setImagePreview("");
+      setDialogOpen(false);
+    } catch (err) {
+      console.error("Error creating user:", err);
+      toast.error("Có lỗi xảy ra khi tạo bác sĩ");
+    }
   };
 
   const handleAddService = async () => {
@@ -271,7 +359,7 @@ export default function User() {
       const dataToSend = {
         MaBacSi: selectedUser.MaBacSi,
         MaDichVu: selectedDichVu,
-        GhiChu: "", 
+        GhiChu: "",
       };
       console.log("📤 Sending data:", dataToSend);
       await axios.post("http://localhost:5000/api/chi-tiet-dich-vu/create", dataToSend);
@@ -340,7 +428,7 @@ export default function User() {
       };
       await axios.post("http://localhost:5000/api/lich-lam-viec/create", dataToSend);
       toast.success("Thêm lịch làm việc thành công!");
-      
+
       const response = await axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${selectedUser.MaBacSi}`);
       const data = Array.isArray(response.data) ? response.data : [];
       setScheduleList(data);
@@ -384,7 +472,7 @@ export default function User() {
 
   return (
     <RoleGuard allowedRoles={["Quản lý"]}>
-      <title>User</title>
+      <title>Quản Lý Bác Sĩ</title>
       <Tabs defaultValue="all">
         <div className="flex items-center">
           <TabsList>
@@ -412,12 +500,37 @@ export default function User() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Thêm bác sĩ</DialogTitle>
+                  <DialogTitle>Thêm Bác Sĩ Mới</DialogTitle>
                   <DialogDescription>
-                    Thêm bác sĩ mới vào danh sách.
+                    Điền thông tin để thêm bác sĩ mới vào hệ thống.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-6 items-center gap-4">
+                    <Label htmlFor="avatar" className="text-right col-span-2">
+                      Ảnh đại diện
+                    </Label>
+                    <div className="col-span-4">
+                      <Input
+                        id="avatar"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="cursor-pointer"
+                      />
+                      {imagePreview && (
+                        <div className="mt-2">
+                          <Image
+                            src={imagePreview}
+                            alt="Preview"
+                            width={80}
+                            height={80}
+                            className="rounded-full object-cover"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
                   <div className="grid grid-cols-6 items-center gap-4">
                     <Label htmlFor="HoTen" className="text-right col-span-2">
                       Họ và Tên
@@ -463,7 +576,7 @@ export default function User() {
                 </div>
                 <DialogFooter>
                   <Button type="button" onClick={handleCreateUser}>
-                    Confirm
+                    Xác nhận
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -479,6 +592,7 @@ export default function User() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Ảnh</TableHead>
                     <TableHead>Họ và Tên</TableHead>
                     <TableHead>Số điện thoại</TableHead>
                     <TableHead>Email</TableHead>
@@ -493,6 +607,21 @@ export default function User() {
                 {filteredUsers.map((users: any) => (
                   <TableBody key={users.MaBacSi}>
                     <TableRow>
+                      <TableCell>
+                        {users.AnhDaiDien ? (
+                          <Image
+                            src={users.AnhDaiDien}
+                            alt={users.HoTen}
+                            width={40}
+                            height={40}
+                            className="rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                            <UserIcon className="w-6 h-6 text-gray-400" />
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         {users.HoTen}
                       </TableCell>
@@ -519,7 +648,7 @@ export default function User() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                             <DropdownMenuItem onClick={() => handleEditClick(users)}>Sửa</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDeleteClick(users)}>Xóa</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleServiceClick(users)}>Thêm dịch vụ</DropdownMenuItem>
@@ -545,15 +674,15 @@ export default function User() {
       <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogTitle>Xác Nhận Xóa Bác Sĩ</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this user?
+              Bạn có chắc chắn muốn xóa bác sĩ này không? Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleAlertClose}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={handleAlertClose}>Hủy</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmDelete}>
-              Confirm
+              Xác nhận
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -561,9 +690,34 @@ export default function User() {
       <AlertDialog open={showAlertEdit} onOpenChange={setShowAlertEdit}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Edit userduct</AlertDialogTitle>
+            <AlertDialogTitle>Chỉnh Sửa Thông Tin Bác Sĩ</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-6 items-center gap-4">
+              <Label htmlFor="avatar-edit" className="text-right col-span-2">
+                Ảnh đại diện
+              </Label>
+              <div className="col-span-4">
+                <Input
+                  id="avatar-edit"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="cursor-pointer"
+                />
+                {imagePreview && (
+                  <div className="mt-2">
+                    <Image
+                      src={imagePreview}
+                      alt="Preview"
+                      width={80}
+                      height={80}
+                      className="rounded-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
             <div className="grid grid-cols-6 items-center gap-4">
               <Label htmlFor="HoTen" className="text-right col-span-2">
                 Họ và Tên
@@ -603,9 +757,9 @@ export default function User() {
             <Input onChange={handleInputChange} id="MatKhau" type="text" className="col-span-4" defaultValue={user.MatKhau} hidden />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleAlertEditClose}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={handleAlertEditClose}>Hủy</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmEdit}>
-              Confirm
+              Xác nhận
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -743,7 +897,7 @@ export default function User() {
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa dịch vụ</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa dịch vụ này khỏi bác sĩ không? 
+              Bạn có chắc chắn muốn xóa dịch vụ này khỏi bác sĩ không?
               Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -888,7 +1042,7 @@ export default function User() {
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa lịch làm việc</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa lịch làm việc này không? 
+              Bạn có chắc chắn muốn xóa lịch làm việc này không?
               Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -905,7 +1059,7 @@ export default function User() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      
+
       <Toaster />
     </RoleGuard>
   )

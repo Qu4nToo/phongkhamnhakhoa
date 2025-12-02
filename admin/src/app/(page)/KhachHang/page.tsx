@@ -136,7 +136,7 @@ export default function User() {
     // Gửi dữ liệu cập nhật
     axios.put(`http://localhost:5000/api/khach-hang/update/${user.MaKhachHang}`, newUser)
       .then(() => {
-        toast("User Edited: User information has been updated.");
+        toast.success("Cập nhật khách hàng thành công!");
         // Tải lại danh sách
         axios.get("http://localhost:5000/api/khach-hang/get")
           .then((response) => setUsers(response.data))
@@ -152,7 +152,7 @@ export default function User() {
       })
       .catch((err) => {
         console.error("Error editing user:", err);
-        toast("Edit Failed: There was an error updating the user.");
+        toast.error("Có lỗi xảy ra khi cập nhật khách hàng!");
       });
   }
 
@@ -160,7 +160,7 @@ export default function User() {
     if (selectedUser) {
       axios.delete(`http://localhost:5000/api/khach-hang/delete/${selectedUser.MaKhachHang}`)
         .then(() => {
-          toast("User Deleted: User has been deleted.");
+          toast.success("Xóa khách hàng thành công!");
           axios.get("http://localhost:5000/api/khach-hang/get")
             .then((response) => setUsers(response.data))
             .catch((err) => console.error("Error fetching users:", err));
@@ -175,7 +175,7 @@ export default function User() {
         })
         .catch((err) => {
           console.error("Error deleting user:", err);
-          toast("Delete Failed: There was an error deleting the user.");
+          toast.error("Có lỗi xảy ra khi xóa khách hàng!");
         });
     }
   };
@@ -187,7 +187,7 @@ export default function User() {
     };
     axios.post("http://localhost:5000/api/khach-hang/create", userToCreate)
       .then(() => {
-        toast("User Created: New User has been added successfully.");
+        toast.success("Thêm khách hàng thành công!");
         axios.get("http://localhost:5000/api/khach-hang/get")
           .then((response) => setUsers(response.data))
           .catch((err) => console.error("Error fetching users:", err));
@@ -206,7 +206,7 @@ export default function User() {
 
   return (
     <RoleGuard allowedRoles={["Quản lý"]}>
-      <title>User</title>
+      <title>Quản Lý Khách Hàng</title>
       <Tabs defaultValue="all">
         <div className="flex items-center">
           <TabsList>
@@ -278,7 +278,7 @@ export default function User() {
                 </div>
                 <DialogFooter>
                   <Button type="button" onClick={handleCreateUser}>
-                    Confirm
+                    Xác nhận
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -333,7 +333,7 @@ export default function User() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                             <DropdownMenuItem onClick={() => handleEditClick(user)}>Sửa</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDeleteClick(user)}>Xóa</DropdownMenuItem>
                           </DropdownMenuContent>
@@ -352,15 +352,15 @@ export default function User() {
       <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogTitle>Xác Nhận Xóa Khách Hàng</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this user?
+              Bạn có chắc chắn muốn xóa khách hàng này không? Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleAlertClose}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={handleAlertClose}>Hủy</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmDelete}>
-              Confirm
+              Xác nhận
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -403,9 +403,9 @@ export default function User() {
             <Input id="MatKhau" type="hidden" defaultValue={newUser.MatKhau} />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleAlertEditClose}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={handleAlertEditClose}>Hủy</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmEdit}>
-              Confirm
+              Xác nhận
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -342,7 +342,7 @@ export default function BookingView() {
         };
         axios.post("http://localhost:5000/api/lich-hen/create", bookingToCreate)
             .then(() => {
-                toast("booking Created: New booking has been added successfully.");
+                toast.success("Thêm lịch hẹn thành công!");
                 axios.get("http://localhost:5000/api/lich-hen/get")
                     .then((response) => setbookings(response.data))
                     .catch((err) => console.error("Error fetching bookings:", err));
@@ -469,7 +469,7 @@ export default function BookingView() {
 
     return (
         <>
-            <title>booking</title>
+            <title>Quản Lý Lịch Hẹn</title>
             <Tabs defaultValue="all">
                 <div className="flex items-center">
                     <TabsList>
@@ -652,7 +652,7 @@ export default function BookingView() {
                                 </div>
                                 <DialogFooter>
                                     <Button type="button" onClick={handleCreatebooking}>
-                                        Confirm
+                                        Xác nhận
                                     </Button>
                                 </DialogFooter>
                             </DialogContent>
@@ -806,7 +806,7 @@ export default function BookingView() {
                                                                 </Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
-                                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                                <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                                                                 <DropdownMenuItem onClick={() => handleViewClick(bookings)}>Xem chi tiết</DropdownMenuItem>
                                                                 {bookings.TinhTrang !== "Đang khám" && bookings.TinhTrang !== "Hoàn thành" && (
                                                                     <DropdownMenuItem onClick={() => handleEditClick(bookings)}>Sửa</DropdownMenuItem>

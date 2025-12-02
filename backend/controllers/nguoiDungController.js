@@ -64,8 +64,8 @@ const NguoiDungController = {
 
   createNguoiDung: async (req, res) => {
     try {
-      const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, VaiTro } = req.body;
-      console.log("Received data:", { HoTen, Email, NgaySinh, SDT, MatKhau: MatKhau ? "***" : MatKhau, DiaChi, VaiTro });
+      const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, VaiTro, AnhDaiDien } = req.body;
+      console.log("Received data:", { HoTen, Email, NgaySinh, SDT, MatKhau: MatKhau ? "***" : MatKhau, DiaChi, VaiTro, AnhDaiDien });
       if (!HoTen || !Email || !NgaySinh || !SDT || !MatKhau || !DiaChi || !VaiTro) {
         console.log("Missing fields:", { HoTen: !!HoTen, Email: !!Email, NgaySinh: !!NgaySinh, SDT: !!SDT, MatKhau: !!MatKhau, DiaChi: !!DiaChi, VaiTro: !!VaiTro });
         return res.status(400).json({ message: "Tất cả các trường đều là bắt buộc!" });
@@ -88,7 +88,7 @@ const NguoiDungController = {
         return res.status(400).json({ message: "Email đã được sử dụng bởi người dùng khác!" });
       }
       const hashedPassword = await bcrypt.hash(MatKhau, 10);
-      const result = await NguoiDung.create({ HoTen, Email, NgaySinh, SDT, MatKhau: hashedPassword, DiaChi, VaiTro });
+      const result = await NguoiDung.create({ HoTen, Email, NgaySinh, SDT, MatKhau: hashedPassword, DiaChi, VaiTro, AnhDaiDien: AnhDaiDien || null });
       return res.status(201).json({ message: "Thêm người dùng thành công!", data: result });
     } catch (error) {
       console.error("Lỗi khi thêm người dùng:", error);
@@ -99,7 +99,9 @@ const NguoiDungController = {
   updateNguoiDung: async (req, res) => {
     try {
       const { id } = req.params;
-      const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, VaiTro } = req.body;
+      const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, VaiTro, AnhDaiDien } = req.body;
+      console.log("📥 Received update data:", { id, HoTen, Email, AnhDaiDien });
+      
       if (!HoTen || !Email || !NgaySinh || !SDT || !MatKhau || !DiaChi || !VaiTro) {
         return res.status(400).json({ message: "Tất cả các trường đều là bắt buộc!" });
       }
@@ -117,7 +119,16 @@ const NguoiDungController = {
         return res.status(400).json({ message: "Email không hợp lệ!" });
       }
 
-      const result = await NguoiDung.update(id, { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, VaiTro });
+      const updateData = { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, VaiTro };
+      if (AnhDaiDien !== undefined) {
+        updateData.AnhDaiDien = AnhDaiDien;
+        console.log("✅ AnhDaiDien will be updated:", AnhDaiDien);
+      } else {
+        console.log("⚠️ AnhDaiDien is undefined, will not update");
+      }
+
+      console.log("📤 Final update data:", updateData);
+      const result = await NguoiDung.update(id, updateData);
       if (result.affectedRows === 0) {
         return res.status(404).json({ message: "Không tìm thấy người dùng để cập nhật!" });
       }

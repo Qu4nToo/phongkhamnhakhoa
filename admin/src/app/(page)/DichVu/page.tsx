@@ -157,7 +157,7 @@ export default function ServiceView() {
         if (selectedservice) {
             axios.delete(`http://localhost:5000/api/dich-vu/delete/${selectedservice.MaDichVu}`)
                 .then(() => {
-                    toast("service Deleted: service has been deleted.");
+                    toast.success("Xóa dịch vụ thành công!");
                     axios.get("http://localhost:5000/api/dich-vu/get")
                         .then((response) => setServices(response.data))
                         .catch((err) => console.error("Error fetching services:", err));
@@ -165,7 +165,7 @@ export default function ServiceView() {
                 })
                 .catch((err) => {
                     console.error("Error deleting service:", err);
-                    toast("Delete Failed: There was an error deleting the service.");
+                    toast.error("Có lỗi xảy ra khi xóa dịch vụ!");
                 });
         }
     };
@@ -176,7 +176,7 @@ export default function ServiceView() {
         };
         axios.post("http://localhost:5000/api/dich-vu/create", serviceToCreate)
             .then(() => {
-                toast("service Created: New service has been added successfully.");
+                toast.success("Thêm dịch vụ thành công!");
                 // Load lại danh sách sản phẩm
                 axios.get("http://localhost:5000/api/dich-vu/get")
                     .then((response) => setServices(response.data))
@@ -196,7 +196,7 @@ export default function ServiceView() {
 
     return (
         <>
-            <title>service</title>
+            <title>Quản Lý Dịch Vụ</title>
             <Tabs defaultValue="all">
                 <div className="flex items-center">
                     <TabsList>
@@ -277,7 +277,7 @@ export default function ServiceView() {
                                 </div>
                                 <DialogFooter>
                                     <Button type="button" onClick={handleCreateservice}>
-                                        Confirm
+                                        Xác nhận
                                     </Button>
                                 </DialogFooter>
                             </DialogContent>
@@ -343,7 +343,7 @@ export default function ServiceView() {
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                        <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                                                         <DropdownMenuItem onClick={() => handleEditClick(services)}>Sửa</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleDeleteClick(services)}>Xóa</DropdownMenuItem>
                                                     </DropdownMenuContent>
@@ -360,15 +360,15 @@ export default function ServiceView() {
             <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                        <AlertDialogTitle>Xác Nhận Xóa Dịch Vụ</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this service?
+                            Bạn có chắc chắn muốn xóa dịch vụ này không? Hành động này không thể hoàn tác.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleAlertClose}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={handleAlertClose}>Hủy</AlertDialogCancel>
                         <AlertDialogAction onClick={handleConfirmDelete}>
-                            Confirm
+                            Xác nhận
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -376,7 +376,7 @@ export default function ServiceView() {
             <AlertDialog open={showAlertEdit} onOpenChange={setShowAlertEdit}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Edit service</AlertDialogTitle>
+                        <AlertDialogTitle>Chỉnh Sửa Thông Tin Dịch Vụ</AlertDialogTitle>
                     </AlertDialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-6 items-center gap-4">
@@ -427,9 +427,9 @@ export default function ServiceView() {
 
                     </div>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleAlertEditClose}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={handleAlertEditClose}>Hủy</AlertDialogCancel>
                         <AlertDialogAction onClick={handleConfirmEdit}>
-                            Confirm
+                            Xác nhận
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

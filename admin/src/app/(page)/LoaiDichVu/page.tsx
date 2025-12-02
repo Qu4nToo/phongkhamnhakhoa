@@ -143,7 +143,7 @@ export default function categoryView() {
         if (selectedcategory) {
             axios.delete(`http://localhost:5000/api/loai-dich-vu/delete/${selectedcategory.MaLoaiDV}`)
                 .then(() => {
-                    toast("category Deleted: category has been deleted.");
+                    toast.success("Xóa loại dịch vụ thành công!");
                     axios.get("http://localhost:5000/api/loai-dich-vu/get")
                         .then((response) => setCategorys(response.data))
                         .catch((err) => console.error("Error fetching categorys:", err));
@@ -151,7 +151,7 @@ export default function categoryView() {
                 })
                 .catch((err) => {
                     console.error("Error deleting category:", err);
-                    toast("Delete Failed: There was an error deleting the category.");
+                    toast.error("Có lỗi xảy ra khi xóa loại dịch vụ!");
                 });
         }
     };
@@ -162,7 +162,7 @@ export default function categoryView() {
         };
         axios.post("http://localhost:5000/api/loai-dich-vu/create", categoryToCreate)
             .then(() => {
-                toast("category Created: New category has been added successfully.");
+                toast.success("Thêm loại dịch vụ thành công!");
                 // Load lại danh sách sản phẩm
                 axios.get("http://localhost:5000/api/loai-dich-vu/get")
                     .then((response) => setCategorys(response.data))
@@ -178,7 +178,7 @@ export default function categoryView() {
 
     return (
         <>
-            <title>category</title>
+            <title>Quản Lý Loại Dịch Vụ</title>
             <Tabs defaultValue="all">
                 <div className="flex items-center">
                     <TabsList>
@@ -217,7 +217,7 @@ export default function categoryView() {
                                 </div>
                                 <DialogFooter>
                                     <Button type="button" onClick={handleCreatecategory}>
-                                        Confirm
+                                        Xác nhận
                                     </Button>
                                 </DialogFooter>
                             </DialogContent>
@@ -263,7 +263,7 @@ export default function categoryView() {
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                        <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                                                         <DropdownMenuItem onClick={() => handleEditClick(categorys)}>Sửa</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleDeleteClick(categorys)}>Xóa</DropdownMenuItem>
                                                     </DropdownMenuContent>
@@ -280,15 +280,15 @@ export default function categoryView() {
             <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                        <AlertDialogTitle>Xác Nhận Xóa Loại Dịch Vụ</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this category?
+                            Bạn có chắc chắn muốn xóa loại dịch vụ này không? Hành động này không thể hoàn tác.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleAlertClose}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={handleAlertClose}>Hủy</AlertDialogCancel>
                         <AlertDialogAction onClick={handleConfirmDelete}>
-                            Confirm
+                            Xác nhận
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -296,7 +296,7 @@ export default function categoryView() {
             <AlertDialog open={showAlertEdit} onOpenChange={setShowAlertEdit}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Edit category</AlertDialogTitle>
+                        <AlertDialogTitle>Chỉnh Sửa Thông Tin Loại Dịch Vụ</AlertDialogTitle>
                     </AlertDialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-6 items-center gap-4">
@@ -313,9 +313,9 @@ export default function categoryView() {
                         </div>
                     </div>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleAlertEditClose}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={handleAlertEditClose}>Hủy</AlertDialogCancel>
                         <AlertDialogAction onClick={handleConfirmEdit}>
-                            Confirm
+                            Xác nhận
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -127,7 +127,7 @@ export default function phieuKhamView() {
         if (selectedphieuKham) {
             axios.delete(`http://localhost:5000/api/phieu-kham/delete/${selectedphieuKham.MaPhieuKham}`)
                 .then(() => {
-                    toast("phieuKham Deleted: phieuKham has been deleted.");
+                    toast.success("Xóa phiếu khám thành công!");
                     axios.get("http://localhost:5000/api/phieu-kham/get")
                         .then((response) => setPhieuKhams(response.data))
                         .catch((err) => console.error("Error fetching phieuKhams:", err));
@@ -135,7 +135,7 @@ export default function phieuKhamView() {
                 })
                 .catch((err) => {
                     console.error("Error deleting phieuKham:", err);
-                    toast("Delete Failed: There was an error deleting the phieuKham.");
+                    toast.error("Có lỗi xảy ra khi xóa phiếu khám!");
                 });
         }
     };
@@ -242,7 +242,7 @@ export default function phieuKhamView() {
     };
     return (
         <>
-            <title>phieuKham</title>
+            <title>Quản Lý Phiếu Khám</title>
             <Tabs defaultValue="all">
                 <div className="flex items-center">
                     <TabsList>
@@ -395,7 +395,7 @@ export default function phieuKhamView() {
                                                                 </Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
-                                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                                <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                                                                 <DropdownMenuItem onClick={() => handleViewClick(phieuKhams)}>Xem chi tiết</DropdownMenuItem>
                                                                 {phieuKhams.TrangThai === "Đã khám" && (
                                                                     <DropdownMenuItem onClick={() => handleCreateInvoiceClick(phieuKhams)}>Tạo hóa đơn</DropdownMenuItem>
@@ -415,15 +415,15 @@ export default function phieuKhamView() {
             <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                        <AlertDialogTitle>Xác Nhận Xóa Phiếu Khám</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this phieuKham?
+                            Bạn có chắc chắn muốn xóa phiếu khám này không? Hành động này không thể hoàn tác.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleAlertClose}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={handleAlertClose}>Hủy</AlertDialogCancel>
                         <AlertDialogAction onClick={handleConfirmDelete}>
-                            Confirm
+                            Xác nhận
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

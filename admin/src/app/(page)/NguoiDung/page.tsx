@@ -2,10 +2,12 @@
 import { useEffect, useState } from "react"
 import React from "react"
 import { sha3_512 } from "js-sha3";
+import Image from "next/image"
 import {
     MoreHorizontal,
     PlusCircle,
-    Search, // Import Search icon
+    Search,
+    UserIcon,
 } from "lucide-react"
 import { RoleGuard } from "@/components/features/role-guard"
 import {
@@ -78,8 +80,11 @@ export default function User() {
         NgaySinh: "",
         MatKhau: "",
         DiaChi: "",
-        VaiTro: ""
+        VaiTro: "",
+        AnhDaiDien: ""
     });
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string>("");
 
 
     const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -98,6 +103,36 @@ export default function User() {
             ...prev,
             [id]: value,
         }));
+    };
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const uploadImage = async (userId: string, file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('userId', userId);
+
+        try {
+            const response = await axios.post(
+                'http://localhost:5000/api/upload/by-user?folder=NguoiDungAvatar&prefix=avatar',
+                formData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+            return response.data.url;
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            throw error;
+        }
     };
 
 
@@ -126,15 +161,20 @@ export default function User() {
     }
 
     const handleEditClick = (user: any) => {
-
         setUser(user);
-
         const formattedDate = user.NgaySinh ? user.NgaySinh.split('T')[0] : '';
-
         setNewUser({
-            ...user,
+            HoTen: user.HoTen,
+            SDT: user.SDT,
+            Email: user.Email,
             NgaySinh: formattedDate,
+            MatKhau: user.MatKhau,
+            DiaChi: user.DiaChi,
+            VaiTro: user.VaiTro,
+            AnhDaiDien: user.AnhDaiDien || ""
         });
+        setImagePreview(user.AnhDaiDien || "");
+        setImageFile(null);
         setShowAlertEdit(true);
     }
 
@@ -147,65 +187,119 @@ export default function User() {
         setSelectedUser(null);
     }
 
-    const handleConfirmEdit = () => {
-        const maNguoiDung = user.MaNguoiDung;
-        axios.put(`http://localhost:5000/api/nguoi-dung/update/${maNguoiDung}`, newUser)
-            .then(() => {
-                toast("User Edited: User information has been updated.");
-                axios.get("http://localhost:5000/api/nguoi-dung/get")
-                    .then((response) => setUsers(response.data))
-                    .catch((err) => console.error("Error fetching users:", err));
-                setNewUser({
-                    HoTen: "",
-                    SDT: "",
-                    Email: "",
-                    NgaySinh: "",
-                    MatKhau: "",
-                    DiaChi: "",
-                    VaiTro: ""
-                });
-                setShowAlertEdit(false);
-            })
-            .catch((err) => {
-                console.error("Error editing user:", err);
-                toast("Edit Failed: There was an error updating the user.");
+    const handleConfirmEdit = async () => {
+        try {
+            // Upload ảnh mới nếu có
+            if (imageFile) {
+                console.log("📸 Uploading new image, old URL:", user.AnhDaiDien);
+
+                const formData = new FormData();
+                formData.append('file', imageFile);
+                formData.append('userId', user.MaNguoiDung);
+
+                // Thêm oldFileUrl nếu đã có ảnh cũ
+                if (user.AnhDaiDien) {
+                    formData.append('oldFileUrl', user.AnhDaiDien);
+                }
+
+                const uploadResponse = await axios.post(
+                    'http://localhost:5000/api/upload/by-user?folder=NguoiDungAvatar&prefix=avatar',
+                    formData,
+                    { headers: { 'Content-Type': 'multipart/form-data' } }
+                );
+
+                newUser.AnhDaiDien = uploadResponse.data.url;
+                console.log("✅ New image uploaded:", newUser.AnhDaiDien);
+            }
+
+            const maNguoiDung = user.MaNguoiDung;
+            console.log("📤 Dữ liệu gửi lên server:", newUser);
+            console.log("🖼️ AnhDaiDien sẽ update:", newUser.AnhDaiDien);
+            await axios.put(`http://localhost:5000/api/nguoi-dung/update/${maNguoiDung}`, newUser);
+            toast.success("Cập nhật người dùng thành công!");
+            
+            const response = await axios.get("http://localhost:5000/api/nguoi-dung/get");
+            setUsers(response.data);
+            
+            setNewUser({
+                HoTen: "",
+                SDT: "",
+                Email: "",
+                NgaySinh: "",
+                MatKhau: "",
+                DiaChi: "",
+                VaiTro: "",
+                AnhDaiDien: ""
             });
+            setImageFile(null);
+            setImagePreview("");
+            setShowAlertEdit(false);
+        } catch (err: any) {
+            console.error("Error editing user:", err);
+            toast.error(err.response?.data?.message || "Có lỗi xảy ra khi cập nhật người dùng!");
+        }
     }
 
-    const handleConfirmDelete = () => {
-        if (selectedUser) {
-            axios.delete(`http://localhost:5000/api/nguoi-dung/delete/${selectedUser.MaNguoiDung}`)
-                .then(() => {
-                    toast("User Deleted: User has been deleted.");
-                    axios.get("http://localhost:5000/api/nguoi-dung/get")
-                        .then((response) => setUsers(response.data))
-                        .catch((err) => console.error("Error fetching users:", err));
-                    setNewUser({
-                        HoTen: "",
-                        SDT: "",
-                        Email: "",
-                        NgaySinh: "",
-                        MatKhau: "",
-                        DiaChi: "",
-                        VaiTro: ""
+    const handleConfirmDelete = async () => {
+        if (!selectedUser) return;
+
+        try {
+            // Xóa ảnh từ Firebase nếu có
+            if (selectedUser.AnhDaiDien) {
+                try {
+                    console.log("🗑️ Đang xóa ảnh:", selectedUser.AnhDaiDien);
+                    await axios.delete('http://localhost:5000/api/upload', {
+                        data: { fileUrl: selectedUser.AnhDaiDien.trim() }
                     });
-                    setShowAlert(false);
-                })
-                .catch((err) => {
-                    console.error("Error deleting user:", err);
-                    toast("Delete Failed: There was an error deleting the user.");
-                });
+                    console.log("✅ Xóa ảnh thành công");
+                } catch (error: any) {
+                    console.error("❌ Lỗi xóa ảnh:", error.response?.data || error.message);
+                }
+            }
+
+            await axios.delete(`http://localhost:5000/api/nguoi-dung/delete/${selectedUser.MaNguoiDung}`);
+            toast.success("Xóa người dùng thành công!");
+            
+            const response = await axios.get("http://localhost:5000/api/nguoi-dung/get");
+            setUsers(response.data);
+            
+            setNewUser({
+                HoTen: "",
+                SDT: "",
+                Email: "",
+                NgaySinh: "",
+                MatKhau: "",
+                DiaChi: "",
+                VaiTro: "",
+                AnhDaiDien: ""
+            });
+            setShowAlert(false);
+            setSelectedUser(null);
+        } catch (error: any) {
+            console.error("Error deleting user:", error);
+            toast.error(error.response?.data?.message || "Có lỗi xảy ra khi xóa người dùng!");
         }
     };
 
     const handleCreateUser = async () => {
         try {
-            await axios.post("http://localhost:5000/api/nguoi-dung/create", newUser);
-            toast("User Created: New User has been added successfully.");
+            const response = await axios.post("http://localhost:5000/api/nguoi-dung/create", newUser);
+            const newMaNguoiDung = response.data.data.insertId;
+
+            // Upload ảnh nếu có
+            if (imageFile && newMaNguoiDung) {
+                const imageUrl = await uploadImage(newMaNguoiDung.toString(), imageFile);
+                await axios.put(`http://localhost:5000/api/nguoi-dung/update/${newMaNguoiDung}`, {
+                    ...newUser,
+                    AnhDaiDien: imageUrl
+                });
+            }
+
+            toast.success("Thêm người dùng thành công!");
             
             // Reload users list
-            const response = await axios.get("http://localhost:5000/api/nguoi-dung/get");
-            setUsers(response.data);
+            const refreshData = await axios.get("http://localhost:5000/api/nguoi-dung/get");
+            setUsers(refreshData.data);
             
             // Reset form
             setNewUser({
@@ -215,8 +309,11 @@ export default function User() {
                 NgaySinh: "",
                 MatKhau: "",
                 DiaChi: "",
-                VaiTro: ""
+                VaiTro: "",
+                AnhDaiDien: ""
             });
+            setImageFile(null);
+            setImagePreview("");
             setDialogOpen(false);
         } catch (err: any) {
             console.error("Error creating user:", err);
@@ -231,7 +328,7 @@ export default function User() {
 
     return (
         <RoleGuard allowedRoles={["Quản lý"]}>
-            <title>User</title>
+            <title>Quản Lý Người Dùng</title>
             <Tabs defaultValue="all">
                 <div className="flex items-center">
                     <TabsList>
@@ -269,6 +366,31 @@ export default function User() {
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
+                                    <div className="grid grid-cols-6 items-center gap-4">
+                                        <Label htmlFor="avatar" className="text-right col-span-2">
+                                            Ảnh đại diện
+                                        </Label>
+                                        <div className="col-span-4">
+                                            <Input
+                                                id="avatar"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                                className="cursor-pointer"
+                                            />
+                                            {imagePreview && (
+                                                <div className="mt-2">
+                                                    <Image
+                                                        src={imagePreview}
+                                                        alt="Preview"
+                                                        width={80}
+                                                        height={80}
+                                                        className="rounded-full object-cover"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                     <div className="grid grid-cols-6 items-center gap-4">
                                         <Label htmlFor="VaiTro" className="text-right col-span-2">
                                             Vai trò
@@ -323,7 +445,7 @@ export default function User() {
                                 </div>
                                 <DialogFooter>
                                     <Button type="button" onClick={handleCreateUser}>
-                                        Confirm
+                                        Xác nhận
                                     </Button>
                                 </DialogFooter>
                             </DialogContent>
@@ -339,6 +461,7 @@ export default function User() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
+                                        <TableHead>Ảnh</TableHead>
                                         <TableHead>Vai trò</TableHead>
                                         <TableHead>Họ và Tên</TableHead>
                                         <TableHead>Số điện thoại</TableHead>
@@ -353,6 +476,21 @@ export default function User() {
                                 <TableBody>
                                     {filteredUsers.map((user: any) => (
                                         <TableRow key={user.MaNguoiDung}>
+                                            <TableCell>
+                                                {user.AnhDaiDien ? (
+                                                    <Image
+                                                        src={user.AnhDaiDien}
+                                                        alt={user.HoTen}
+                                                        width={40}
+                                                        height={40}
+                                                        className="rounded-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                                        <UserIcon className="w-6 h-6 text-gray-400" />
+                                                    </div>
+                                                )}
+                                            </TableCell>
                                             <TableCell className="font-medium">
                                                 {user.VaiTro}
                                             </TableCell>
@@ -382,7 +520,7 @@ export default function User() {
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                        <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                                                         <DropdownMenuItem onClick={() => handleEditClick(user)}>Sửa</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleDeleteClick(user)}>Xóa</DropdownMenuItem>
                                                     </DropdownMenuContent>
@@ -401,15 +539,15 @@ export default function User() {
             <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                        <AlertDialogTitle>Xác Nhận Xóa Người Dùng</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this user?
+                            Bạn có chắc chắn muốn xóa người dùng này không? Hành động này không thể hoàn tác.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleAlertClose}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={handleAlertClose}>Hủy</AlertDialogCancel>
                         <AlertDialogAction onClick={handleConfirmDelete}>
-                            Confirm
+                            Xác nhận
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -422,6 +560,31 @@ export default function User() {
                         <AlertDialogTitle>Sửa thông tin người dùng</AlertDialogTitle>
                     </AlertDialogHeader>
                     <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-6 items-center gap-4">
+                            <Label htmlFor="avatar-edit" className="text-right col-span-2">
+                                Ảnh đại diện
+                            </Label>
+                            <div className="col-span-4">
+                                <Input
+                                    id="avatar-edit"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="cursor-pointer"
+                                />
+                                {imagePreview && (
+                                    <div className="mt-2">
+                                        <Image
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            width={80}
+                                            height={80}
+                                            className="rounded-full object-cover"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                         {/* Dropdown Chức vụ (Edit) */}
                         <div className="grid grid-cols-6 items-center gap-4">
                             <Label htmlFor="VaiTro" className="text-right col-span-2">
@@ -473,9 +636,9 @@ export default function User() {
                         <Input id="MatKhau" type="hidden" defaultValue={newUser.MatKhau} />
                     </div>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleAlertEditClose}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={handleAlertEditClose}>Hủy</AlertDialogCancel>
                         <AlertDialogAction onClick={handleConfirmEdit}>
-                            Confirm
+                            Xác nhận
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
