@@ -17,7 +17,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useTitle } from "./TitleContext";
-import axios from "axios";
+import axios from "@/lib/axios";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -57,8 +57,9 @@ export default function Navbar() {
       href: `/DichVu/${dv.TenLoaiDV.replace(/\s+/g, "")}`,
     }));
   const handleSignOut = () => {
-    sessionStorage.removeItem("user_info");
-    globalThis.location.reload();
+    import('@/lib/auth').then(({ logout }) => {
+      logout();
+    });
   };
 
   const handleXemLichHen = () => {
@@ -145,7 +146,7 @@ export default function Navbar() {
                       <>
                         <MenuItem>
                           <span className="block px-4 py-2 text-sm text-gray-700 font-bold">
-                            {userInfo?.khachHang.HoTen || "Name"}
+                            {userInfo?.hoTen || "Name"}
                           </span>
                         </MenuItem>
                         <MenuItem>

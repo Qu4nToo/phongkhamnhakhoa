@@ -42,7 +42,7 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs"
-import axios from "axios"
+import axios from "@/lib/axios"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Toaster } from "@/components/ui/sonner"
@@ -105,11 +105,11 @@ export default function BookingView() {
             .then(res => setDichVuList(res.data))
             .catch(err => console.log(err))
         
-        const storedUserInfo = sessionStorage.getItem("bacsi_info");
+        const storedUserInfo = sessionStorage.getItem("user_info");
         if (storedUserInfo) {
 
-            const doctorsinfo = JSON.parse(storedUserInfo);
-            axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${doctorsinfo.bacSi.MaBacSi}`)
+            const user = JSON.parse(storedUserInfo);
+            axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${user.id}`)
                 .then(response => {
                     // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
                     const filteredBookings = response.data.filter((booking: any) => 
@@ -121,7 +121,7 @@ export default function BookingView() {
                 .catch(err => console.log(err))
             
             // Fetch lịch làm việc của bác sĩ
-            axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${doctorsinfo.bacSi.MaBacSi}`)
+            axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${user.id}`)
                 .then(res => {
                     // Chuyển đổi thứ thành số (0=CN, 1=T2, ..., 6=T7)
                     const thuMap: Record<string, number> = {
@@ -327,10 +327,10 @@ export default function BookingView() {
             console.log("Cập nhật trạng thái lịch hẹn thành công");
             
             // Reload danh sách lịch hẹn
-            const storedUserInfo = sessionStorage.getItem("bacsi_info");
+            const storedUserInfo = sessionStorage.getItem("user_info");
             if (storedUserInfo) {
-                const doctorsinfo = JSON.parse(storedUserInfo);
-                const response = await axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${doctorsinfo.bacSi.MaBacSi}`);
+                const user = JSON.parse(storedUserInfo);
+                const response = await axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${user.id}`);
                 // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
                 const filteredBookings = response.data.filter((booking: any) => 
                     booking.TinhTrang === "Đã xác nhận"

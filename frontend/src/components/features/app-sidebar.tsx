@@ -59,15 +59,16 @@ const items = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [userInfo, setUserInfo] = useState<any>(null);
   useEffect(() => {
-    const storedUserInfo = sessionStorage.getItem("bacsi_info");
+    const storedUserInfo = sessionStorage.getItem("user_info");
     if (storedUserInfo) {
       const user = JSON.parse(storedUserInfo);
       setUserInfo(user);
     }
   }, []);
   const handleSignOut = () => {
-    sessionStorage.removeItem("bacsi_info");
-    globalThis.location.reload();
+    import('@/lib/auth').then(({ logout }) => {
+      logout();
+    });
   };
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -102,7 +103,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
-                  <User2 /> {userInfo?.bacSi.HoTen}
+                  <User2 /> {userInfo?.hoTen}
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
@@ -111,7 +112,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 className="w-[--radix-popper-anchor-width]"
               >
                 <DropdownMenuItem>
-                  <span className="font-medium">{userInfo?.bacSi.HoTen}</span>
+                  <span className="font-medium">{userInfo?.hoTen}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>
                   <span>Sign out</span>

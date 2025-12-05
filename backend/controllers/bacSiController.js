@@ -51,8 +51,29 @@ const BacSiController = {
                 return res.status(401).json({ message: "Email hoặc mật khẩu không hợp lệ." });
             }
             if (bacSi && isMatch) {
-                const token = jwt.sign({ id: bacSi.MaBacSi, role: bacSi.VaiTro }, process.env.JWT_SECRET, { expiresIn: "1h" });
-                res.status(200).json({ bacSi, token, message: 'Đăng nhập thành công' });
+                const payload = {
+                    id: bacSi.MaBacSi,
+                    email: bacSi.Email,
+                    hoTen: bacSi.HoTen,
+                    role: 'Bác sĩ',
+                    sdt: bacSi.SoDienThoai,
+                    kinhNghiem: bacSi.KinhNghiem
+                };
+                
+        // Tạo access token (15 phút)
+        const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
+        
+        // Tạo refresh token (3 giờ)
+        const refreshToken = jwt.sign(
+          { ...payload, type: 'refresh' }, 
+          process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, 
+          { expiresIn: "3h" }
+        );                // Trả về cả 2 tokens
+                res.status(200).json({ 
+                    accessToken,
+                    refreshToken,
+                    message: 'Đăng nhập thành công' 
+                });
             }
         } catch (error) {
             console.error("Lỗi khi đăng nhập:", error);
@@ -127,7 +148,7 @@ const BacSiController = {
             if (AnhDaiDien !== undefined) {
                 updateData.AnhDaiDien = AnhDaiDien;
             }
-
+            console.log("📤 Final update data:", updateData);
             const result = await BacSi.update(id, updateData);
             if (result.affectedRows === 0)
                 return res.status(404).json({ message: "Không tìm thấy bác sĩ để cập nhật!" });

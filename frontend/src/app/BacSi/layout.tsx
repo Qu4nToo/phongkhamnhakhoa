@@ -9,27 +9,41 @@ import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast, Toaster } from "sonner";
+import { isAuthenticated, getCurrentUser } from "@/lib/auth";
+import { useTokenRefresh } from "@/lib/tokenRefresh";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState<boolean>(true); // isLoading để kiểm tra xem có cần tải không
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Enable automatic token refresh
+  useTokenRefresh();
 
   useEffect(() => {
-    const storedUserInfo = sessionStorage.getItem("bacsi_info");
-
-    if (!storedUserInfo) {
-      alert("Bạn chưa đăng nhập");
+    // Kiểm tra token có tồn tại không
+    if (!isAuthenticated()) {
+      toast.error("Bạn chưa đăng nhập");
       router.push("/DangNhap");
-    } else {
-      const user = JSON.parse(storedUserInfo);
-      console.log("User info from sessionStorage:", user);
-      if (user.bacSi.VaiTro !== 'Bác sĩ') {
-        toast.error("Bạn không có quyền truy cập trang này");
-        router.push("/");
-      } else {
-        setIsLoading(false);
-      }
+      return;
     }
+
+    // Giải mã token để lấy thông tin user
+    const user = getCurrentUser();
+    
+    if (!user) {
+      toast.error("Token không hợp lệ");
+      router.push("/DangNhap");
+      return;
+    }
+
+    // Kiểm tra role
+    if (user.role !== 'Bác sĩ') {
+      toast.error("Bạn không có quyền truy cập trang này");
+      router.push("/");
+      return;
+    }
+
+    setIsLoading(false);
   }, [router]);
 
   // Nếu đang tải (isLoading), hiển thị một màn hình chờ

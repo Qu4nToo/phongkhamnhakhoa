@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialogadmin"
 import { ScrollArea } from "@radix-ui/react-scroll-area";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";

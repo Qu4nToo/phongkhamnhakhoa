@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import axios from "@/lib/axios";
+import { saveAuthData } from "@/lib/auth";
 import { toast, Toaster } from "sonner";
 import { FaEyeSlash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
@@ -25,47 +26,50 @@ export function Login() {
         e.preventDefault();
 
         try {
-            // Fetch user data by email from the backend
             // --- BƯỚC 1: KIỂM TRA KHÁCH HÀNG ---
-            const response = await fetch(
-                `http://localhost:5000/api/khach-hang/login`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ Email: email, MatKhau: password }),
-                }
-            );
+            try {
+                const response = await axios.post(
+                    `http://localhost:5000/api/khach-hang/login`,
+                    { Email: email, MatKhau: password }
+                );
 
-            if (response.ok) {
-                const user = await response.json();
-                // Xử lý đăng nhập thành công Khách hàng
-                sessionStorage.setItem("user_info", JSON.stringify(user));
-                toast.success("Đăng nhập Khách hàng thành công!");
-                router.push("/");
-                return;
+                if (response.data.accessToken && response.data.refreshToken) {
+                    // Lưu JWT tokens
+                    saveAuthData(response.data.accessToken, response.data.refreshToken);
+                    toast.success("Đăng nhập Khách hàng thành công!");
+                    router.push("/");
+                    return;
+                }
+            } catch (error: any) {
+                // Nếu không phải khách hàng, thử bác sĩ
+                if (error.response?.status !== 404 && error.response?.status !== 401) {
+                    throw error;
+                }
             }
 
             // --- BƯỚC 2: KIỂM TRA BÁC SĨ ---
-            const response2 = await fetch(
-                `http://localhost:5000/api/bac-si/login`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ Email: email, MatKhau: password }),
-                }
-            );
+            try {
+                const response2 = await axios.post(
+                    `http://localhost:5000/api/bac-si/login`,
+                    { Email: email, MatKhau: password }
+                );
 
-            if (response2.ok) {
-                const user2 = await response2.json();
-                // Xử lý đăng nhập thành công Bác sĩ
-                sessionStorage.setItem("bacsi_info", JSON.stringify(user2));
-                toast.success("Đăng nhập Bác sĩ thành công!");
-                router.push("/BacSi");
-                return;
+                if (response2.data.accessToken && response2.data.refreshToken) {
+                    // Lưu JWT tokens
+                    saveAuthData(response2.data.accessToken, response2.data.refreshToken);
+                    // Lưu thêm flag để biết là bác sĩ
+                    sessionStorage.setItem("is_doctor", "true");
+                    toast.success("Đăng nhập Bác sĩ thành công!");
+                    router.push("/BacSi");
+                    return;
+                }
+            } catch (error: any) {
+                // Cả 2 đều fail
+                toast.error("Email hoặc mật khẩu không hợp lệ.");
             }
-            toast.error("Email hoặc mật khẩu không hợp lệ.");
         } catch (error) {
             console.error("Login error:", error);
+            toast.error("Có lỗi xảy ra. Vui lòng thử lại!");
         }
     };
 

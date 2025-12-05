@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";

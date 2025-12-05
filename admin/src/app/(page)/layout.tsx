@@ -9,24 +9,35 @@ import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast, Toaster } from "sonner";
+import { getCurrentUser, isAuthenticated } from "@/lib/auth";
+import { useTokenRefresh } from "@/lib/tokenRefresh";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<string>("");
 
-  useEffect(() => {
-    const storedUserInfo = sessionStorage.getItem("user_info");
+  // Enable automatic token refresh
+  useTokenRefresh();
 
-    if (!storedUserInfo) {
+  useEffect(() => {
+    // Kiểm tra token có tồn tại không
+    if (!isAuthenticated()) {
       toast.error("Bạn chưa đăng nhập");
       router.push("/Login");
       return;
     }
 
-    const user = JSON.parse(storedUserInfo);
-    const role = user?.nguoiDung?.VaiTro;
-    setUserRole(role);
+    // Giải mã token để lấy thông tin user
+    const user = getCurrentUser();
+    
+    if (!user) {
+      toast.error("Token không hợp lệ");
+      router.push("/Login");
+      return;
+    }
+
+    setUserRole(user.role);
     setIsLoading(false);
   }, [router]);
 
