@@ -12,6 +12,7 @@ import {
   ReceiptText,
   Book,
 } from "lucide-react";
+import { getCurrentUser, logout } from "@/lib/auth";
 
 import {
   Sidebar,
@@ -96,17 +97,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
-    const storedUserInfo = sessionStorage.getItem("user_info");
-    if (storedUserInfo) {
-      const user = JSON.parse(storedUserInfo);
+    // Giải mã token để lấy thông tin user
+    const user = getCurrentUser();
+    if (user) {
       setUserInfo(user);
-      setUserRole(user?.nguoiDung?.VaiTro || "");
+      setUserRole(user.role || "");
     }
   }, []);
 
   const handleSignOut = () => {
-    sessionStorage.removeItem("user_info");
-    globalThis.location.reload();
+    logout();
   };
 
   // Lọc menu items dựa trên role của user
@@ -147,7 +147,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
-                  <User2 /> {userInfo?.nguoiDung.HoTen}
+                  <User2 /> {userInfo?.hoTen || "User"}
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
@@ -156,10 +156,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 className="w-[--radix-popper-anchor-width]"
               >
                 <DropdownMenuItem>
-                  <span className="font-medium">{userInfo?.nguoiDung.HoTen}</span>
+                  <span className="font-medium">{userInfo?.hoTen}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <span className="text-xs text-gray-500">{userInfo?.email}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>
-                  <span>Sign out</span>
+                  <span>Đăng xuất</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

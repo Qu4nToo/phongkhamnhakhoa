@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import React from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { getCurrentUser } from "@/lib/auth"
 
 import {
     MoreHorizontal,
@@ -48,7 +49,7 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs"
-import axios from "axios"
+import axios from "@/lib/axios"
 import { Input } from "@/components/ui/input"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
@@ -188,15 +189,14 @@ export default function phieuKhamView() {
         if (!selectedPhieuKhamForInvoice) return;
         
         try {
-            // Lấy thông tin người dùng đang đăng nhập
-            const storedUserInfo = sessionStorage.getItem("user_info");
-            if (!storedUserInfo) {
+            // Lấy thông tin người dùng từ token
+            const user = getCurrentUser();
+            if (!user) {
                 toast.error("Phiên đăng nhập đã hết hạn!");
                 return;
             }
             
-            const user = JSON.parse(storedUserInfo);
-            const maNguoiDung = user?.nguoiDung?.MaNguoiDung;
+            const maNguoiDung = user.id;
             
             if (!maNguoiDung) {
                 toast.error("Không tìm thấy thông tin người dùng!");

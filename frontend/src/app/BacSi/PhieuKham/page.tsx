@@ -49,7 +49,7 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs"
-import axios from "axios"
+import axios from "@/lib/axios"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { Textarea } from "@/components/ui/textarea"
@@ -82,10 +82,10 @@ export default function phieuKhamView() {
         return formatter.format(price).replace('₫', 'VND').trim();
     };
     useEffect(() => {
-        const storedUserInfo = sessionStorage.getItem("bacsi_info");
+        const storedUserInfo = sessionStorage.getItem("user_info");
         if (storedUserInfo) {
-            const doctorsinfo = JSON.parse(storedUserInfo);
-            axios.get(`http://localhost:5000/api/phieu-kham/getByBacSiID/${doctorsinfo.bacSi.MaBacSi}`)
+            const user = JSON.parse(storedUserInfo);
+            axios.get(`http://localhost:5000/api/phieu-kham/getByBacSiID/${user.id}`)
                 .then(response => {
                     console.log("Response data:", response.data);
                     if (Array.isArray(response.data)) {
@@ -167,10 +167,10 @@ export default function phieuKhamView() {
             });
 
             // Cập nhật danh sách
-            const storedUserInfo = sessionStorage.getItem("bacsi_info");
+            const storedUserInfo = sessionStorage.getItem("user_info");
             if (storedUserInfo) {
-                const doctorsinfo = JSON.parse(storedUserInfo);
-                const response = await axios.get(`http://localhost:5000/api/phieu-kham/getByBacSiID/${doctorsinfo.bacSi.MaBacSi}`);
+                const user = JSON.parse(storedUserInfo);
+                const response = await axios.get(`http://localhost:5000/api/phieu-kham/getByBacSiID/${user.id}`);
                 if (Array.isArray(response.data)) {
                     const filteredData = response.data.filter((pk: any) =>
                         pk.TrangThai === "Chưa khám" || pk.TrangThai === null || pk.TrangThai === ""

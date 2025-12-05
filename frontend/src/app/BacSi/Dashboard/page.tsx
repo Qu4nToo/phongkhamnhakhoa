@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "@/lib/axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart,
@@ -41,13 +41,12 @@ export default function DoctorDashboard() {
   const [appointmentsByStatus, setAppointmentsByStatus] = useState([]);
 
   useEffect(() => {
-    // Lấy thông tin bác sĩ từ sessionStorage
-    const bacSiInfo = sessionStorage.getItem("bacsi_info");
+    // Lấy thông tin bác sĩ từ sessionStorage (JWT token)
+    const userInfo = sessionStorage.getItem("user_info");
     
-    if (bacSiInfo) {
-      const data = JSON.parse(bacSiInfo);
-      const bacSi = data.bacSi;
-      const maBacSi = bacSi.MaBacSi;
+    if (userInfo) {
+      const user = JSON.parse(userInfo);
+      const maBacSi = user.id; // JWT token có id trực tiếp
       
       setDoctorId(maBacSi);
       

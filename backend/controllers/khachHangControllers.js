@@ -50,8 +50,29 @@ const KhachHangController = {
                 return res.status(401).json({ message: "Email hoặc mật khẩu không hợp lệ." });
             }
             if (khachHang && isMatch) {
-                const token = jwt.sign({ id: khachHang.MaKhachHang, role: khachHang.VaiTro}, process.env.JWT_SECRET, { expiresIn: "1h" });
-                res.status(200).json({ khachHang, token, message: 'Đăng nhập thành công' });
+                const payload = {
+                    id: khachHang.MaKhachHang,
+                    email: khachHang.Email,
+                    hoTen: khachHang.HoTen,
+                    role: 'Khách hàng',
+                    sdt: khachHang.SoDienThoai,
+                    ngaySinh: khachHang.NgaySinh
+                };
+                
+        // Tạo access token (15 phút)
+        const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
+        
+        // Tạo refresh token (3 giờ)
+        const refreshToken = jwt.sign(
+          { ...payload, type: 'refresh' }, 
+          process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, 
+          { expiresIn: "3h" }
+        );                // Trả về cả 2 tokens
+                res.status(200).json({ 
+                    accessToken,
+                    refreshToken,
+                    message: 'Đăng nhập thành công' 
+                });
             }
         } catch (error) {
             console.error("Lỗi khi đăng nhập:", error);

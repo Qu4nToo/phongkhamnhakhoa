@@ -33,15 +33,23 @@ export default function DoctorProfile() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const storedUserInfo = sessionStorage.getItem("bacsi_info");
+        const storedUserInfo = sessionStorage.getItem("user_info");
         
         if (storedUserInfo) {
             try {
-                const doctorsinfo: DoctorInfo = JSON.parse(storedUserInfo);
-                if (doctorsinfo.bacSi) {
-                    setDoctorData(doctorsinfo.bacSi);
-                    setOriginalData(doctorsinfo.bacSi); 
-                }
+                const user = JSON.parse(storedUserInfo);
+                // JWT payload có dạng: { id, email, hoTen, role, sdt, kinhNghiem }
+                const doctorInfo: DoctorData = {
+                    MaBacSi: user.id,
+                    HoTen: user.hoTen,
+                    Email: user.email,
+                    SoDienThoai: user.sdt,
+                    KinhNghiem: user.kinhNghiem,
+                    NgaySinh: user.ngaySinh,
+                    DiaChi: user.diaChi
+                };
+                setDoctorData(doctorInfo);
+                setOriginalData(doctorInfo); 
             } catch (error) {
                 console.error("Lỗi phân tích JSON:", error);
                 router.push('/DangNhap');
@@ -97,14 +105,19 @@ export default function DoctorProfile() {
             
             const updatedDoctorData = { ...doctorData };
             
-            const storedUserInfo = sessionStorage.getItem("bacsi_info");
+            const storedUserInfo = sessionStorage.getItem("user_info");
             if (storedUserInfo) {
-                const oldInfo: DoctorInfo = JSON.parse(storedUserInfo);
-                const newInfo: DoctorInfo = {
-                    ...oldInfo,
-                    bacSi: updatedDoctorData 
+                const user = JSON.parse(storedUserInfo);
+                const newUserInfo = {
+                    ...user,
+                    hoTen: updatedDoctorData.HoTen,
+                    email: updatedDoctorData.Email,
+                    sdt: updatedDoctorData.SoDienThoai,
+                    kinhNghiem: updatedDoctorData.KinhNghiem,
+                    ngaySinh: updatedDoctorData.NgaySinh,
+                    diaChi: updatedDoctorData.DiaChi
                 };
-                sessionStorage.setItem("bacsi_info", JSON.stringify(newInfo));
+                sessionStorage.setItem("user_info", JSON.stringify(newUserInfo));
             }
 
             setOriginalData(updatedDoctorData);
