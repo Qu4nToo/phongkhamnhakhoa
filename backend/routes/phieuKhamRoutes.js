@@ -10,6 +10,8 @@ router.post('/create', phieuKhamController.createPhieuKham);
 
 router.get('/getByBacSiID/:id', phieuKhamController.getPhieuKhamByIdBacSi);
 
+router.get('/getByKhachHangID/:id', phieuKhamController.getPhieuKhamByKhachHangId);
+
 router.put('/update/:id', phieuKhamController.updatePhieuKham);
 
 router.delete('/delete/:id', phieuKhamController.deletePhieuKham);

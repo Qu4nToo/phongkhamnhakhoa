@@ -133,7 +133,7 @@ export const useTokenRefresh = () => {
         localStorage.removeItem('refreshToken');
         sessionStorage.removeItem('user_info');
         setTimeout(() => {
-          window.location.href = '/';
+          window.location.href = '/DangNhap';
         }, 1500);
       }
     }, 30000); // Check every 30 seconds

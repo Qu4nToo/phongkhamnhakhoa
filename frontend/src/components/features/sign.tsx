@@ -25,51 +25,66 @@ export function Login() {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        let khachHangFailed = false;
+        let bacSiFailed = false;
+
+        // --- BƯỚC 1: KIỂM TRA KHÁCH HÀNG ---
         try {
-            // --- BƯỚC 1: KIỂM TRA KHÁCH HÀNG ---
-            try {
-                const response = await axios.post(
-                    `http://localhost:5000/api/khach-hang/login`,
-                    { Email: email, MatKhau: password }
-                );
+            const response = await axios.post(
+                `http://localhost:5000/api/khach-hang/login`,
+                { Email: email, MatKhau: password },
+                { skipAuthRefresh: true }
+            );
 
-                if (response.data.accessToken && response.data.refreshToken) {
-                    // Lưu JWT tokens
-                    saveAuthData(response.data.accessToken, response.data.refreshToken);
-                    toast.success("Đăng nhập Khách hàng thành công!");
-                    router.push("/");
-                    return;
-                }
-            } catch (error: any) {
-                // Nếu không phải khách hàng, thử bác sĩ
-                if (error.response?.status !== 404 && error.response?.status !== 401) {
-                    throw error;
-                }
+            if (response.data.accessToken && response.data.refreshToken) {
+                // Lưu JWT tokens
+                saveAuthData(response.data.accessToken, response.data.refreshToken);
+                toast.success("Đăng nhập Khách hàng thành công!");
+                router.push("/");
+                return;
             }
-
-            // --- BƯỚC 2: KIỂM TRA BÁC SĨ ---
-            try {
-                const response2 = await axios.post(
-                    `http://localhost:5000/api/bac-si/login`,
-                    { Email: email, MatKhau: password }
-                );
-
-                if (response2.data.accessToken && response2.data.refreshToken) {
-                    // Lưu JWT tokens
-                    saveAuthData(response2.data.accessToken, response2.data.refreshToken);
-                    // Lưu thêm flag để biết là bác sĩ
-                    sessionStorage.setItem("is_doctor", "true");
-                    toast.success("Đăng nhập Bác sĩ thành công!");
-                    router.push("/BacSi");
-                    return;
-                }
-            } catch (error: any) {
-                // Cả 2 đều fail
-                toast.error("Email hoặc mật khẩu không hợp lệ.");
+        } catch (error: any) {
+            if (error.response?.status === 404 || error.response?.status === 401) {
+                khachHangFailed = true;
+            } else {
+                // Lỗi server hoặc network
+                console.error("Login error:", error);
+                toast.error("Có lỗi xảy ra. Vui lòng thử lại!");
+                return;
             }
-        } catch (error) {
-            console.error("Login error:", error);
-            toast.error("Có lỗi xảy ra. Vui lòng thử lại!");
+        }
+
+        // --- BƯỚC 2: KIỂM TRA BÁC SĨ ---
+        try {
+            const response2 = await axios.post(
+                `http://localhost:5000/api/bac-si/login`,
+                { Email: email, MatKhau: password },
+                { skipAuthRefresh: true }
+            );
+
+            if (response2.data.accessToken && response2.data.refreshToken) {
+                // Lưu JWT tokens
+                saveAuthData(response2.data.accessToken, response2.data.refreshToken);
+                // Lưu thêm flag để biết là bác sĩ
+                sessionStorage.setItem("is_doctor", "true");
+                toast.success("Đăng nhập Bác sĩ thành công!");
+                router.push("/BacSi");
+                return;
+            }
+        } catch (error: any) {
+            if (error.response?.status === 404 || error.response?.status === 401) {
+                bacSiFailed = true;
+            } else {
+                // Lỗi server hoặc network
+                console.error("Login error:", error);
+                toast.error("Có lỗi xảy ra. Vui lòng thử lại!");
+                return;
+            }
+        }
+
+        // Cả 2 đều fail
+        if (khachHangFailed && bacSiFailed) {
+            toast.error("Email hoặc mật khẩu không hợp lệ.");
         }
     };
 

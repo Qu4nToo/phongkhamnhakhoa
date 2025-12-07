@@ -9,7 +9,7 @@ router.post('/login', bacSiController.loginBacSi);
 // Route cho Quản lý và Lễ tân - xem danh sách
 router.get('/get',
     authenticateToken,
-    authenticateRole('Quản lý', 'Lễ tân'),
+    authenticateRole('Quản lý', 'Lễ tân', 'Bác sĩ'),
     bacSiController.getAllBacSi
 );
 
@@ -21,7 +21,7 @@ router.get('/get/:id',
 
 router.get('/getBacSiByDichVu/:dichVuId',
     authenticateToken,
-    authenticateRole('Quản lý', 'Lễ tân'),
+    authenticateRole('Quản lý', 'Lễ tân', 'Khách hàng'),
     bacSiController.getBacSiByDichVu
 );
 

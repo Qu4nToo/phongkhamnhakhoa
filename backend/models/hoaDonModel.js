@@ -21,6 +21,16 @@ module.exports = {
     }
   },
 
+  getByKhachHangId: async (id) => {
+    try {
+      const [rows] = await db.query('SELECT hd.*, kh.HoTen FROM hoadon hd join khachhang kh on hd.MaKhachHang = kh.MaKhachHang WHERE hd.MaKhachHang = ? order by hd.NgayTao desc', [id]);
+      return rows;
+    } catch (err) {
+      console.error('Query Error:', err.message);
+      throw new Error('Database query failed');
+    }
+  },
+
   create: async (data) => {
     try {
       const [result] = await db.query('INSERT INTO hoadon SET ?', data);

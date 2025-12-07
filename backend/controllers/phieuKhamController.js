@@ -40,6 +40,21 @@ const PhieuKhamController = {
         }
     },
 
+    getPhieuKhamByKhachHangId: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const result = await PhieuKham.getByKhachHangId(id);
+            if (!result || result.length === 0) {
+                return res.status(404).json({ message: "Không tìm thấy phiếu khám!" });
+            }
+            res.status(200).json(result);
+        } 
+        catch (error) {
+            console.error("Lỗi khi lấy phiếu khám theo khách hàng:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
     createPhieuKham: async (req, res) => {
         try {
             const { MaKhachHang, MaBacSi, NgayKham, MaLichHen } = req.body;

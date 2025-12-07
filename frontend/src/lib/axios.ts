@@ -36,6 +36,11 @@ axios.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Bỏ qua interceptor cho các request login/register
+    if (originalRequest.skipAuthRefresh) {
+      return Promise.reject(error);
+    }
+
     // Nếu lỗi 401 và chưa retry
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
@@ -116,14 +121,9 @@ const handleLogout = () => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   sessionStorage.removeItem('user_info');
-  
-  toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!', {
-    duration: 3000,
-    position: 'top-center',
-  });
-  
+  toast.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!');
   setTimeout(() => {
-    window.location.href = '/';
+    window.location.href = '/DangNhap';
   }, 1500);
 };
 
