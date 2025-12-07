@@ -52,7 +52,7 @@ const BacSiController = {
             }
             if (bacSi && isMatch) {
                 const payload = {
-                    id: bacSi.MaBacSi,
+                    MaBacSi: bacSi.MaBacSi,
                     email: bacSi.Email,
                     hoTen: bacSi.HoTen,
                     role: 'Bác sĩ',

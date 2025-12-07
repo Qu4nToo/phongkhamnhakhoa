@@ -51,7 +51,7 @@ const KhachHangController = {
             }
             if (khachHang && isMatch) {
                 const payload = {
-                    id: khachHang.MaKhachHang,
+                    MaKhachHang: khachHang.MaKhachHang,
                     email: khachHang.Email,
                     hoTen: khachHang.HoTen,
                     role: 'Khách hàng',

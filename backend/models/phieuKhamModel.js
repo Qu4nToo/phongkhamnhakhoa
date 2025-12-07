@@ -31,6 +31,16 @@ module.exports = {
     }
   },
 
+  getByKhachHangId: async (id) => {
+    try {
+      const [rows] = await db.query('SELECT pk.*, kh.HoTen as TenKhachHang, bs.HoTen as TenBacSi, lh.GioHen FROM phieukham pk join khachhang kh on pk.MaKhachHang = kh.MaKhachHang join bacsi bs on pk.MaBacSi = bs.MaBacSi left join lichhen lh on pk.MaLichHen = lh.MaLichHen WHERE pk.MaKhachHang = ? order by pk.NgayKham desc, lh.GioHen desc', [id]);
+      return rows;
+    } catch (err) {
+      console.error('Query Error:', err.message);
+      throw new Error('Database query failed');
+    }
+  },
+
   findByFields: async ({ MaKhachHang, MaBacSi, NgayKham }) => {
     try {
       const sql = `

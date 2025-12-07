@@ -25,6 +25,20 @@ const HoaDonController = {
         }
     },
 
+    getHoaDonByKhachHangId: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const result = await HoaDon.getByKhachHangId(id);
+            if (!result || result.length === 0) {
+                return res.status(404).json({ message: "Không tìm thấy hóa đơn!" });
+            }
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Lỗi khi lấy hóa đơn theo khách hàng:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
     createHoaDon: async (req, res) => {
         try {
             const { MaPhieuKham, TongTien, TrangThai, PhuongThuc, MaKhachHang, MaNguoiDung } = req.body;

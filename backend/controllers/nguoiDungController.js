@@ -54,7 +54,7 @@ const NguoiDungController = {
       }
       if (nguoiDung && isMatch) {
         const payload = {
-          id: nguoiDung.MaNguoiDung,
+          MaNguoiDung: nguoiDung.MaNguoiDung,
           email: nguoiDung.Email,
           hoTen: nguoiDung.HoTen,
           role: nguoiDung.VaiTro,

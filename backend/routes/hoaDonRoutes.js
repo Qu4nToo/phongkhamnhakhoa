@@ -8,6 +8,8 @@ router.get('/get', hoaDonController.getAllHoaDon);
 
 router.get('/get/:id', hoaDonController.getHoaDonById);
 
+router.get('/getByKhachHangID/:id', hoaDonController.getHoaDonByKhachHangId);
+
 
 router.post('/create', hoaDonController.createHoaDon);
 

@@ -1,4 +1,4 @@
-import Navbar from "@/components/features/navigation";
+import { Header } from "@/components/features/hearder";
 import { TitleProvider } from "@/components/features/TitleContext";
 
 import Footer from "@/components/features/footer";
@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <main>
       <TitleProvider>
-        <Navbar />
+        <Header />
           <div className="container mx-auto px-2 py-6">
             <div className="max-w-5xl mx-auto">
               <BookingForm />

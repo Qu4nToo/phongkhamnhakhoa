@@ -74,7 +74,7 @@ export default function BookingForm() {
 
     const user = JSON.parse(storedUser);
     setUserInfo(user);
-    setFormData((prev) => ({ ...prev, MaKhachHang: user.khachHang.MaKhachHang }));
+    setFormData((prev) => ({ ...prev, MaKhachHang: user.MaKhachHang }));
 
     // Lấy danh sách dịch vụ ngay từ đầu
     axios
@@ -192,14 +192,18 @@ export default function BookingForm() {
         },
       });
       setFormData({
-        MaKhachHang: userInfo.khachHang.MaKhachHang,
+        MaKhachHang: userInfo.MaKhachHang,
         MaBacSi: "",
         MaDichVu: "",
         NgayHen: "",
         GioHen: "",
         GhiChu: "",
       });
-      router.push("/LichHen");
+      
+      // Chuyển đến trang thông tin với tab lịch hẹn
+      setTimeout(() => {
+        router.push("/ThongTin?tab=LichHen");
+      }, 1500);
     } catch (error) {
       console.error("Lỗi đặt lịch:", error);
       if (axios.isAxiosError(error)) {
@@ -280,7 +284,7 @@ export default function BookingForm() {
         <CardContent className="pt-6 space-y-5">
           <input
             name="MaKhachHang"
-            value={userInfo.khachHang.MaKhachHang}
+            value={userInfo.MaKhachHang}
             onChange={handleChange}
             hidden
           />
@@ -290,7 +294,7 @@ export default function BookingForm() {
             <Label>Họ và tên</Label>
             <input
               type="text"
-              value={userInfo.khachHang.HoTen}
+              value={userInfo.hoTen}
               readOnly
               className="w-full bg-gray-50 border border-gray-300 text-black rounded-md p-2 focus:ring-2 focus:ring-blue-400 outline-none"
             />
@@ -301,7 +305,7 @@ export default function BookingForm() {
             <Label>Email</Label>
             <input
               type="email"
-              value={userInfo.khachHang.Email}
+              value={userInfo.email}
               readOnly
               className="w-full bg-gray-50 border border-gray-300 text-black rounded-md p-2 focus:ring-2 focus:ring-blue-400 outline-none"
             />
