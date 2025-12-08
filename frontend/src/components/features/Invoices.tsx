@@ -102,7 +102,6 @@ export function Invoices() {
         </div>
       </div>
 
-      /* Danh sách hóa đơn */
       <div className="space-y-4">
         {invoices.length === 0 ? (
           <div className="text-center py-8 text-gray-500">Chưa có hóa đơn nào</div>
@@ -110,7 +109,7 @@ export function Invoices() {
           invoices.map((invoice) => {
             const statusConfig = getStatusConfig(invoice.TrangThai === 'Đã thanh toán' ? 'paid' : 'pending');
             const StatusIcon = statusConfig.icon;
-            const date = new Date(invoice.NgayLap);
+            const date = new Date(invoice.NgayTao);
             const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
           
           return (

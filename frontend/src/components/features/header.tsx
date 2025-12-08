@@ -31,7 +31,7 @@ export function Header() {
         .filter((dv: any) => dv?.TenLoaiDV)
         .map((dv: any) => ({
             name: dv.TenLoaiDV,
-            href: `/DichVu/${dv?.slug}`,
+            href: `/DichVu/${dv?.Slug}`,
         }));
     const handleSignOut = () => {
         import('@/lib/auth').then(({ logout }) => {
@@ -58,7 +58,7 @@ export function Header() {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex space-x-8">
                         <a
-                            href="#home"
+                            href="/"
                             className="text-gray-700 font-bold hover:text-blue-600 transition-colors cursor-pointer"
                         >
                             Trang Chủ
@@ -91,17 +91,17 @@ export function Header() {
                         </div>
 
                         <a
-                            href="#about"
+                            href="/GioiThieu"
                             className="text-gray-700 font-bold hover:text-blue-600 transition-colors cursor-pointer"
                         >
                             Về Chúng Tôi
                         </a>
 
                         <a
-                            href="#contact"
+                            href="/BangGia"
                             className="text-gray-700 font-bold hover:text-blue-600 transition-colors cursor-pointer"
                         >
-                            Liên Hệ
+                            Bảng giá
                         </a>
                     </nav>
 

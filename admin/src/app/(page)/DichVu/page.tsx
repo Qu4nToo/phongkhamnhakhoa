@@ -73,7 +73,8 @@ export default function ServiceView() {
         Gia: "",
         DonVi: "",
         MaLoaiDV: "",
-        ThoiLuong: ""
+        ThoiLuong: "",
+        TrangThai: "Đang hoạt động"
     });
     const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { id, value } = e.target;
@@ -187,7 +188,8 @@ export default function ServiceView() {
                     Gia: "",
                     DonVi: "",
                     MaLoaiDV: "",
-                    ThoiLuong: ""
+                    ThoiLuong: "",
+                    TrangThai: "Đang hoạt động"
                 });
                 setDialogOpen(false);
             })
@@ -274,6 +276,20 @@ export default function ServiceView() {
                                         </Label>
                                         <Input onChange={handleInputChange} id="ThoiLuong" type="number" className="col-span-4" placeholder="VD: 30, 60, 90" />
                                     </div>
+                                    <div className="grid grid-cols-6 items-center gap-4">
+                                        <Label htmlFor="TrangThai" className="text-right col-span-2">
+                                            Trạng thái
+                                        </Label>
+                                        <select
+                                            id="TrangThai"
+                                            onChange={handleInputChange2}
+                                            className="col-span-4"
+                                            defaultValue="Đang hoạt động"
+                                        >
+                                            <option value="Đang hoạt động">Đang hoạt động</option>
+                                            <option value="Dừng hoạt động">Dừng hoạt động</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <DialogFooter>
                                     <Button type="button" onClick={handleCreateservice}>
@@ -299,6 +315,7 @@ export default function ServiceView() {
                                         <TableHead>Đơn vị</TableHead>
                                         <TableHead>Giá</TableHead>
                                         <TableHead>Thời lượng</TableHead>
+                                        <TableHead>Trạng thái</TableHead>
                                         <TableHead>
                                             <span className="sr-only">Actions</span>
                                         </TableHead>
@@ -328,6 +345,15 @@ export default function ServiceView() {
                                             </TableCell>
                                             <TableCell className="font-medium">
                                                 {services.ThoiLuong} phút
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                                    services.TrangThai === 'Đang hoạt động' 
+                                                        ? 'bg-green-100 text-green-800' 
+                                                        : 'bg-red-100 text-red-800'
+                                                }`}>
+                                                    {services.TrangThai || 'Đang hoạt động'}
+                                                </span>
                                             </TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
@@ -423,6 +449,20 @@ export default function ServiceView() {
                                 Thời lượng (phút)
                             </Label>
                             <Input onChange={handleInputChange} id="ThoiLuong" type="number" className="col-span-4" defaultValue={service.ThoiLuong} />
+                        </div>
+                        <div className="grid grid-cols-6 items-center gap-4">
+                            <Label htmlFor="TrangThai" className="text-right col-span-2">
+                                Trạng thái
+                            </Label>
+                            <select
+                                id="TrangThai"
+                                onChange={handleInputChange2}
+                                className="col-span-4"
+                                defaultValue={service.TrangThai || 'Đang hoạt động'}
+                            >
+                                <option value="Đang hoạt động">Đang hoạt động</option>
+                                <option value="Dừng hoạt động">Dừng hoạt động</option>
+                            </select>
                         </div>
 
                     </div>

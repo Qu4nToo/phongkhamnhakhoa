@@ -46,7 +46,7 @@ export default function DoctorDashboard() {
     
     if (userInfo) {
       const user = JSON.parse(userInfo);
-      const maBacSi = user.id; // JWT token có id trực tiếp
+      const maBacSi = user.MaBacSi; // JWT token có id trực tiếp
       
       setDoctorId(maBacSi);
       

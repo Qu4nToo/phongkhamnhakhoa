@@ -101,7 +101,10 @@ export default function User() {
     MatKhau: "",
     KinhNghiem: "",
     DiaChi: "",
-    AnhDaiDien: ""
+    AnhDaiDien: "",
+    ChuyenKhoa: "",
+    BangCap: "",
+    ChuyenMon: ""
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -568,6 +571,24 @@ export default function User() {
                     <Input onChange={handleInputChange} id="DiaChi" type="text" className="col-span-4" />
                   </div>
                   <div className="grid grid-cols-6 items-center gap-4">
+                    <Label htmlFor="ChuyenKhoa" className="text-right col-span-2">
+                      Chuyên khoa
+                    </Label>
+                    <Input onChange={handleInputChange} id="ChuyenKhoa" type="text" className="col-span-4" placeholder="VD: Nha khoa tổng quát" />
+                  </div>
+                  <div className="grid grid-cols-6 items-center gap-4">
+                    <Label htmlFor="BangCap" className="text-right col-span-2">
+                      Bằng cấp
+                    </Label>
+                    <Input onChange={handleInputChange} id="BangCap" type="text" className="col-span-4" placeholder="VD: Đại học Y Hà Nội" />
+                  </div>
+                  <div className="grid grid-cols-6 items-center gap-4">
+                    <Label htmlFor="ChuyenMon" className="text-right col-span-2">
+                      Chuyên môn
+                    </Label>
+                    <Input onChange={handleInputChange} id="ChuyenMon" type="text" className="col-span-4" placeholder="VD: Chỉnh nha, Cấy ghép Implant" />
+                  </div>
+                  <div className="grid grid-cols-6 items-center gap-4">
                     <Label htmlFor="MatKhau" className="text-right col-span-2">
                       Mật khẩu
                     </Label>
@@ -753,6 +774,24 @@ export default function User() {
                 Địa chỉ
               </Label>
               <Input onChange={handleInputChange} id="DiaChi" type="text" className="col-span-4" defaultValue={user.DiaChi} />
+            </div>
+            <div className="grid grid-cols-6 items-center gap-4">
+              <Label htmlFor="ChuyenKhoa" className="text-right col-span-2">
+                Chuyên khoa
+              </Label>
+              <Input onChange={handleInputChange} id="ChuyenKhoa" type="text" className="col-span-4" defaultValue={user.ChuyenKhoa} placeholder="VD: Nha khoa tổng quát" />
+            </div>
+            <div className="grid grid-cols-6 items-center gap-4">
+              <Label htmlFor="BangCap" className="text-right col-span-2">
+                Bằng cấp
+              </Label>
+              <Input onChange={handleInputChange} id="BangCap" type="text" className="col-span-4" defaultValue={user.BangCap} placeholder="VD: Đại học Y Hà Nội" />
+            </div>
+            <div className="grid grid-cols-6 items-center gap-4">
+              <Label htmlFor="ChuyenMon" className="text-right col-span-2">
+                Chuyên môn
+              </Label>
+              <Input onChange={handleInputChange} id="ChuyenMon" type="text" className="col-span-4" defaultValue={user.ChuyenMon} placeholder="VD: Chỉnh nha, Cấy ghép Implant" />
             </div>
             <Input onChange={handleInputChange} id="MatKhau" type="text" className="col-span-4" defaultValue={user.MatKhau} hidden />
           </div>

@@ -109,7 +109,7 @@ export default function BookingView() {
         if (storedUserInfo) {
 
             const user = JSON.parse(storedUserInfo);
-            axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${user.id}`)
+            axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${user.MaBacSi}`)
                 .then(response => {
                     // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
                     const filteredBookings = response.data.filter((booking: any) => 
@@ -121,7 +121,7 @@ export default function BookingView() {
                 .catch(err => console.log(err))
             
             // Fetch lịch làm việc của bác sĩ
-            axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${user.id}`)
+            axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${user.MaBacSi}`)
                 .then(res => {
                     // Chuyển đổi thứ thành số (0=CN, 1=T2, ..., 6=T7)
                     const thuMap: Record<string, number> = {
@@ -137,8 +137,6 @@ export default function BookingView() {
                     setAvailableDays(days);
                 })
                 .catch(err => console.log(err));
-            
-            setDoctors(doctorsinfo);
         }
     }, []);
 
@@ -330,7 +328,7 @@ export default function BookingView() {
             const storedUserInfo = sessionStorage.getItem("user_info");
             if (storedUserInfo) {
                 const user = JSON.parse(storedUserInfo);
-                const response = await axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${user.id}`);
+                const response = await axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${user.MaBacSi}`);
                 // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
                 const filteredBookings = response.data.filter((booking: any) => 
                     booking.TinhTrang === "Đã xác nhận"

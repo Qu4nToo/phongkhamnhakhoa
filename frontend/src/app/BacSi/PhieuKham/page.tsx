@@ -85,7 +85,7 @@ export default function phieuKhamView() {
         const storedUserInfo = sessionStorage.getItem("user_info");
         if (storedUserInfo) {
             const user = JSON.parse(storedUserInfo);
-            axios.get(`http://localhost:5000/api/phieu-kham/getByBacSiID/${user.id}`)
+            axios.get(`http://localhost:5000/api/phieu-kham/getByBacSiID/${user.MaBacSi}`)
                 .then(response => {
                     console.log("Response data:", response.data);
                     if (Array.isArray(response.data)) {
@@ -170,7 +170,7 @@ export default function phieuKhamView() {
             const storedUserInfo = sessionStorage.getItem("user_info");
             if (storedUserInfo) {
                 const user = JSON.parse(storedUserInfo);
-                const response = await axios.get(`http://localhost:5000/api/phieu-kham/getByBacSiID/${user.id}`);
+                const response = await axios.get(`http://localhost:5000/api/phieu-kham/getByBacSiID/${user.MaBacSi}`);
                 if (Array.isArray(response.data)) {
                     const filteredData = response.data.filter((pk: any) =>
                         pk.TrangThai === "Chưa khám" || pk.TrangThai === null || pk.TrangThai === ""

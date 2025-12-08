@@ -59,7 +59,7 @@ export default function App() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-1 py-4 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${
+                  className={`flex items-center space-x-2 px-4 py-4 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'

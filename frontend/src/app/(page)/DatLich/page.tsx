@@ -1,4 +1,4 @@
-import { Header } from "@/components/features/hearder";
+import { Header } from "@/components/features/header";
 import { TitleProvider } from "@/components/features/TitleContext";
 
 import Footer from "@/components/features/footer";

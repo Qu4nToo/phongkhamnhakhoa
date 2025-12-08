@@ -1,6 +1,6 @@
 import { TitleProvider } from "@/components/features/TitleContext";
 import Footer from "@/components/features/footer";
-import { Header } from "@/components/features/hearder";
+import { Header } from "@/components/features/header";
 import { Hero } from "@/components/features/hero";
 import { About } from "@/components/features/about";
 import { Services } from "@/components/features/service";
