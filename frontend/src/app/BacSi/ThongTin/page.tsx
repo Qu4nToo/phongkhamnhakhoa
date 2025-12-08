@@ -17,7 +17,10 @@ interface DoctorData {
     SoDienThoai: string;
     KinhNghiem?: string;
     NgaySinh?: string;
-    DiaChi?: string;
+    DiaChi: string;
+    ChuyenKhoa: string;
+    BangCap: string;
+    ChuyenMon: string;
 }
 
 interface DoctorInfo {
@@ -38,15 +41,18 @@ export default function DoctorProfile() {
         if (storedUserInfo) {
             try {
                 const user = JSON.parse(storedUserInfo);
-                // JWT payload có dạng: { id, email, hoTen, role, sdt, kinhNghiem }
+                // JWT payload có dạng: { MaBacSi, email, hoTen, role, sdt, kinhNghiem, diaChi, ngaySinh, chuyenKhoa, bangCap, chuyenMon }
                 const doctorInfo: DoctorData = {
-                    MaBacSi: user.id,
+                    MaBacSi: user.MaBacSi,
                     HoTen: user.hoTen,
                     Email: user.email,
                     SoDienThoai: user.sdt,
                     KinhNghiem: user.kinhNghiem,
                     NgaySinh: user.ngaySinh,
-                    DiaChi: user.diaChi
+                    DiaChi: user.diaChi || '',
+                    ChuyenKhoa: user.chuyenKhoa || '',
+                    BangCap: user.bangCap || '',
+                    ChuyenMon: user.chuyenMon || ''
                 };
                 setDoctorData(doctorInfo);
                 setOriginalData(doctorInfo); 
@@ -95,12 +101,23 @@ export default function DoctorProfile() {
                 SoDienThoai: doctorData.SoDienThoai,
                 KinhNghiem: doctorData.KinhNghiem,
                 NgaySinh: doctorData.NgaySinh,
-                DiaChi: doctorData.DiaChi
+                DiaChi: doctorData.DiaChi,
+                ChuyenKhoa: doctorData.ChuyenKhoa,
+                BangCap: doctorData.BangCap,
+                ChuyenMon: doctorData.ChuyenMon
             };
+
+            // Lấy token từ sessionStorage
+            const token = sessionStorage.getItem("access_token");
 
             const response = await axios.put(
                 `http://localhost:5000/api/bac-si/update/${doctorData.MaBacSi}`,
-                payload
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
             );
             
             const updatedDoctorData = { ...doctorData };
@@ -115,7 +132,10 @@ export default function DoctorProfile() {
                     sdt: updatedDoctorData.SoDienThoai,
                     kinhNghiem: updatedDoctorData.KinhNghiem,
                     ngaySinh: updatedDoctorData.NgaySinh,
-                    diaChi: updatedDoctorData.DiaChi
+                    diaChi: updatedDoctorData.DiaChi,
+                    chuyenKhoa: updatedDoctorData.ChuyenKhoa,
+                    bangCap: updatedDoctorData.BangCap,
+                    chuyenMon: updatedDoctorData.ChuyenMon
                 };
                 sessionStorage.setItem("user_info", JSON.stringify(newUserInfo));
             }
@@ -211,6 +231,9 @@ export default function DoctorProfile() {
                     {renderInputField('NgaySinh', 'Ngày Sinh', <Calendar />, 'date')}
                     {renderInputField('DiaChi', 'Địa Chỉ', <MapPin />, 'text')}
                     {renderInputField('KinhNghiem', 'Kinh Nghiệm', <Briefcase />, 'text')}
+                    {renderInputField('ChuyenKhoa', 'Chuyên Khoa', <Stethoscope />, 'text')}
+                    {renderInputField('BangCap', 'Bằng Cấp', <Briefcase />, 'text')}
+                    {renderInputField('ChuyenMon', 'Chuyên Môn', <Stethoscope />, 'text')}
 
                 </CardContent>
             </Card>

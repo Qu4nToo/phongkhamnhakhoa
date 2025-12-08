@@ -57,7 +57,12 @@ const BacSiController = {
                     hoTen: bacSi.HoTen,
                     role: 'Bác sĩ',
                     sdt: bacSi.SoDienThoai,
-                    kinhNghiem: bacSi.KinhNghiem
+                    kinhNghiem: bacSi.KinhNghiem,
+                    diaChi: bacSi.DiaChi,
+                    ngaySinh: bacSi.NgaySinh,
+                    chuyenKhoa: bacSi.ChuyenKhoa,
+                    bangCap: bacSi.BangCap,
+                    chuyenMon: bacSi.ChuyenMon
                 };
                 
         // Tạo access token (15 phút)
@@ -83,8 +88,8 @@ const BacSiController = {
 
    createBacSi: async (req, res) => {
         try {
-            const { HoTen, SoDienThoai, Email, MatKhau, KinhNghiem, NgaySinh, DiaChi, AnhDaiDien } = req.body;
-            if (!HoTen || !SoDienThoai || !Email || !MatKhau || !KinhNghiem || !NgaySinh || !DiaChi)
+            const { HoTen, SoDienThoai, Email, MatKhau, KinhNghiem, NgaySinh, DiaChi, AnhDaiDien, ChuyenKhoa, BangCap, ChuyenMon } = req.body;
+            if (!HoTen || !SoDienThoai || !Email || !MatKhau || !KinhNghiem || !NgaySinh || !DiaChi || !ChuyenKhoa || !BangCap || !ChuyenMon)
                 return res.status(400).json({ message: "Tất cả các trường đều là bắt buộc!" });
 
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -110,7 +115,10 @@ const BacSiController = {
                 MatKhau: hashedPassword, 
                 KinhNghiem, 
                 NgaySinh, 
-                DiaChi 
+                DiaChi,
+                ChuyenKhoa,
+                BangCap,
+                ChuyenMon
             };
             
             // Thêm AnhDaiDien nếu có
@@ -137,12 +145,12 @@ const BacSiController = {
     updateBacSi: async (req, res) => {
         try {
             const { id } = req.params;
-            const { HoTen, SoDienThoai, Email, KinhNghiem, NgaySinh, DiaChi, AnhDaiDien } = req.body;
+            const { HoTen, SoDienThoai, Email, KinhNghiem, NgaySinh, DiaChi, AnhDaiDien, ChuyenKhoa, BangCap, ChuyenMon } = req.body;
 
-            if (!HoTen || !SoDienThoai || !Email || !KinhNghiem || !NgaySinh || !DiaChi)
+            if (!HoTen || !SoDienThoai || !Email || !KinhNghiem || !NgaySinh || !DiaChi || !ChuyenKhoa || !BangCap || !ChuyenMon)
                 return res.status(400).json({ message: "Thiếu thông tin bắt buộc!" });
 
-            const updateData = { HoTen, SoDienThoai, Email, KinhNghiem, NgaySinh, DiaChi };
+            const updateData = { HoTen, SoDienThoai, Email, KinhNghiem, NgaySinh, DiaChi, ChuyenKhoa, BangCap, ChuyenMon };
             
             // Thêm AnhDaiDien nếu có
             if (AnhDaiDien !== undefined) {

@@ -1,5 +1,18 @@
 const LoaiDichVu = require("../models/loaiDichVuModel");
 
+// Hàm tạo slug từ tiếng Việt có dấu
+const createSlug = (text) => {
+    return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+};
+
 const LoaiDichVuController = {
     // ✅ Lấy tất cả loại dịch vụ
     getAllLoaiDichVu: async (req, res) => {
@@ -36,8 +49,12 @@ const LoaiDichVuController = {
                 return res.status(400).json({ message: "Tên loại dịch vụ là bắt buộc!" });
             }
 
+            // Tạo slug từ tên loại dịch vụ
+            const slug = createSlug(TenLoaiDV);
+
             const result = await LoaiDichVu.create({
                 TenLoaiDV,
+                Slug: slug,
                 MoTa: MoTa || null
             });
 
@@ -61,8 +78,12 @@ const LoaiDichVuController = {
                 return res.status(400).json({ message: "Tên loại dịch vụ là bắt buộc!" });
             }
 
+            // Tạo slug mới từ tên loại dịch vụ
+            const slug = createSlug(TenLoaiDV);
+
             const result = await LoaiDichVu.update(id, {
                 TenLoaiDV,
+                Slug: slug,
                 MoTa: MoTa || null
             });
 
