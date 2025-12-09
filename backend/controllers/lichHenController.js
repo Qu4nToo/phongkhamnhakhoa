@@ -154,6 +154,29 @@ const LichHenController = {
     }
   },
 
+  // 🔹 Cập nhật trạng thái lịch hẹn
+  updateStatus: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { TinhTrang } = req.body;
+
+      if (!TinhTrang) {
+        return res.status(400).json({ message: "Vui lòng cung cấp trạng thái!" });
+      }
+
+      const result = await LichHen.updateStatus(id, TinhTrang);
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Không tìm thấy lịch hẹn để cập nhật!" });
+      }
+
+      return res.status(200).json({ message: "Cập nhật trạng thái thành công!" });
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
   // 🔹 Xóa lịch hẹn
   deleteLichHen: async (req, res) => {
     try {

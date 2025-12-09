@@ -164,6 +164,16 @@ module.exports = {
             throw new Error("Database update failed");
         }
     },
+    updateStatus: async (id, TinhTrang) => {
+        try {
+            const sql = "UPDATE lichhen SET TinhTrang = ? WHERE MaLichHen = ?";
+            const [result] = await db.query(sql, [TinhTrang, id]);
+            return result;
+        } catch (error) {
+            console.error("Update Status Error:", error.message);
+            throw new Error("Database update status failed");
+        }
+    },
     delete: async (id) => {
         try {
             const sql = "DELETE FROM lichhen WHERE MaLichHen = ?";

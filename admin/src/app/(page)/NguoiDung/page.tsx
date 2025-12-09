@@ -62,6 +62,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import { set } from "date-fns";
 
 
 export default function User() {
@@ -119,16 +120,21 @@ export default function User() {
 
     const uploadImage = async (userId: string, file: File) => {
         const formData = new FormData();
-        formData.append('file', file);
-        formData.append('userId', userId);
+        formData.append('avatar', file);
 
         try {
-            const response = await axios.post(
-                'http://localhost:5000/api/upload/by-user?folder=NguoiDungAvatar&prefix=avatar',
+            const token = sessionStorage.getItem('access_token');
+            const response = await axios.put(
+                `http://localhost:5000/api/nguoi-dung/update-avatar/${userId}`,
                 formData,
-                { headers: { 'Content-Type': 'multipart/form-data' } }
+                { 
+                    headers: { 
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${token}`
+                    } 
+                }
             );
-            return response.data.url;
+            return response.data.avatarUrl;
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error;
@@ -163,6 +169,11 @@ export default function User() {
     const handleEditClick = (user: any) => {
         setUser(user);
         const formattedDate = user.NgaySinh ? user.NgaySinh.split('T')[0] : '';
+        
+        // Reset image states first
+        setImageFile(null);
+        setImagePreview(user.AnhDaiDien || "");
+        
         setNewUser({
             HoTen: user.HoTen,
             SDT: user.SDT,
@@ -173,42 +184,30 @@ export default function User() {
             VaiTro: user.VaiTro,
             AnhDaiDien: user.AnhDaiDien || ""
         });
-        setImagePreview(user.AnhDaiDien || "");
-        setImageFile(null);
+        
         setShowAlertEdit(true);
     }
 
     const handleAlertEditClose = () => {
         setShowAlertEdit(false);
+        setImageFile(null);
+        setImagePreview("");
     }
 
     const handleAlertClose = () => {
         setShowAlert(false);
         setSelectedUser(null);
+        setImageFile(null);
+        setImagePreview("");
     }
 
     const handleConfirmEdit = async () => {
         try {
             // Upload ảnh mới nếu có
             if (imageFile) {
-                console.log("📸 Uploading new image, old URL:", user.AnhDaiDien);
-
-                const formData = new FormData();
-                formData.append('file', imageFile);
-                formData.append('userId', user.MaNguoiDung);
-
-                // Thêm oldFileUrl nếu đã có ảnh cũ
-                if (user.AnhDaiDien) {
-                    formData.append('oldFileUrl', user.AnhDaiDien);
-                }
-
-                const uploadResponse = await axios.post(
-                    'http://localhost:5000/api/upload/by-user?folder=NguoiDungAvatar&prefix=avatar',
-                    formData,
-                    { headers: { 'Content-Type': 'multipart/form-data' } }
-                );
-
-                newUser.AnhDaiDien = uploadResponse.data.url;
+                console.log("📸 Uploading new image for user:", user.MaNguoiDung);
+                const avatarUrl = await uploadImage(user.MaNguoiDung, imageFile);
+                newUser.AnhDaiDien = avatarUrl;
                 console.log("✅ New image uploaded:", newUser.AnhDaiDien);
             }
 
@@ -245,18 +244,7 @@ export default function User() {
 
         try {
             // Xóa ảnh từ Firebase nếu có
-            if (selectedUser.AnhDaiDien) {
-                try {
-                    console.log("🗑️ Đang xóa ảnh:", selectedUser.AnhDaiDien);
-                    await axios.delete('http://localhost:5000/api/upload', {
-                        data: { fileUrl: selectedUser.AnhDaiDien.trim() }
-                    });
-                    console.log("✅ Xóa ảnh thành công");
-                } catch (error: any) {
-                    console.error("❌ Lỗi xóa ảnh:", error.response?.data || error.message);
-                }
-            }
-
+            // Avatar sẽ tự động bị xóa khi xóa người dùng
             await axios.delete(`http://localhost:5000/api/nguoi-dung/delete/${selectedUser.MaNguoiDung}`);
             toast.success("Xóa người dùng thành công!");
             
@@ -288,11 +276,7 @@ export default function User() {
 
             // Upload ảnh nếu có
             if (imageFile && newMaNguoiDung) {
-                const imageUrl = await uploadImage(newMaNguoiDung.toString(), imageFile);
-                await axios.put(`http://localhost:5000/api/nguoi-dung/update/${newMaNguoiDung}`, {
-                    ...newUser,
-                    AnhDaiDien: imageUrl
-                });
+                await uploadImage(newMaNguoiDung.toString(), imageFile);
             }
 
             toast.success("Thêm người dùng thành công!");
@@ -379,14 +363,16 @@ export default function User() {
                                                 className="cursor-pointer"
                                             />
                                             {imagePreview && (
-                                                <div className="mt-2">
-                                                    <Image
-                                                        src={imagePreview}
-                                                        alt="Preview"
-                                                        width={80}
-                                                        height={80}
-                                                        className="rounded-full object-cover"
-                                                    />
+                                                <div className="mt-2 flex justify-center">
+                                                    <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
+                                                        <Image
+                                                            src={imagePreview}
+                                                            alt="Preview"
+                                                            width={80}
+                                                            height={80}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
@@ -478,13 +464,15 @@ export default function User() {
                                         <TableRow key={user.MaNguoiDung}>
                                             <TableCell>
                                                 {user.AnhDaiDien ? (
-                                                    <Image
-                                                        src={user.AnhDaiDien}
-                                                        alt={user.HoTen}
-                                                        width={40}
-                                                        height={40}
-                                                        className="rounded-full object-cover"
-                                                    />
+                                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
+                                                        <Image
+                                                            src={user.AnhDaiDien}
+                                                            alt={user.HoTen}
+                                                            width={40}
+                                                            height={40}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
                                                 ) : (
                                                     <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                                                         <UserIcon className="w-6 h-6 text-gray-400" />
@@ -573,14 +561,14 @@ export default function User() {
                                     className="cursor-pointer"
                                 />
                                 {imagePreview && (
-                                    <div className="mt-2">
-                                        <Image
-                                            src={imagePreview}
-                                            alt="Preview"
-                                            width={80}
-                                            height={80}
-                                            className="rounded-full object-cover"
-                                        />
+                                    <div className="mt-2 flex justify-center">
+                                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
+                                            <img
+                                                src={imagePreview}
+                                                alt="Preview"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
                                     </div>
                                 )}
                             </div>

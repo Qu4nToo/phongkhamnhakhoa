@@ -174,16 +174,21 @@ export default function User() {
 
   const uploadImage = async (userId: string, file: File) => {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('userId', userId);
+    formData.append('avatar', file);
 
     try {
-      const response = await axios.post(
-        'http://localhost:5000/api/upload/by-user?folder=BacSiAvatar&prefix=avatar',
+      const token = sessionStorage.getItem('access_token');
+      const response = await axios.put(
+        `http://localhost:5000/api/bac-si/update-avatar/${userId}`,
         formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        { 
+          headers: { 
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`
+          } 
+        }
       );
-      return response.data.url;
+      return response.data.avatarUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
       throw error;
@@ -242,25 +247,9 @@ export default function User() {
     try {
       // Upload ảnh mới nếu có
       if (imageFile) {
-        console.log("📸 Uploading new image, old URL:", user.AnhDaiDien);
-
-        // Dùng API replace để tự động xóa file cũ
-        const formData = new FormData();
-        formData.append('file', imageFile);
-        formData.append('userId', user.MaBacSi);
-
-        // Thêm oldFileUrl nếu đã có ảnh cũ
-        if (user.AnhDaiDien) {
-          formData.append('oldFileUrl', user.AnhDaiDien);
-        }
-
-        const uploadResponse = await axios.post(
-          'http://localhost:5000/api/upload/by-user?folder=BacSiAvatar&prefix=avatar',
-          formData,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
-        );
-
-        newUser.AnhDaiDien = uploadResponse.data.url;
+        console.log("📸 Uploading new image for doctor:", user.MaBacSi);
+        const avatarUrl = await uploadImage(user.MaBacSi, imageFile);
+        newUser.AnhDaiDien = avatarUrl;
         console.log("✅ New image uploaded:", newUser.AnhDaiDien);
       }
 
@@ -282,21 +271,7 @@ export default function User() {
     if (!selectedUser) return;
 
     try {
-      if (selectedUser.AnhDaiDien) {
-        try {
-          console.log("🗑️ Đang xóa ảnh:", selectedUser.AnhDaiDien);
-          console.log("📏 URL length:", selectedUser.AnhDaiDien.length);
-          console.log("🔍 URL có khoảng trắng?", selectedUser.AnhDaiDien !== selectedUser.AnhDaiDien.trim());
-          
-          const response = await axios.delete('http://localhost:5000/api/upload/delete', {
-            data: { fileUrl: selectedUser.AnhDaiDien.trim() }
-          });
-          console.log("✅ Response xóa ảnh:", response.data);
-        } catch (error: any) {
-          console.error("❌ Lỗi xóa ảnh:", error.response?.data || error.message);
-        }
-      }
-
+      // Avatar sẽ tự động bị xóa khi xóa bác sĩ
       await axios.delete(`http://localhost:5000/api/bac-si/delete/${selectedUser.MaBacSi}`);
       toast.success("Xóa bác sĩ thành công!");
 
@@ -317,11 +292,7 @@ export default function User() {
 
       // Upload ảnh nếu có
       if (imageFile && newMaBacSi) {
-        const imageUrl = await uploadImage(newMaBacSi, imageFile);
-        await axios.put(`http://localhost:5000/api/bac-si/update/${newMaBacSi}`, {
-          ...newUser,
-          AnhDaiDien: imageUrl
-        });
+        await uploadImage(newMaBacSi, imageFile);
       }
 
       toast.success("Thêm bác sĩ thành công!");
@@ -336,7 +307,10 @@ export default function User() {
         MatKhau: "",
         KinhNghiem: "",
         DiaChi: "",
-        AnhDaiDien: ""
+        AnhDaiDien: "",
+        ChuyenKhoa: "",
+        BangCap: "",
+        ChuyenMon: ""
       });
       setImageFile(null);
       setImagePreview("");

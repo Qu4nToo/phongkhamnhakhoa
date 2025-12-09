@@ -16,6 +16,8 @@ router.post('/create', lichHenController.createLichHen);
 
 router.put('/update/:id', lichHenController.updateLichHen);
 
+router.put('/update-status/:id', lichHenController.updateStatus);
+
 router.delete('/delete/:id', lichHenController.deleteLichHen);
 
 module.exports = router;

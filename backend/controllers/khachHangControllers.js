@@ -56,7 +56,9 @@ const KhachHangController = {
                     hoTen: khachHang.HoTen,
                     role: 'Khách hàng',
                     sdt: khachHang.SoDienThoai,
-                    ngaySinh: khachHang.NgaySinh
+                    ngaySinh: khachHang.NgaySinh,
+                    diaChi: khachHang.DiaChi,
+                    anhDaiDien: khachHang.AnhDaiDien
                 };
                 
         // Tạo access token (15 phút)
@@ -126,10 +128,10 @@ const KhachHangController = {
     updateKhachHang: async (req, res) => {
         try {
             const { id } = req.params;
-            const { HoTen, NgaySinh, SoDienThoai, Email, MatKhau } = req.body;
+            const { HoTen, NgaySinh, SoDienThoai, Email, DiaChi } = req.body;
 
-            if (!HoTen || !NgaySinh || !SoDienThoai || !Email || !MatKhau) {
-                return res.status(400).json({ message: "Các trường HoTen, NgaySinh, SoDienThoai, Email, MatKhau là bắt buộc!" });
+            if (!HoTen || !NgaySinh || !SoDienThoai || !Email) {
+                return res.status(400).json({ message: "Các trường HoTen, NgaySinh, SoDienThoai, Email là bắt buộc!" });
             }
 
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -142,17 +144,18 @@ const KhachHangController = {
                 return res.status(400).json({ message: "Số điện thoại không hợp lệ! Phải gồm 10 chữ số và bắt đầu bằng 0." });
             }
 
-            if (MatKhau && MatKhau.length < 6) {
-                return res.status(400).json({ message: "Mật khẩu phải có ít nhất 6 ký tự!" });
-            }
-
-            const result = await KhachHang.update(id, {
+            const updateData = {
                 HoTen,
                 NgaySinh,
                 SoDienThoai,
-                Email,
-                MatKhau
-            });
+                Email
+            };
+
+            if (DiaChi !== undefined) {
+                updateData.DiaChi = DiaChi;
+            }
+
+            const result = await KhachHang.update(id, updateData);
 
             if (result.affectedRows === 0) {
                 return res.status(404).json({ message: "Không tìm thấy khách hàng để cập nhật!" });
@@ -162,6 +165,92 @@ const KhachHangController = {
 
         } catch (error) {
             console.error("Lỗi khi cập nhật khách hàng:", error);
+            return res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    changePassword: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { oldPassword, newPassword } = req.body;
+
+            if (!oldPassword || !newPassword) {
+                return res.status(400).json({ message: "Mật khẩu cũ và mật khẩu mới là bắt buộc!" });
+            }
+
+            if (newPassword.length < 6) {
+                return res.status(400).json({ message: "Mật khẩu mới phải có ít nhất 6 ký tự!" });
+            }
+
+            // Lấy thông tin khách hàng hiện tại
+            const khachHang = await KhachHang.getById(id);
+            if (!khachHang) {
+                return res.status(404).json({ message: "Không tìm thấy khách hàng!" });
+            }
+
+            // Kiểm tra mật khẩu cũ
+            const isMatch = await bcrypt.compare(oldPassword, khachHang.MatKhau);
+            if (!isMatch) {
+                return res.status(401).json({ message: "Mật khẩu cũ không đúng!" });
+            }
+
+            // Hash mật khẩu mới
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+            // Cập nhật mật khẩu
+            const result = await KhachHang.updatePassword(id, hashedPassword);
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: "Không thể cập nhật mật khẩu!" });
+            }
+
+            return res.status(200).json({ message: "Đổi mật khẩu thành công!" });
+
+        } catch (error) {
+            console.error("Lỗi khi đổi mật khẩu:", error);
+            return res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    updateAvatar: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const uploadService = require('../services/uploadService');
+
+            if (!req.file) {
+                return res.status(400).json({ message: "Vui lòng chọn ảnh!" });
+            }
+
+            // Lấy thông tin khách hàng để xóa ảnh cũ
+            const khachHang = await KhachHang.getById(id);
+            if (!khachHang) {
+                return res.status(404).json({ message: "Không tìm thấy khách hàng!" });
+            }
+
+            // Upload ảnh mới lên Firebase với tên file theo mã khách hàng
+            // Tự động xóa ảnh cũ nếu có
+            const avatarUrl = await uploadService.uploadFileByUserId(
+                req.file,
+                id,
+                'avatars/khachhang',
+                'avatar',
+                khachHang.AnhDaiDien || null
+            );
+
+            // Cập nhật URL ảnh mới vào database
+            const result = await KhachHang.update(id, { AnhDaiDien: avatarUrl });
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: "Không thể cập nhật avatar!" });
+            }
+
+            return res.status(200).json({ 
+                message: "Cập nhật avatar thành công!",
+                avatarUrl: avatarUrl
+            });
+
+        } catch (error) {
+            console.error("Lỗi khi cập nhật avatar:", error);
             return res.status(500).json({ message: "Lỗi server", error: error.message });
         }
     },
