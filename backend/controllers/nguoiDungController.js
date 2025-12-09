@@ -59,7 +59,8 @@ const NguoiDungController = {
           hoTen: nguoiDung.HoTen,
           role: nguoiDung.VaiTro,
           sdt: nguoiDung.SDT,
-          diaChi: nguoiDung.DiaChi
+          diaChi: nguoiDung.DiaChi,
+          anhDaiDien: nguoiDung.AnhDaiDien
         };
         
         // Tạo access token (15 phút)
@@ -122,11 +123,11 @@ const NguoiDungController = {
   updateNguoiDung: async (req, res) => {
     try {
       const { id } = req.params;
-      const { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, VaiTro, AnhDaiDien } = req.body;
+      const { HoTen, Email, NgaySinh, SDT, DiaChi, VaiTro, AnhDaiDien } = req.body;
       console.log("📥 Received update data:", { id, HoTen, Email, AnhDaiDien });
       
-      if (!HoTen || !Email || !NgaySinh || !SDT || !MatKhau || !DiaChi || !VaiTro) {
-        return res.status(400).json({ message: "Tất cả các trường đều là bắt buộc!" });
+      if (!HoTen || !Email || !NgaySinh || !SDT || !DiaChi || !VaiTro) {
+        return res.status(400).json({ message: "Các trường HoTen, Email, NgaySinh, SDT, DiaChi, VaiTro là bắt buộc!" });
       }
 
       const phoneRegex = /^(0\d{9})$/;
@@ -134,15 +135,12 @@ const NguoiDungController = {
         return res.status(400).json({ message: "Số điện thoại không hợp lệ! Phải gồm 10 chữ số và bắt đầu bằng 0." });
       }
 
-      if (MatKhau && MatKhau.length < 6) {
-        return res.status(400).json({ message: "Mật khẩu phải có ít nhất 6 ký tự!" });
-      }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(Email)) {
         return res.status(400).json({ message: "Email không hợp lệ!" });
       }
 
-      const updateData = { HoTen, Email, NgaySinh, SDT, MatKhau, DiaChi, VaiTro };
+      const updateData = { HoTen, Email, NgaySinh, SDT, DiaChi, VaiTro };
       if (AnhDaiDien !== undefined) {
         updateData.AnhDaiDien = AnhDaiDien;
         console.log("✅ AnhDaiDien will be updated:", AnhDaiDien);
@@ -158,6 +156,81 @@ const NguoiDungController = {
       return res.status(200).json({ message: "Cập nhật người dùng thành công!" });
     } catch (error) {
       console.error("Lỗi khi cập nhật người dùng:", error);
+      return res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  changePassword: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { oldPassword, newPassword } = req.body;
+
+      if (!oldPassword || !newPassword) {
+        return res.status(400).json({ message: "Mật khẩu cũ và mật khẩu mới là bắt buộc!" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: "Mật khẩu mới phải có ít nhất 6 ký tự!" });
+      }
+
+      const nguoiDung = await NguoiDung.getById(id);
+      if (!nguoiDung) {
+        return res.status(404).json({ message: "Không tìm thấy người dùng!" });
+      }
+
+      const isMatch = await bcrypt.compare(oldPassword, nguoiDung.MatKhau);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Mật khẩu cũ không đúng!" });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const result = await NguoiDung.updatePassword(id, hashedPassword);
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Không thể cập nhật mật khẩu!" });
+      }
+
+      return res.status(200).json({ message: "Đổi mật khẩu thành công!" });
+    } catch (error) {
+      console.error("Lỗi khi đổi mật khẩu:", error);
+      return res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  updateAvatar: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const uploadService = require('../services/uploadService');
+
+      if (!req.file) {
+        return res.status(400).json({ message: "Vui lòng chọn ảnh!" });
+      }
+
+      const nguoiDung = await NguoiDung.getById(id);
+      if (!nguoiDung) {
+        return res.status(404).json({ message: "Không tìm thấy người dùng!" });
+      }
+
+      const avatarUrl = await uploadService.uploadFileByUserId(
+        req.file,
+        id,
+        'avatars/nguoidung',
+        'avatar',
+        nguoiDung.AnhDaiDien || null
+      );
+
+      const result = await NguoiDung.update(id, { AnhDaiDien: avatarUrl });
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Không thể cập nhật avatar!" });
+      }
+
+      return res.status(200).json({ 
+        message: "Cập nhật avatar thành công!",
+        avatarUrl: avatarUrl
+      });
+    } catch (error) {
+      console.error("Lỗi khi cập nhật avatar:", error);
       return res.status(500).json({ message: "Lỗi server", error: error.message });
     }
   },

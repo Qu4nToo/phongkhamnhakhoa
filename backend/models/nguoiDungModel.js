@@ -67,6 +67,16 @@ module.exports = {
             throw new Error('Database update failed');
         }
     },
+    updatePassword: async (id, password) => {
+        try {
+            const sql = 'UPDATE nguoidung SET MatKhau = ? WHERE MaNguoiDung = ?';
+            const [result] = await db.query(sql, [password, id]);
+            return result;
+        } catch (error) {
+            console.error('Update Password Error:', error.message);
+            throw new Error('Database update failed');
+        }
+    },
     delete: async (id) => {
         try {
             const sql = 'DELETE FROM nguoidung WHERE MaNguoiDung = ?';

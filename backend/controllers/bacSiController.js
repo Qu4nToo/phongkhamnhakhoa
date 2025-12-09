@@ -62,7 +62,8 @@ const BacSiController = {
                     ngaySinh: bacSi.NgaySinh,
                     chuyenKhoa: bacSi.ChuyenKhoa,
                     bangCap: bacSi.BangCap,
-                    chuyenMon: bacSi.ChuyenMon
+                    chuyenMon: bacSi.ChuyenMon,
+                    anhDaiDien: bacSi.AnhDaiDien
                 };
                 
         // Tạo access token (15 phút)
@@ -252,6 +253,82 @@ const BacSiController = {
         } catch (error) {
             console.error("Lỗi khi lấy biểu đồ:", error);
             res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    changePassword: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { oldPassword, newPassword } = req.body;
+
+            if (!oldPassword || !newPassword) {
+                return res.status(400).json({ message: "Mật khẩu cũ và mật khẩu mới là bắt buộc!" });
+            }
+
+            if (newPassword.length < 6) {
+                return res.status(400).json({ message: "Mật khẩu mới phải có ít nhất 6 ký tự!" });
+            }
+
+            const bacSi = await BacSi.getByEmail((await BacSi.getById(id))[0]?.Email);
+            if (!bacSi) {
+                return res.status(404).json({ message: "Không tìm thấy bác sĩ!" });
+            }
+
+            const isMatch = await bcrypt.compare(oldPassword, bacSi.MatKhau);
+            if (!isMatch) {
+                return res.status(401).json({ message: "Mật khẩu cũ không đúng!" });
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            const result = await BacSi.updatePassword(id, hashedPassword);
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: "Không thể cập nhật mật khẩu!" });
+            }
+
+            return res.status(200).json({ message: "Đổi mật khẩu thành công!" });
+        } catch (error) {
+            console.error("Lỗi khi đổi mật khẩu:", error);
+            return res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    updateAvatar: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const uploadService = require('../services/uploadService');
+
+            if (!req.file) {
+                return res.status(400).json({ message: "Vui lòng chọn ảnh!" });
+            }
+
+            const bacSiData = await BacSi.getById(id);
+            if (!bacSiData || bacSiData.length === 0) {
+                return res.status(404).json({ message: "Không tìm thấy bác sĩ!" });
+            }
+
+            const bacSi = bacSiData[0];
+            const avatarUrl = await uploadService.uploadFileByUserId(
+                req.file,
+                id,
+                'avatars/bacsi',
+                'avatar',
+                bacSi.AnhDaiDien || null
+            );
+
+            const result = await BacSi.update(id, { AnhDaiDien: avatarUrl });
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: "Không thể cập nhật avatar!" });
+            }
+
+            return res.status(200).json({ 
+                message: "Cập nhật avatar thành công!",
+                avatarUrl: avatarUrl
+            });
+        } catch (error) {
+            console.error("Lỗi khi cập nhật avatar:", error);
+            return res.status(500).json({ message: "Lỗi server", error: error.message });
         }
     }
 };

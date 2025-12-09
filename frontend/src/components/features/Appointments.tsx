@@ -1,10 +1,24 @@
-import { Calendar, Clock, User, MapPin, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, CheckCircle, XCircle, AlertCircle, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export function Appointments() {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -26,6 +40,39 @@ export function Appointments() {
 
     fetchAppointments();
   }, []);
+
+  const openCancelDialog = (maLichHen: number) => {
+    setSelectedAppointmentId(maLichHen);
+    setCancelDialogOpen(true);
+  };
+
+  const handleCancelAppointment = async () => {
+    if (!selectedAppointmentId) return;
+
+    try {
+      setLoading(true);
+      await axios.put(`http://localhost:5000/api/lich-hen/update-status/${selectedAppointmentId}`, {
+        TinhTrang: 'Đã hủy'
+      });
+      
+      toast.success('Hủy lịch hẹn thành công!');
+      
+      // Reload appointments
+      const storedUserInfo = sessionStorage.getItem("user_info");
+      if (storedUserInfo) {
+        const user = JSON.parse(storedUserInfo);
+        const response = await axios.get(`http://localhost:5000/api/lich-hen/getByKhachHangID/${user.MaKhachHang}`);
+        setAppointments(response.data);
+      }
+    } catch (error: any) {
+      console.error('Đã xảy ra lỗi:', error);
+      toast.error(error.response?.data?.message || 'Lỗi khi hủy lịch hẹn!');
+    } finally {
+      setLoading(false);
+      setCancelDialogOpen(false);
+      setSelectedAppointmentId(null);
+    }
+  };
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -175,6 +222,22 @@ export function Appointments() {
                         <p className="text-yellow-800">{appointment.GhiChu}</p>
                       </div>
                     )}
+
+                    {/* Nút hủy */}
+                    {(appointment.TinhTrang === 'Chờ xác nhận' || appointment.TinhTrang === 'Đã xác nhận') && (
+                      <div className="mt-4 flex justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openCancelDialog(appointment.MaLichHen)}
+                          disabled={loading}
+                          className="gap-1 hover:bg-red-700 hover:border-red-700 hover:text-white"
+                        >
+                          <X className="w-4 h-4" />
+                          Hủy lịch hẹn
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -237,11 +300,51 @@ export function Appointments() {
                       {appointment.GhiChu}
                     </div>
                   )}
+
+                  {/* Nút hủy */}
+                  {(appointment.TinhTrang === 'Chờ xác nhận' || appointment.TinhTrang === 'Đã xác nhận') && (
+                    <div className="mt-3 ml-16 flex justify-end">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => openCancelDialog(appointment.MaLichHen)}
+                        disabled={loading}
+                        className="gap-1"
+                      >
+                        <X className="w-4 h-4" />
+                        Hủy lịch hẹn
+                      </Button>
+                    </div>
+                  )}
                 </div>
               );
             })}
         </div>
       </div>
+
+      {/* Alert Dialog xác nhận hủy */}
+      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <AlertDialogContent className="sm:max-w-[425px] mx-4 max-w-[calc(100%-2rem)]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-base sm:text-lg">Xác nhận hủy lịch hẹn</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              Bạn có chắc chắn muốn hủy lịch hẹn này không? Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto" disabled={loading}>
+              Không
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelAppointment}
+              disabled={loading}
+              className="w-full sm:w-auto bg-red-600 hover:bg-red-700"
+            >
+              {loading ? 'Đang hủy...' : 'Có, hủy lịch'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

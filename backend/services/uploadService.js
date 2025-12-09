@@ -14,7 +14,7 @@ const uploadFile = async (file, folder = 'uploads') => {
             throw new Error('Không có file để upload');
         }
 
-        const fileName = `${folder}/${timestamp}_${file.originalname}`;
+        const fileName = `${folder}_${file.originalname}`;
 
         // Tạo file reference trong bucket
         const fileUpload = bucket.file(fileName);
