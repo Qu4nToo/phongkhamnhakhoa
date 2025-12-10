@@ -6,6 +6,9 @@ const router = express.Router();
 // Lấy tất cả loại dịch vụ
 router.get('/get', loaiDichVuController.getAllLoaiDichVu);
 
+// Lấy loại dịch vụ theo slug
+router.get('/getBySlug/:slug', loaiDichVuController.getLoaiDichVuBySlug);
+
 // Lấy loại dịch vụ theo ID
 router.get('/get/:id', loaiDichVuController.getLoaiDichVuById);
 

@@ -108,11 +108,13 @@ export function Header() {
                     <div className="hidden md:flex items-center space-x-4">
                         <Menu as="div" className="relative group">
                             <MenuButton className="flex rounded-full focus:outline-none">
-                                <img
-                                    alt="user"
-                                    src="/user.png"
-                                    className="h-7 w-7 rounded-full"
-                                />
+                                <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-gray-200">
+                                    <img
+                                        alt="user"
+                                        src={userInfo?.anhDaiDien || "/user.png"}
+                                        className="h-full w-full object-cover"
+                                    />
+                                </div>
                             </MenuButton>
                             <div className="absolute right-0 top-full pt-2 w-52 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                                 <MenuItems className="bg-white rounded-lg shadow-xl overflow-hidden border border-gray-200">

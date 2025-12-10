@@ -37,6 +37,36 @@ const DichVuController = {
             res.status(500).json({ message: "Lỗi server", error: error.message });
         }
     },
+
+    getDichVuByMaLoaiDV: async (req, res) => {
+        try {
+            const { maloaidv } = req.params;
+            
+            // Lấy danh sách dịch vụ theo MaLoaiDV
+            const dichVuList = await DichVu.getByLoaiDichVu(maloaidv);
+            res.status(200).json(dichVuList);
+        } catch (error) {
+            console.error("Lỗi khi lấy dịch vụ theo mã loại:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    getDichVuBySlug: async (req, res) => {
+        try {
+            const { slug } = req.params;
+            
+            // Lấy chi tiết dịch vụ theo slug
+            const dichVu = await DichVu.getBySlug(slug);
+            if (!dichVu) {
+                return res.status(404).json({ message: "Không tìm thấy dịch vụ!" });
+            }
+            res.status(200).json(dichVu);
+        } catch (error) {
+            console.error("Lỗi khi lấy chi tiết dịch vụ theo slug:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
     createDichVu: async (req, res) => {
         try {
             const { TenDichVu, Gia, MoTa, DonVi, MaLoaiDV, ThoiLuong, TrangThai } = req.body;

@@ -24,10 +24,7 @@ const upload = multer({
 // Route công khai - không cần đăng nhập
 router.post('/login', bacSiController.loginBacSi);
 
-// Route cho Quản lý và Lễ tân - xem danh sách
 router.get('/get',
-    authenticateToken,
-    authenticateRole('Quản lý', 'Lễ tân', 'Bác sĩ', 'Khách hàng'),
     bacSiController.getAllBacSi
 );
 

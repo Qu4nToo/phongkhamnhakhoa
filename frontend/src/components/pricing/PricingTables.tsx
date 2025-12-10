@@ -30,23 +30,23 @@ export function PricingTables() {
         // Fetch loại dịch vụ
         const categoriesRes = await axios.get('http://localhost:5000/api/loai-dich-vu/get');
         const servicesRes = await axios.get('http://localhost:5000/api/dich-vu/get');
-        
+
         console.log('Categories:', categoriesRes.data);
         console.log('Services:', servicesRes.data);
-        
+
         // Lọc chỉ lấy dịch vụ đang hoạt động
-        const activeServices = servicesRes.data.filter((service: any) => 
+        const activeServices = servicesRes.data.filter((service: any) =>
           service.TrangThai === 'Đang hoạt động'
         );
-        
+
         console.log('Active Services:', activeServices);
-        
+
         // Gộp dữ liệu: mỗi loại dịch vụ có danh sách dịch vụ của nó
         const combinedData: Category[] = categoriesRes.data.map((category: any) => {
-          const categoryServices = activeServices.filter((service: any) => 
+          const categoryServices = activeServices.filter((service: any) =>
             service.MaLoaiDV === category.MaLoaiDV
           );
-          
+
           return {
             MaLoaiDichVu: category.MaLoaiDV,
             TenLoaiDichVu: category.TenLoaiDV,
@@ -54,7 +54,7 @@ export function PricingTables() {
             services: categoryServices
           };
         }).filter((category: Category) => category.services.length > 0); // Chỉ giữ loại có dịch vụ
-        
+
         console.log('Combined Data:', combinedData);
         setPricingData(combinedData);
       } catch (error) {
@@ -93,8 +93,15 @@ export function PricingTables() {
   }
 
   return (
-    <section id="pricing" className="py-16 bg-gray-50">
+
+    <section id="pricing" className="py-10 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <div className="mb-6 flex items-center gap-2 text-sm text-gray-600">
+          <a href="/" className="hover:text-blue-600">Trang chủ</a>
+          <span>{'>'}</span>
+          <span className="text-blue-600">Bảng giá</span>
+        </div>
         <div className="text-center mb-12">
           <h2 className="text-gray-900 mb-4">
             Bảng Giá Chi Tiết

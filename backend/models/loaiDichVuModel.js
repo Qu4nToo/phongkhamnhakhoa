@@ -25,6 +25,18 @@ module.exports = {
         }
     },
 
+    // ✅ Lấy loại dịch vụ theo Slug
+    getBySlug: async (slug) => {
+        try {
+            const sql = 'SELECT * FROM loaidichvu WHERE Slug = ?';
+            const [rows] = await db.query(sql, [slug]);
+            return rows[0];
+        } catch (error) {
+            console.error('Query Error:', error);
+            throw new Error('Database query failed');
+        }
+    },
+
     // ✅ Tạo mới loại dịch vụ
     create: async (data) => {
         try {
