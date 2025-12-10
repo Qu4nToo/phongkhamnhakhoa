@@ -20,7 +20,32 @@ module.exports = {
       throw new Error('Database query failed');
     }
   },
-  
+
+  getByLoaiDichVu: async (maLoaiDV) => {
+    try {
+      const [rows] = await db.query(
+        'SELECT dv.*, ldv.MaLoaiDV, ldv.TenLoaiDV, ldv.MoTa as MoTaLoai FROM dichvu dv JOIN loaidichvu ldv ON dv.MaLoaiDV = ldv.MaLoaiDV WHERE dv.MaLoaiDV = ?',
+        [maLoaiDV]
+      );
+      return rows;
+    } catch (err) {
+      console.error('Query Error:', err.message);
+      throw new Error('Database query failed');
+    }
+  },
+
+  getBySlug: async (slug) => {
+    try {
+      const [rows] = await db.query(
+        'SELECT dv.*, ldv.MaLoaiDV, ldv.TenLoaiDV, ldv.Slug as SlugLoaiDV, ldv.MoTa as MoTaLoai FROM dichvu dv JOIN loaidichvu ldv ON dv.MaLoaiDV = ldv.MaLoaiDV WHERE dv.Slug = ?',
+        [slug]
+      );
+      return rows[0];
+    } catch (err) {
+      console.error('Query Error:', err.message);
+      throw new Error('Database query failed');
+    }
+  },
 
   create: async (data) => {
     try {

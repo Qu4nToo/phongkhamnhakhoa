@@ -27,8 +27,14 @@ const highlights = [
 
 export function AboutIntro() {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-10 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <div className="mb-6 flex items-center gap-2 text-sm text-gray-600">
+          <a href="/" className="hover:text-blue-600">Trang chủ</a>
+          <span>{'>'}</span>
+          <span className="text-blue-600">Về chúng tôi</span>
+        </div>
         <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
           <div>
             <p className="text-blue-600 mb-4">Giới Thiệu</p>

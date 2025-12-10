@@ -5,6 +5,11 @@ const router = express.Router();
 // GET all ratings
 router.get('/get', dichVuController.getAllDichVu);
 
+// GET services by MaLoaiDV
+router.get('/byLoaiDichVuID/:maloaidv', dichVuController.getDichVuByMaLoaiDV);
+
+router.get('/getBySlug/:slug', dichVuController.getDichVuBySlug);
+
 // GET single rating by ID
 router.get('/get/:id', dichVuController.getDichVuById);
 

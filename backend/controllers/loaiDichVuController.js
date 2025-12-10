@@ -40,6 +40,21 @@ const LoaiDichVuController = {
         }
     },
 
+    // ✅ Lấy loại dịch vụ theo Slug
+    getLoaiDichVuBySlug: async (req, res) => {
+        try {
+            const { slug } = req.params;
+            const loaiDichVu = await LoaiDichVu.getBySlug(slug);
+            if (!loaiDichVu) {
+                return res.status(404).json({ message: "Không tìm thấy loại dịch vụ!" });
+            }
+            res.status(200).json(loaiDichVu);
+        } catch (error) {
+            console.error("Lỗi khi lấy loại dịch vụ theo slug:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
     // ✅ Thêm loại dịch vụ mới
     createLoaiDichVu: async (req, res) => {
         try {

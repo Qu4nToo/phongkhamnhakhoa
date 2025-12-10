@@ -1,35 +1,42 @@
 import React from 'react';
-import { Smile, Sparkles, Shield, Zap, Users, Award } from 'lucide-react';
+import Link from 'next/link';
+import { Smile, Shield, Zap, Users, Award, Heart } from 'lucide-react';
 
 const services = [
   {
     icon: Smile,
     title: 'Vệ Sinh Răng Miệng',
+    slug: 've-sinh-rang-mieng',
     description: 'Làm sạch chuyên nghiệp và chăm sóc phòng ngừa để giữ răng khỏe mạnh.',
   },
-  {
-    icon: Sparkles,
-    title: 'Tẩy Trắng Răng',
-    description: 'Công nghệ tẩy trắng tiên tiến cho nụ cười trắng sáng tự tin.',
-  },
+{
+    icon: Heart,
+    title: 'Nha Khoa Tổng Quát',
+    slug: 'nha-khoa-tong-quat',
+    description: 'Chăm sóc sức khỏe răng miệng toàn diện, bao gồm khám, cạo vôi và điều trị các bệnh lý thông thường.',
+},
   {
     icon: Shield,
     title: 'Cấy Ghép Implant',
+    slug: 'cay-ghep-implant',
     description: 'Giải pháp thay thế răng vĩnh viễn trông và cảm giác tự nhiên.',
   },
   {
     icon: Zap,
     title: 'Chỉnh Nha',
+    slug: 'chinh-nha',
     description: 'Niềng răng và khay trong suốt để răng đều đẹp và hoàn thiện nụ cười.',
   },
   {
     icon: Users,
     title: 'Nha Khoa Gia Đình',
+    slug: 'nha-khoa-gia-dinh',
     description: 'Chăm sóc răng miệng toàn diện cho mọi lứa tuổi và gia đình.',
   },
   {
     icon: Award,
     title: 'Nha Khoa Thẩm Mỹ',
+    slug: 'nha-khoa-tham-my',
     description: 'Thay đổi nụ cười với dán sứ veneer, trám răng và làm đẹp nụ cười.',
   },
 ];
@@ -50,16 +57,17 @@ export function Services() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
-            <div
+            <Link
               key={index}
-              className="p-6 border border-gray-200 rounded-xl hover:shadow-lg transition-shadow group"
+              href={`/DichVu/${service.slug}`}
+              className="p-6 border border-gray-200 rounded-xl hover:shadow-lg transition-shadow group block cursor-pointer"
             >
               <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
                 <service.icon className="w-7 h-7 text-blue-600 group-hover:text-white transition-colors" />
               </div>
               <h3 className="text-gray-900 mb-2">{service.title}</h3>
               <p className="text-gray-600">{service.description}</p>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

@@ -14,9 +14,8 @@ export default function App() {
         <TitleProvider>
             <div className="min-h-screen bg-white">
                 <Header />
-                <PricingHero />
-                <PricingIntro />
                 <PricingTables />
+                <PricingIntro />
                 <PaymentMethods />
                 <PricingNotes />
                 <ConsultationCTA />

@@ -16,7 +16,6 @@ export default function App() {
         <TitleProvider>
             <div className="min-h-screen bg-white">
                 <Header />
-                <AboutHero />
                 <AboutIntro />
                 <VisionMission />
                 <CoreValues />
