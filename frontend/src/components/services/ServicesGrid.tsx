@@ -2,153 +2,6 @@
 import { useState } from 'react';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 
-const servicesData = [
-  {
-    id: 1,
-    name: 'Trụ Implant Straumann BLT SLActive',
-    category: 'Trồng răng Implant',
-    priceRange: '28.000.000đ - 35.000.000đ',
-    image: 'https://images.unsplash.com/photo-1593022356769-11f762e25ed9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjBpbXBsYW50fGVufDF8fHx8MTc2NTM3MTQ1OXww&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: false,
-    bestseller: true
-  },
-  {
-    id: 2,
-    name: 'Trụ Implant Straumann BLT SLA',
-    category: 'Trồng răng Implant',
-    priceRange: '24.000.000đ - 27.000.000đ',
-    image: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjB0cmVhdG1lbnR8ZW58MXx8fHwxNzY1MzcxNDU5fDA&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: true,
-    bestseller: false
-  },
-  {
-    id: 3,
-    name: 'Implant Neodent Acqua',
-    category: 'Trồng răng Implant',
-    priceRange: '23.000.000đ - 27.000.000đ',
-    image: 'https://images.unsplash.com/photo-1611690061822-b707a67bfebb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50aXN0JTIwcGF0aWVudCUyMHNtaWxlfGVufDF8fHx8MTc2NTI2NDM0NHww&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: false,
-    bestseller: true
-  },
-  {
-    id: 4,
-    name: 'Implant Dentium Super Line/ NR line/ SlimLine',
-    category: 'Trồng răng Implant',
-    priceRange: '15.000.000đ - 17.000.000đ',
-    image: 'https://images.unsplash.com/photo-1593022356769-11f762e25ed9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjBpbXBsYW50fGVufDF8fHx8MTc2NTM3MTQ1OXww&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: false,
-    bestseller: false
-  },
-  {
-    id: 5,
-    name: 'Cấy ghép Implant trọn gói – Platinum Combo',
-    category: 'Trồng răng Implant',
-    priceRange: '16.000.000đ - 19.000.000đ',
-    image: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjB0cmVhdG1lbnR8ZW58MXx8fHwxNzY1MzcxNDU5fDA&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: true,
-    bestseller: false
-  },
-  {
-    id: 6,
-    name: 'Cấy ghép Implant trọn gói – Gold Combo',
-    category: 'Trồng răng Implant',
-    priceRange: '23.000.000đ - 33.000.000đ',
-    image: 'https://images.unsplash.com/photo-1611690061822-b707a67bfebb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50aXN0JTIwcGF0aWVudCUyMHNtaWxlfGVufDF8fHx8MTc2NTI2NDM0NHww&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: false,
-    bestseller: true
-  },
-  {
-    id: 7,
-    name: 'Cấy ghép Implant trọn gói – Silver Combo',
-    category: 'Trồng răng Implant',
-    priceRange: '10.000.000đ - 12.000.000đ',
-    image: 'https://images.unsplash.com/photo-1593022356769-11f762e25ed9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjBpbXBsYW50fGVufDF8fHx8MTc2NTM3MTQ1OXww&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: false,
-    bestseller: false
-  },
-  {
-    id: 8,
-    name: 'Răng Sứ Zirconia Cao Cấp',
-    category: 'Răng sứ thẩm mỹ',
-    priceRange: '4.000.000đ - 6.000.000đ',
-    image: 'https://images.unsplash.com/photo-1675516161546-1894798c71de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjBjcm93bnxlbnwxfHx8fDE3NjUzNTkyNjV8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: true,
-    bestseller: true
-  },
-  {
-    id: 9,
-    name: 'Răng Sứ Emax Thẩm Mỹ',
-    category: 'Răng sứ thẩm mỹ',
-    priceRange: '6.000.000đ - 8.000.000đ',
-    image: 'https://images.unsplash.com/photo-1675516161546-1894798c71de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjBjcm93bnxlbnwxfHx8fDE3NjUzNTkyNjV8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: false,
-    bestseller: true
-  },
-  {
-    id: 10,
-    name: 'Niềng Răng Invisalign',
-    category: 'Niềng răng - Chỉnh nha',
-    priceRange: '80.000.000đ - 150.000.000đ',
-    image: 'https://images.unsplash.com/photo-1598531228433-d9f0cb960816?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvcnRob2RvbnRpYyUyMGJyYWNlc3xlbnwxfHx8fDE3NjUzNzE0NTl8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: true,
-    bestseller: false
-  },
-  {
-    id: 11,
-    name: 'Niềng Răng Mắc Cài Kim Loại',
-    category: 'Niềng răng - Chỉnh nha',
-    priceRange: '25.000.000đ - 40.000.000đ',
-    image: 'https://images.unsplash.com/photo-1598531228433-d9f0cb960816?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvcnRob2RvbnRpYyUyMGJyYWNlc3xlbnwxfHx8fDE3NjUzNzE0NTl8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: false,
-    bestseller: true
-  },
-  {
-    id: 12,
-    name: 'Tẩy Trắng Răng Bleach Bright',
-    category: 'Tẩy trắng răng',
-    priceRange: '5.000.000đ - 8.000.000đ',
-    image: 'https://images.unsplash.com/photo-1654373535457-383a0a4d00f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWV0aCUyMHdoaXRlbmluZ3xlbnwxfHx8fDE3NjUzNTI5OTF8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: false,
-    bestseller: true
-  },
-  {
-    id: 13,
-    name: 'Tẩy Trắng Răng Laser',
-    category: 'Tẩy trắng răng',
-    priceRange: '3.000.000đ - 5.000.000đ',
-    image: 'https://images.unsplash.com/photo-1654373535457-383a0a4d00f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWV0aCUyMHdoaXRlbmluZ3xlbnwxfHx8fDE3NjUzNTI5OTF8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: true,
-    bestseller: false
-  },
-  {
-    id: 14,
-    name: 'Khám Răng Trẻ Em',
-    category: 'Nha khoa trẻ em',
-    priceRange: '200.000đ - 500.000đ',
-    image: 'https://images.unsplash.com/photo-1619236233405-bb5d430f0620?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGlsZCUyMGRlbnRpc3R8ZW58MXx8fHwxNzY1MzcxNDU5fDA&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: false,
-    bestseller: true
-  },
-  {
-    id: 15,
-    name: 'Điều Trị Tủy Răng Hàm Lớn',
-    category: 'Điều trị tủy - Nội nha',
-    priceRange: '1.500.000đ - 2.500.000đ',
-    image: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjBoeWdpZW5lfGVufDF8fHx8MTc2NTI2ODI4Nnww&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: false,
-    bestseller: false
-  },
-  {
-    id: 16,
-    name: 'Cạo Vôi Răng Chuyên Sâu',
-    category: 'Điều trị nha khoa tổng quát',
-    priceRange: '300.000đ - 500.000đ',
-    image: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjBoeWdpZW5lfGVufDF8fHx8MTc2NTI2ODI4Nnww&ixlib=rb-4.1.0&q=80&w=1080',
-    featured: true,
-    bestseller: true
-  }
-];
-
 type FilterType = 'all' | 'featured' | 'bestseller' | 'price-high' | 'price-low';
 
 interface ServicesGridProps {
@@ -158,7 +11,7 @@ interface ServicesGridProps {
 
 export function ServicesGrid({ services, title }: ServicesGridProps) {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  const dataToUse = services && services.length > 0 ? services : servicesData;
+  const dataToUse = services && services.length > 0 ? services : [];
 
   const getFilteredServices = () => {
     let filtered = [...dataToUse];
@@ -251,7 +104,7 @@ export function ServicesGrid({ services, title }: ServicesGridProps) {
               {/* Image Container */}
               <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 group">
                 <ImageWithFallback
-                  src={service.HinhAnh || service.image}
+                  src={service.AnhChinh || service.HinhAnh || service.image}
                   alt={service.TenDichVu || service.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />

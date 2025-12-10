@@ -37,9 +37,12 @@ export default function App() {
         fetchServiceBySlug();
     }, [slug]);
 
-    const serviceImages = service?.HinhAnh ? [service.HinhAnh] : [
-        'https://images.unsplash.com/photo-1650739353152-5488298a9d38?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjBpbXBsYW50JTIwM2R8ZW58MXx8fHwxNzY1Mjg0MTE1fDA&ixlib=rb-4.1.0&q=80&w=1080',
-    ];
+    // Lấy tất cả ảnh từ database, nếu không có thì dùng ảnh mặc định
+    const serviceImages = service?.HinhAnhs && service.HinhAnhs.length > 0
+        ? service.HinhAnhs.map((img: any) => img.URL)
+        : service?.HinhAnh 
+        ? [service.HinhAnh]
+        : ['https://images.unsplash.com/photo-1650739353152-5488298a9d38?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjBpbXBsYW50JTIwM2R8ZW58MXx8fHwxNzY1Mjg0MTE1fDA&ixlib=rb-4.1.0&q=80&w=1080'];
 
     if (loading) {
         return (

@@ -31,7 +31,9 @@ export default function ServiceByCategory() {
         
         // 2. Lấy danh sách dịch vụ theo MaLoaiDV
         const dichVuResponse = await axios.get(`http://localhost:5000/api/dich-vu/byLoaiDichVuID/${loaiDVData.MaLoaiDV}`);
-        setServices(dichVuResponse.data);
+        // Lọc chỉ lấy dịch vụ đang hoạt động
+        const activeDichVu = dichVuResponse.data.filter((dv: any) => dv.TrangThai === 'Đang hoạt động');
+        setServices(activeDichVu);
       } catch (error: any) {
         console.error('Error fetching services:', error);
         setError(error.response?.data?.message || 'Không thể tải dữ liệu dịch vụ');

@@ -3,7 +3,19 @@ const db = require('../config/server');
 module.exports = {
   getAlls: async () => {
     try {
-      const [rows] = await db.query('SELECT dv.*,ldv.MaLoaiDV,ldv.TenLoaiDV, ldv.MoTa as MoTaLoai FROM dichvu dv JOIN loaidichvu ldv ON dv.MaLoaiDV = ldv.MaLoaiDV');
+      const [rows] = await db.query(`
+        SELECT 
+          dv.*,
+          ldv.MaLoaiDV,
+          ldv.TenLoaiDV, 
+          ldv.MoTa as MoTaLoai,
+          COUNT(ha.MaHinhAnh) as SoLuongHinh,
+          (SELECT URL FROM hinhanhdichvu WHERE MaDichVu = dv.MaDichVu AND LaAnhChinh = 1 LIMIT 1) as AnhChinh
+        FROM dichvu dv 
+        JOIN loaidichvu ldv ON dv.MaLoaiDV = ldv.MaLoaiDV
+        LEFT JOIN hinhanhdichvu ha ON dv.MaDichVu = ha.MaDichVu
+        GROUP BY dv.MaDichVu
+      `);
       return rows;
     } catch (err) {
       console.error('Query Error:', err.message);
@@ -23,10 +35,17 @@ module.exports = {
 
   getByLoaiDichVu: async (maLoaiDV) => {
     try {
-      const [rows] = await db.query(
-        'SELECT dv.*, ldv.MaLoaiDV, ldv.TenLoaiDV, ldv.MoTa as MoTaLoai FROM dichvu dv JOIN loaidichvu ldv ON dv.MaLoaiDV = ldv.MaLoaiDV WHERE dv.MaLoaiDV = ?',
-        [maLoaiDV]
-      );
+      const [rows] = await db.query(`
+        SELECT 
+          dv.*, 
+          ldv.MaLoaiDV, 
+          ldv.TenLoaiDV, 
+          ldv.MoTa as MoTaLoai,
+          (SELECT URL FROM hinhanhdichvu WHERE MaDichVu = dv.MaDichVu AND LaAnhChinh = 1 LIMIT 1) as AnhChinh
+        FROM dichvu dv 
+        JOIN loaidichvu ldv ON dv.MaLoaiDV = ldv.MaLoaiDV 
+        WHERE dv.MaLoaiDV = ?
+      `, [maLoaiDV]);
       return rows;
     } catch (err) {
       console.error('Query Error:', err.message);
@@ -36,11 +55,26 @@ module.exports = {
 
   getBySlug: async (slug) => {
     try {
+      // Lấy thông tin dịch vụ
       const [rows] = await db.query(
         'SELECT dv.*, ldv.MaLoaiDV, ldv.TenLoaiDV, ldv.Slug as SlugLoaiDV, ldv.MoTa as MoTaLoai FROM dichvu dv JOIN loaidichvu ldv ON dv.MaLoaiDV = ldv.MaLoaiDV WHERE dv.Slug = ?',
         [slug]
       );
-      return rows[0];
+      
+      if (rows.length === 0) return null;
+      
+      const dichVu = rows[0];
+      
+      // Lấy tất cả ảnh của dịch vụ
+      const [images] = await db.query(
+        'SELECT * FROM hinhanhdichvu WHERE MaDichVu = ? ORDER BY ThuTu ASC',
+        [dichVu.MaDichVu]
+      );
+      
+      // Gắn mảng ảnh vào object dịch vụ
+      dichVu.HinhAnhs = images;
+      
+      return dichVu;
     } catch (err) {
       console.error('Query Error:', err.message);
       throw new Error('Database query failed');
