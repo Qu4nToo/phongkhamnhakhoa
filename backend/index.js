@@ -26,6 +26,7 @@ const chiTietPhieuKhamRoutes = require('./routes/chiTietPhieuKhamRoutes');
 const lichLamViecRoutes = require('./routes/lichLamViecRoutes');
 const loaiDichVuRoutes = require('./routes/loaiDichVuRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const hinhAnhDichVuRoutes = require('./routes/hinhAnhDichVuRoutes');
 
 app.get('/', async (req, res) => {
   try {
@@ -54,6 +55,7 @@ app.use('/api/danh-gia', danhGiaRoutes);
 app.use('/api/chi-tiet-dich-vu', chiTietDichVuRoutes);
 app.use('/api/chi-tiet-phieu-kham', chiTietPhieuKhamRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/hinh-anh-dich-vu', hinhAnhDichVuRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

@@ -4,6 +4,9 @@ import React from "react"
 import {
     MoreHorizontal,
     PlusCircle,
+    Upload,
+    X,
+    Image as ImageIcon,
 } from "lucide-react"
 import {
     Dialog,
@@ -65,6 +68,12 @@ export default function ServiceView() {
     const [showAlertEdit, setShowAlertEdit] = useState(false);
     const [selectedservice, setSelectedservice] = useState<any>([]);
     const [isDialogOpen, setDialogOpen] = useState(false);
+    const [isImageDialogOpen, setImageDialogOpen] = useState(false);
+    const [selectedServiceForImages, setSelectedServiceForImages] = useState<any>(null);
+    const [serviceImages, setServiceImages] = useState<any[]>([]);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+    const [uploading, setUploading] = useState(false);
 
 
     const [newService, setNewService] = useState({
@@ -196,6 +205,123 @@ export default function ServiceView() {
             .catch((err) => console.error("Error creating service:", err));
     };
 
+    const reloadServices = async () => {
+        try {
+            const response = await axios.get("http://localhost:5000/api/dich-vu/get");
+            setServices(response.data);
+        } catch (err) {
+            console.error("Error fetching services:", err);
+        }
+    };
+
+    const handleImageManageClick = async (service: any) => {
+        setSelectedServiceForImages(service);
+        setImageDialogOpen(true);
+        // Fetch images for this service
+        try {
+            const response = await axios.get(`http://localhost:5000/api/hinh-anh-dich-vu/get/${service.MaDichVu}`);
+            setServiceImages(response.data);
+        } catch (err) {
+            console.error("Error fetching images:", err);
+            setServiceImages([]);
+        }
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length + selectedFiles.length > 10) {
+            toast.error("Chỉ được upload tối đa 10 ảnh!");
+            return;
+        }
+        
+        setSelectedFiles(prev => [...prev, ...files]);
+        
+        // Create preview URLs
+        const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+        setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
+    };
+
+    const handleRemoveFile = (index: number) => {
+        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+        URL.revokeObjectURL(previewUrls[index]);
+        setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleUploadImages = async () => {
+        if (selectedFiles.length === 0) {
+            toast.error("Vui lòng chọn ít nhất 1 ảnh!");
+            return;
+        }
+
+        setUploading(true);
+        const formData = new FormData();
+        selectedFiles.forEach(file => {
+            formData.append('images', file);
+        });
+
+        try {
+            await axios.post(
+                `http://localhost:5000/api/hinh-anh-dich-vu/upload/${selectedServiceForImages.MaDichVu}`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+            );
+            
+            toast.success(`Upload thành công ${selectedFiles.length} ảnh!`);
+            
+            // Refresh images list
+            const response = await axios.get(`http://localhost:5000/api/hinh-anh-dich-vu/get/${selectedServiceForImages.MaDichVu}`);
+            setServiceImages(response.data);
+            
+            // Reload services to update image count
+            await reloadServices();
+            
+            // Clear selected files
+            setSelectedFiles([]);
+            previewUrls.forEach(url => URL.revokeObjectURL(url));
+            setPreviewUrls([]);
+        } catch (err) {
+            console.error("Error uploading images:", err);
+            toast.error("Có lỗi xảy ra khi upload ảnh!");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDeleteImage = async (maHinhAnh: string) => {
+        try {
+            await axios.delete(`http://localhost:5000/api/hinh-anh-dich-vu/delete/${maHinhAnh}`);
+            toast.success("Xóa ảnh thành công!");
+            
+            // Refresh images list
+            const response = await axios.get(`http://localhost:5000/api/hinh-anh-dich-vu/get/${selectedServiceForImages.MaDichVu}`);
+            setServiceImages(response.data);
+            
+            // Reload services to update image count
+            await reloadServices();
+        } catch (err) {
+            console.error("Error deleting image:", err);
+            toast.error("Có lỗi xảy ra khi xóa ảnh!");
+        }
+    };
+
+    const handleSetMainImage = async (maHinhAnh: string) => {
+        try {
+            await axios.put(`http://localhost:5000/api/hinh-anh-dich-vu/set-main/${maHinhAnh}`);
+            toast.success("Đặt ảnh chính thành công!");
+            
+            // Refresh images list
+            const response = await axios.get(`http://localhost:5000/api/hinh-anh-dich-vu/get/${selectedServiceForImages.MaDichVu}`);
+            setServiceImages(response.data);
+        } catch (err) {
+            console.error("Error setting main image:", err);
+            toast.error("Có lỗi xảy ra!");
+        }
+    };
+
     return (
         <>
             <title>Quản Lý Dịch Vụ</title>
@@ -315,6 +441,7 @@ export default function ServiceView() {
                                         <TableHead>Đơn vị</TableHead>
                                         <TableHead>Giá</TableHead>
                                         <TableHead>Thời lượng</TableHead>
+                                        <TableHead>Hình ảnh</TableHead>
                                         <TableHead>Trạng thái</TableHead>
                                         <TableHead>
                                             <span className="sr-only">Actions</span>
@@ -347,6 +474,12 @@ export default function ServiceView() {
                                                 {services.ThoiLuong} phút
                                             </TableCell>
                                             <TableCell className="font-medium">
+                                                <div className="flex items-center gap-1">
+                                                    <ImageIcon className="h-4 w-4 text-gray-500" />
+                                                    <span className="text-sm">{services.SoLuongHinh || 0}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="font-medium">
                                                 <span className={`px-2 py-1 rounded-full text-xs ${
                                                     services.TrangThai === 'Đang hoạt động' 
                                                         ? 'bg-green-100 text-green-800' 
@@ -370,6 +503,7 @@ export default function ServiceView() {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Hành động</DropdownMenuLabel>
+                                                        <DropdownMenuItem onClick={() => handleImageManageClick(services)}>Quản lý ảnh</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleEditClick(services)}>Sửa</DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleDeleteClick(services)}>Xóa</DropdownMenuItem>
                                                     </DropdownMenuContent>
@@ -474,6 +608,125 @@ export default function ServiceView() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Image Management Dialog */}
+            <Dialog open={isImageDialogOpen} onOpenChange={setImageDialogOpen}>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Quản lý ảnh dịch vụ: {selectedServiceForImages?.TenDichVu}</DialogTitle>
+                        <DialogDescription>
+                            Upload và quản lý ảnh cho dịch vụ này (tối đa 10 ảnh)
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {/* Upload Section */}
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 space-y-4">
+                        <div className="flex items-center justify-center">
+                            <label className="flex flex-col items-center gap-2 cursor-pointer">
+                                <Upload className="h-8 w-8 text-gray-400" />
+                                <span className="text-sm text-gray-600">
+                                    Nhấn để chọn ảnh (tối đa 10 ảnh, mỗi ảnh &lt; 5MB)
+                                </span>
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    onChange={handleFileSelect}
+                                    className="hidden"
+                                />
+                            </label>
+                        </div>
+
+                        {/* Preview Selected Files */}
+                        {previewUrls.length > 0 && (
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium">Ảnh đã chọn ({previewUrls.length}):</p>
+                                <div className="grid grid-cols-5 gap-2">
+                                    {previewUrls.map((url, index) => (
+                                        <div key={index} className="relative group">
+                                            <img
+                                                src={url}
+                                                alt={`Preview ${index + 1}`}
+                                                className="w-full h-24 object-cover rounded-lg"
+                                            />
+                                            <button
+                                                onClick={() => handleRemoveFile(index)}
+                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <Button
+                                    onClick={handleUploadImages}
+                                    disabled={uploading}
+                                    className="w-full"
+                                >
+                                    {uploading ? "Đang upload..." : `Upload ${previewUrls.length} ảnh`}
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Existing Images */}
+                    <div className="space-y-2">
+                        <p className="text-sm font-medium">Ảnh hiện có ({serviceImages.length}):</p>
+                        {serviceImages.length === 0 ? (
+                            <p className="text-sm text-gray-500 text-center py-4">Chưa có ảnh nào</p>
+                        ) : (
+                            <div className="grid grid-cols-4 gap-3">
+                                {serviceImages.map((image: any) => (
+                                    <div key={image.MaHinhAnh} className="relative group border rounded-lg overflow-hidden">
+                                        <img
+                                            src={image.URL}
+                                            alt={`Service image ${image.ThuTu}`}
+                                            className="w-full h-32 object-cover"
+                                        />
+                                        {image.LaAnhChinh === 1 && (
+                                            <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                                                Ảnh chính
+                                            </div>
+                                        )}
+                                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                                            {image.LaAnhChinh !== 1 && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    onClick={() => handleSetMainImage(image.MaHinhAnh)}
+                                                    className="flex-1 text-xs h-7"
+                                                >
+                                                    Đặt làm chính
+                                                </Button>
+                                            )}
+                                            <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                onClick={() => handleDeleteImage(image.MaHinhAnh)}
+                                                className="text-xs h-7"
+                                            >
+                                                Xóa
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => {
+                            setImageDialogOpen(false);
+                            setSelectedFiles([]);
+                            previewUrls.forEach(url => URL.revokeObjectURL(url));
+                            setPreviewUrls([]);
+                        }}>
+                            Đóng
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <Toaster />
         </>
     )

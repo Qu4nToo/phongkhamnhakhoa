@@ -6,15 +6,18 @@ const crypto = require('crypto');
  * Upload file lên Firebase Storage
  * @param {Object} file - File object từ multer
  * @param {String} folder - Thư mục lưu trữ (vd: 'avatars', 'documents')
+ * @param {String} customFileName - Tên file tùy chỉnh (optional)
  * @returns {Promise<String>} URL của file đã upload
  */
-const uploadFile = async (file, folder = 'uploads') => {
+const uploadFile = async (file, folder = 'uploads', customFileName = null) => {
     try {
         if (!file) {
             throw new Error('Không có file để upload');
         }
 
-        const fileName = `${folder}_${file.originalname}`;
+        const fileName = customFileName 
+            ? `${folder}/${customFileName}`
+            : `${folder}_${file.originalname}`;
 
         // Tạo file reference trong bucket
         const fileUpload = bucket.file(fileName);
