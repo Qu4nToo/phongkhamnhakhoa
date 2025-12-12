@@ -76,7 +76,7 @@ const items = [
     title: "Dịch vụ",
     url: "/DichVu",
     icon: BookPlusIcon,
-    roles: ["Quản lý", "Lễ tân"], // Cả hai role
+    roles: ["Quản lý"], // Cả hai role
   },
   {
     title: "Hóa đơn",
@@ -88,7 +88,7 @@ const items = [
     title: "Loại dịch vụ",
     url: "/LoaiDichVu",
     icon: Book,
-    roles: ["Quản lý", "Lễ tân"], // Cả hai role
+    roles: ["Quản lý"], // Cả hai role
   },
 ];
 

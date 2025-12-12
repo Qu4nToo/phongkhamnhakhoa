@@ -50,30 +50,24 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     // Lắng nghe khi có phiếu khám mới được tạo
     socket.on('phieuKham:created', (data) => {
       console.log('Admin received phieuKham:created event:', data);
-      toast.success('Có phiếu khám mới!', {
-        description: `Bác sĩ ${data.phieuKham?.TenBacSi || 'N/A'} - Khách hàng: ${data.phieuKham?.TenKhachHang || 'N/A'}`,
+      toast.success(`Có phiếu khám mới! Bác sĩ: ${data.phieuKham?.TenBacSi || 'N/A'} - Khách hàng: ${data.phieuKham?.TenKhachHang || 'N/A'}`, {
         duration: 5000,
-        descriptionClassName: 'font-bold'
       });
     });
 
     // Lắng nghe khi phiếu khám được hoàn thành
     socket.on('phieuKham:completed', (data) => {
       console.log('Admin received phieuKham:completed event:', data);
-      toast.success('Phiếu khám đã hoàn thành!', {
-        description: `Bác sĩ ${data.phieuKham?.TenBacSi || 'N/A'} - Khách hàng: ${data.phieuKham?.TenKhachHang || 'N/A'}`,
+      toast.success(`Phiếu khám đã hoàn thành! Bác sĩ: ${data.phieuKham?.TenBacSi || 'N/A'}\nKhách hàng: ${data.phieuKham?.TenKhachHang || 'N/A'}`, {
         duration: 5000,
-        descriptionClassName: 'font-bold'
       });
     });
 
     // Lắng nghe khi có lịch hẹn mới
     socket.on('lichHen:created', (data) => {
       console.log('Admin received lichHen:created event:', data);
-      toast.info('Có lịch hẹn mới!', {
-        description: `${data.lichHen?.TenKhachHang || 'N/A'} - ${data.lichHen?.NgayHen} lúc ${data.lichHen?.GioHen}`,
+      toast.info(`Có lịch hẹn mới! ${data.lichHen?.TenKhachHang || 'N/A'} - ${data.lichHen?.NgayHen} lúc ${data.lichHen?.GioHen}`, {
         duration: 5000,
-        descriptionClassName: 'font-bold'
       });
     });
 

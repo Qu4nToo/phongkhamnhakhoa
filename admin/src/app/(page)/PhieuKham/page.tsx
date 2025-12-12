@@ -201,7 +201,7 @@ export default function phieuKhamView() {
                 return;
             }
             
-            const maNguoiDung = user.id;
+            const maNguoiDung = user.MaNguoiDung;
             
             if (!maNguoiDung) {
                 toast.error("Không tìm thấy thông tin người dùng!");

@@ -155,10 +155,10 @@ export default function phieuKhamView() {
                 const lichHen = lichHenResponse.data;
                 if (lichHen) {
                     const updatedLichHen = {
-                        NgayHen: lichHen[0].NgayHen,
-                        GioHen: lichHen[0].GioHen,
+                        NgayHen: lichHen.NgayHen,
+                        GioHen: lichHen.GioHen,
                         TinhTrang: "Hoàn thành",
-                        GhiChu: lichHen[0].GhiChu || ""
+                        GhiChu: lichHen.GhiChu || ""
                     };
                     console.log("Updating lich hen with:", updatedLichHen);
 
