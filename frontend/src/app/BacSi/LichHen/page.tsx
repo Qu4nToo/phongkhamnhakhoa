@@ -113,7 +113,7 @@ export default function BookingView() {
                 .then(response => {
                     // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
                     const filteredBookings = response.data.filter((booking: any) => 
-                        booking.TinhTrang === "Đã xác nhận"
+                        booking.TinhTrang === "Đã xác nhận" || booking.TinhTrang === "Chờ xác nhận"
                     );
                     setbookings(filteredBookings);
                     setFilteredBookings(filteredBookings);
@@ -586,7 +586,10 @@ export default function BookingView() {
                                                     <DropdownMenuContent className="bg-white" align="end">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                         <DropdownMenuItem onClick={() => handleViewClick(bookings)}>Xem chi tiết</DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleCreatePhieuKhamClick(bookings)}>Tạo phiếu khám</DropdownMenuItem>
+                                                        {bookings.TinhTrang == ""}
+                                                        {bookings.TinhTrang === "Đã xác nhận" && (
+                                                            <DropdownMenuItem onClick={() => handleCreatePhieuKhamClick(bookings)}>Tạo phiếu khám</DropdownMenuItem>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>

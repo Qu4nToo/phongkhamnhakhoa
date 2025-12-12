@@ -2,12 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input"; 
-import { Button } from "@/components/ui/button"; 
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { User, Mail, Phone, Stethoscope, Edit, Save, X, Calendar, MapPin, Briefcase, Lock, Eye, EyeOff, Camera } from 'lucide-react';
-import axios from 'axios'; 
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
 // Định nghĩa kiểu dữ liệu cho thông tin Bác sĩ
@@ -36,12 +36,12 @@ export default function DoctorProfile() {
     const [originalData, setOriginalData] = useState<DoctorData | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    
+
     // States for dialogs
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
-    
+
     // States for password
     const [showOldPassword, setShowOldPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -51,14 +51,14 @@ export default function DoctorProfile() {
         newPassword: '',
         confirmPassword: ''
     });
-    
+
     // States for avatar
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string>('');
 
     useEffect(() => {
         const storedUserInfo = sessionStorage.getItem("user_info");
-        
+
         if (storedUserInfo) {
             try {
                 const user = JSON.parse(storedUserInfo);
@@ -77,7 +77,7 @@ export default function DoctorProfile() {
                     AnhDaiDien: user.anhDaiDien || ''
                 };
                 setDoctorData(doctorInfo);
-                setOriginalData(doctorInfo); 
+                setOriginalData(doctorInfo);
             } catch (error) {
                 console.error("Lỗi phân tích JSON:", error);
                 router.push('/DangNhap');
@@ -86,7 +86,7 @@ export default function DoctorProfile() {
             toast.warning("Vui lòng đăng nhập.");
             router.push('/DangNhap');
         }
-        
+
         setIsLoading(false);
     }, []);
 
@@ -283,9 +283,9 @@ export default function DoctorProfile() {
                             <div className="relative flex-shrink-0">
                                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-50 rounded-full flex items-center justify-center overflow-hidden border-2 border-blue-200">
                                     {doctorData.AnhDaiDien ? (
-                                        <img 
-                                            src={doctorData.AnhDaiDien} 
-                                            alt="Avatar" 
+                                        <img
+                                            src={doctorData.AnhDaiDien}
+                                            alt="Avatar"
                                             className="w-full h-full object-cover"
                                             onError={(e) => {
                                                 e.currentTarget.style.display = 'none';
@@ -438,6 +438,8 @@ export default function DoctorProfile() {
                                     id="HoTen"
                                     value={doctorData.HoTen}
                                     onChange={(e) => setDoctorData({ ...doctorData, HoTen: e.target.value })}
+                                    readOnly
+
                                 />
                             </div>
                             <div className="space-y-2">
@@ -447,6 +449,7 @@ export default function DoctorProfile() {
                                     type="date"
                                     value={doctorData.NgaySinh || ''}
                                     onChange={(e) => setDoctorData({ ...doctorData, NgaySinh: e.target.value })}
+                                    readOnly
                                 />
                             </div>
                         </div>
@@ -458,6 +461,7 @@ export default function DoctorProfile() {
                                     type="email"
                                     value={doctorData.Email}
                                     onChange={(e) => setDoctorData({ ...doctorData, Email: e.target.value })}
+                                    readOnly
                                 />
                             </div>
                             <div className="space-y-2">
@@ -466,6 +470,7 @@ export default function DoctorProfile() {
                                     id="SoDienThoai"
                                     value={doctorData.SoDienThoai}
                                     onChange={(e) => setDoctorData({ ...doctorData, SoDienThoai: e.target.value })}
+                                    readOnly
                                 />
                             </div>
                         </div>

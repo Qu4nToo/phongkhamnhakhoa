@@ -307,6 +307,7 @@ export function CustomerInfo() {
                 id="hoTen"
                 value={editForm.HoTen}
                 onChange={(e) => setEditForm({...editForm, HoTen: e.target.value})}
+                readOnly
               />
             </div>
             <div className="space-y-2">
@@ -315,6 +316,7 @@ export function CustomerInfo() {
                 id="sdt"
                 value={editForm.SoDienThoai}
                 onChange={(e) => setEditForm({...editForm, SoDienThoai: e.target.value})}
+                readOnly
               />
             </div>
             <div className="space-y-2">
@@ -324,6 +326,7 @@ export function CustomerInfo() {
                 type="email"
                 value={editForm.Email}
                 onChange={(e) => setEditForm({...editForm, Email: e.target.value})}
+                readOnly
               />
             </div>
             <div className="space-y-2">
@@ -333,6 +336,7 @@ export function CustomerInfo() {
                 type="date"
                 value={editForm.NgaySinh}
                 onChange={(e) => setEditForm({...editForm, NgaySinh: e.target.value})}
+                readOnly
               />
             </div>
             <div className="space-y-2">
