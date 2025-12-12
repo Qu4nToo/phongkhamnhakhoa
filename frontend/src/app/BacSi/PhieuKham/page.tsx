@@ -81,7 +81,9 @@ export default function phieuKhamView() {
 
         return formatter.format(price).replace('₫', 'VND').trim();
     };
-    useEffect(() => {
+
+    // Hàm load danh sách phiếu khám
+    const loadPhieuKhams = () => {
         const storedUserInfo = sessionStorage.getItem("user_info");
         if (storedUserInfo) {
             const user = JSON.parse(storedUserInfo);
@@ -103,7 +105,10 @@ export default function phieuKhamView() {
                     setPhieuKhams([]);
                 })
         }
+    };
 
+    useEffect(() => {
+        loadPhieuKhams();
     }, []);
 
     useEffect(() => {

@@ -71,6 +71,7 @@ export default function hoaDonView() {
     const [isDialogOpen, setDialogOpen] = useState(false);
     const [tongtien, setTongtien] = useState<number>();
     const [selectedStatus, setSelectedStatus] = useState("");
+    const [filterStatus, setFilterStatus] = useState("all");
 
 
     const TRANG_THAI = [
@@ -96,10 +97,15 @@ export default function hoaDonView() {
         return formatter.format(price).replace('₫', 'VND').trim();
     };
 
-    useEffect(() => {
+    // Hàm load danh sách hóa đơn
+    const loadHoaDons = () => {
         axios.get("http://localhost:5000/api/hoa-don/get")
             .then(hoaDons => setHoaDons(hoaDons.data))
             .catch(err => console.log(err))
+    };
+
+    useEffect(() => {
+        loadHoaDons();
     }, []);
     const handleDeleteClick = (hoaDon: React.SetStateAction<null>) => {
         console.log(hoaDon);
@@ -178,13 +184,23 @@ export default function hoaDonView() {
         }
     };
 
+    // Lọc hóa đơn theo trạng thái
+    const filteredHoaDons = hoaDons.filter((hoaDon: any) => {
+        if (filterStatus === "all") return true;
+        if (filterStatus === "paid") return hoaDon.TrangThai === "Đã thanh toán";
+        if (filterStatus === "unpaid") return hoaDon.TrangThai === "Chưa thanh toán";
+        return true;
+    });
+
     return (
         <>
             <title>Quản Lý Hóa Đơn</title>
-            <Tabs defaultValue="all">
+            <Tabs defaultValue="all" onValueChange={setFilterStatus}>
                 <div className="flex items-center">
                     <TabsList>
                         <TabsTrigger value="all">Tất cả</TabsTrigger>
+                        <TabsTrigger value="paid">Đã thanh toán</TabsTrigger>
+                        <TabsTrigger value="unpaid">Chưa thanh toán</TabsTrigger>
                     </TabsList>
                 </div>
                 <TabsContent value="all">
@@ -207,7 +223,7 @@ export default function hoaDonView() {
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                {hoaDons.map((hoaDons: any) => (
+                                {filteredHoaDons.map((hoaDons: any) => (
                                     <TableBody key={hoaDons.MaHoaDon}>
                                         <TableRow >
                                             <TableCell className="font-medium">
@@ -236,6 +252,144 @@ export default function hoaDonView() {
                                                             size="icon"
                                                             variant="ghost"
                                                         // onClick={() => handleToggleMenuClick(product)}
+                                                        >
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                            <span className="sr-only">Toggle menu</span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Hành động</DropdownMenuLabel>
+                                                        <DropdownMenuItem onClick={() => handleViewClick(hoaDons)}>Xem chi tiết</DropdownMenuItem>
+                                                        {hoaDons.TrangThai !== "Đã thanh toán" && (
+                                                            <DropdownMenuItem onClick={() => handleUpdateStatusClick(hoaDons)}>Cập nhật trạng thái</DropdownMenuItem>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                ))}
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="paid">
+                    <Card x-chunk="dashboard-06-chunk-0">
+                        <CardHeader>
+                            <CardTitle>Danh sách hóa đơn đã thanh toán</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Tên khách hàng</TableHead>
+                                        <TableHead>Ngày Tạo</TableHead>
+                                        <TableHead>Ngày Thanh Toán</TableHead>
+                                        <TableHead>Tổng tiền</TableHead>
+                                        <TableHead>Phương thức</TableHead>
+                                        <TableHead>Trạng thái</TableHead>
+                                        <TableHead>
+                                            <span className="sr-only">Actions</span>
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                {filteredHoaDons.map((hoaDons: any) => (
+                                    <TableBody key={hoaDons.MaHoaDon}>
+                                        <TableRow >
+                                            <TableCell className="font-medium">
+                                                {hoaDons.HoTen}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {hoaDons.NgayTao || "Chưa có"}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {hoaDons.NgayThanhToan || "Chưa có"}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {formatPrice(hoaDons.TongTien)}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {hoaDons.PhuongThuc}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {hoaDons.TrangThai}
+                                            </TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            aria-haspopup="true"
+                                                            size="icon"
+                                                            variant="ghost"
+                                                        >
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                            <span className="sr-only">Toggle menu</span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Hành động</DropdownMenuLabel>
+                                                        <DropdownMenuItem onClick={() => handleViewClick(hoaDons)}>Xem chi tiết</DropdownMenuItem>
+                                                        {hoaDons.TrangThai !== "Đã thanh toán" && (
+                                                            <DropdownMenuItem onClick={() => handleUpdateStatusClick(hoaDons)}>Cập nhật trạng thái</DropdownMenuItem>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                ))}
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="unpaid">
+                    <Card x-chunk="dashboard-06-chunk-0">
+                        <CardHeader>
+                            <CardTitle>Danh sách hóa đơn chưa thanh toán</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Tên khách hàng</TableHead>
+                                        <TableHead>Ngày Tạo</TableHead>
+                                        <TableHead>Ngày Thanh Toán</TableHead>
+                                        <TableHead>Tổng tiền</TableHead>
+                                        <TableHead>Phương thức</TableHead>
+                                        <TableHead>Trạng thái</TableHead>
+                                        <TableHead>
+                                            <span className="sr-only">Actions</span>
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                {filteredHoaDons.map((hoaDons: any) => (
+                                    <TableBody key={hoaDons.MaHoaDon}>
+                                        <TableRow >
+                                            <TableCell className="font-medium">
+                                                {hoaDons.HoTen}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {hoaDons.NgayTao || "Chưa có"}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {hoaDons.NgayThanhToan || "Chưa có"}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {formatPrice(hoaDons.TongTien)}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {hoaDons.PhuongThuc}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                {hoaDons.TrangThai}
+                                            </TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            aria-haspopup="true"
+                                                            size="icon"
+                                                            variant="ghost"
                                                         >
                                                             <MoreHorizontal className="h-4 w-4" />
                                                             <span className="sr-only">Toggle menu</span>
