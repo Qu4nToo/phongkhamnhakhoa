@@ -1,5 +1,4 @@
 import React from 'react';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { Microscope, Droplet, Radio, Zap } from 'lucide-react';
 
 const equipment = [
@@ -35,8 +34,8 @@ export function Facilities() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
           <div className="rounded-2xl overflow-hidden shadow-2xl">
-            <ImageWithFallback
-              src="https://images.unsplash.com/photo-1642844819197-5f5f21b89ff8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBkZW50YWwlMjBlcXVpcG1lbnR8ZW58MXx8fHwxNzY1MTg3OTI5fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+            <img
+              src="https://firebasestorage.googleapis.com/v0/b/phongkhamnhakhoahoangquan.firebasestorage.app/o/AnhWeb%2Fthiet-bi.jpg?alt=media&token=b56701f2-4e36-4af4-bf08-b56c7b55eadf"
               alt="Trang thiết bị hiện đại"
               className="w-full h-[500px] object-cover"
             />

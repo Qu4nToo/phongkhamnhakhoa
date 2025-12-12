@@ -1,7 +1,6 @@
 import React from 'react';
 import Footer from "@/components/features/footer";
 import { Header } from "@/components/features/header";
-import { AboutHero } from '@/components/about/AboutHero';
 import { AboutIntro } from '@/components/about/AboutIntro';
 import { VisionMission } from '@/components/about/VisionMission';
 import { CoreValues } from '@/components/about/CoreValues';

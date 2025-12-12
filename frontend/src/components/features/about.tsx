@@ -1,6 +1,5 @@
 "use client"
 import React from 'react';
-import { ImageWithFallback } from '@/components/figma/ImageWithFallback';
 import { CheckCircle } from 'lucide-react';
 
 const features = [
@@ -19,15 +18,15 @@ export function About() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-2xl overflow-hidden shadow-lg">
-              <ImageWithFallback
-                src="https://images.unsplash.com/photo-1611690061822-b707a67bfebb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50aXN0JTIwcGF0aWVudCUyMHNtaWxlfGVufDF8fHx8MTc2NTAzMTA2N3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+              <img
+                src="https://firebasestorage.googleapis.com/v0/b/phongkhamnhakhoahoangquan.firebasestorage.app/o/AnhWeb%2Fcustomer.jpg?alt=media&token=e11717fb-e905-46a4-8e5b-78ebc9346f71"
                 alt="Dentist with patient"
                 className="w-full h-64 object-cover"
               />
             </div>
             <div className="rounded-2xl overflow-hidden shadow-lg mt-8">
-              <ImageWithFallback
-                src="https://images.unsplash.com/photo-1642844819197-5f5f21b89ff8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjB0ZWFtJTIwb2ZmaWNlfGVufDF8fHx8MTc2NTAzMTA2N3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+              <img
+                src="https://firebasestorage.googleapis.com/v0/b/phongkhamnhakhoahoangquan.firebasestorage.app/o/AnhWeb%2Fthiet-bi.jpg?alt=media&token=b56701f2-4e36-4af4-bf08-b56c7b55eadf"
                 alt="Dental team"
                 className="w-full h-64 object-cover"
               />

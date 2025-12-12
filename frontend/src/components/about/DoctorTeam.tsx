@@ -1,6 +1,5 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { GraduationCap, Award, Briefcase } from 'lucide-react';
 import axios from 'axios';
 import {
@@ -81,8 +80,8 @@ export function DoctorTeam() {
               <CarouselItem key={doctor.MaBacSi} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                 <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full">
                   <div className="h-72 bg-gradient-to-br from-blue-100 to-blue-50 relative overflow-hidden">
-                    <ImageWithFallback
-                      src={doctor.AnhDaiDien || "https://images.unsplash.com/photo-1631596577204-53ad0d6e6978?w=400"}
+                    <img
+                      src={doctor.AnhDaiDien || "https://firebasestorage.googleapis.com/v0/b/phongkhamnhakhoahoangquan.firebasestorage.app/o/AnhWeb%2FOlymstore%20001361%20(2).jpg?alt=media&token=a1b1a37c-9917-49f0-85df-00ce94cc8c7f"}
                       alt={doctor.HoTen}
                       className="w-full h-full object-cover"
                     />

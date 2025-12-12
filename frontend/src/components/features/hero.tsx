@@ -38,7 +38,7 @@ export function Hero() {
                     <div className="relative">
                         <div className="rounded-2xl overflow-hidden shadow-2xl">
                             <Image
-                                src="/banner-img.jpg"
+                                src="https://firebasestorage.googleapis.com/v0/b/phongkhamnhakhoahoangquan.firebasestorage.app/o/AnhWeb%2Fbanner-img.jpg?alt=media&token=d7fde876-fc9c-4aca-a534-457e2e8655c2"
                                 alt="Modern dental clinic"
                                 width={800}
                                 height={600}
