@@ -1,6 +1,5 @@
 "use client"
 import { useState } from 'react';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
 
 type FilterType = 'all' | 'featured' | 'bestseller' | 'price-high' | 'price-low';
 
@@ -103,7 +102,7 @@ export function ServicesGrid({ services, title }: ServicesGridProps) {
             >
               {/* Image Container */}
               <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 group">
-                <ImageWithFallback
+                <img
                   src={service.AnhChinh || service.HinhAnh || service.image}
                   alt={service.TenDichVu || service.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"

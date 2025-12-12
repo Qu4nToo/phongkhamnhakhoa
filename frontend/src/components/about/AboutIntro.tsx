@@ -1,5 +1,4 @@
 import React from 'react';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { Award, Users, Heart, Shield } from 'lucide-react';
 
 const highlights = [
@@ -52,8 +51,8 @@ export function AboutIntro() {
             </p>
           </div>
           <div className="rounded-2xl overflow-hidden shadow-2xl">
-            <ImageWithFallback
-              src="https://images.unsplash.com/photo-1758205308181-d52b41e00cef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZW50YWwlMjB0ZWFtJTIwc21pbGluZ3xlbnwxfHx8fDE3NjUxODc5MzB8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+            <img
+              src="https://firebasestorage.googleapis.com/v0/b/phongkhamnhakhoahoangquan.firebasestorage.app/o/AnhWeb%2Fabout.jpg?alt=media&token=643bdffb-47f1-47b6-abe4-1653fd9b3796"
               alt="Đội ngũ nha khoa"
               className="w-full h-full object-cover"
             />
