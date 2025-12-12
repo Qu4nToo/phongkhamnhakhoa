@@ -181,11 +181,11 @@ export default function User() {
       const response = await axios.put(
         `http://localhost:5000/api/bac-si/update-avatar/${userId}`,
         formData,
-        { 
-          headers: { 
+        {
+          headers: {
             'Content-Type': 'multipart/form-data',
             'Authorization': `Bearer ${token}`
-          } 
+          }
         }
       );
       return response.data.avatarUrl;
@@ -496,14 +496,16 @@ export default function User() {
                         className="cursor-pointer"
                       />
                       {imagePreview && (
-                        <div className="mt-2">
-                          <Image
-                            src={imagePreview}
-                            alt="Preview"
-                            width={80}
-                            height={80}
-                            className="rounded-full object-cover"
-                          />
+                        <div className="mt-2 w-full flex justify-center">
+                          <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
+                            <Image
+                              src={imagePreview}
+                              alt="Preview"
+                              width={80}
+                              height={80}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
                         </div>
                       )}
                     </div>
@@ -604,13 +606,15 @@ export default function User() {
                     <TableRow>
                       <TableCell>
                         {users.AnhDaiDien ? (
-                          <Image
-                            src={users.AnhDaiDien}
-                            alt={users.HoTen}
-                            width={40}
-                            height={40}
-                            className="rounded-full object-cover"
-                          />
+                          <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
+                            <Image
+                              src={users.AnhDaiDien}
+                              alt={users.HoTen}
+                              width={40}
+                              height={40}
+                              className="rounded-full object-cover"
+                            />
+                          </div>
                         ) : (
                           <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                             <UserIcon className="w-6 h-6 text-gray-400" />
@@ -701,14 +705,16 @@ export default function User() {
                   className="cursor-pointer"
                 />
                 {imagePreview && (
-                  <div className="mt-2">
-                    <Image
-                      src={imagePreview}
-                      alt="Preview"
-                      width={80}
-                      height={80}
-                      className="rounded-full object-cover"
-                    />
+                  <div className="mt-2 w-full flex justify-center">
+                    <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
+                      <Image
+                        src={imagePreview}
+                        alt="Preview"
+                        width={80}
+                        height={80}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   </div>
                 )}
               </div>

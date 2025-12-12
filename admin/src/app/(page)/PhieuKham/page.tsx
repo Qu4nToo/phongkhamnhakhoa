@@ -90,10 +90,15 @@ export default function phieuKhamView() {
         // Loại bỏ ký hiệu "₫" mặc định
         return formatter.format(numPrice).replace('₫', 'VND').trim();
     };
-    useEffect(() => {
+    // Hàm load danh sách phiếu khám
+    const loadPhieuKhams = () => {
         axios.get("http://localhost:5000/api/phieu-kham/get")
             .then(phieuKhams => setPhieuKhams(phieuKhams.data))
             .catch(err => console.log(err))
+    };
+
+    useEffect(() => {
+        loadPhieuKhams();
     }, []);
     const handleDeleteClick = (phieuKham: React.SetStateAction<null>) => {
         console.log(phieuKham);

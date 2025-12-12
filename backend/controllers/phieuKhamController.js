@@ -86,6 +86,18 @@ const PhieuKhamController = {
                 MaLichHen
             });
 
+            // Lấy thông tin chi tiết phiếu khám vừa tạo
+            const phieuKhamDetail = await PhieuKham.getById(result.insertId);
+            const TenBacSi = phieuKhamDetail?.TenBacSi || 'Bác sĩ';
+
+            // Gửi thông báo qua Socket.IO cho bác sĩ và admin
+            const io = req.app.get('io');
+            io.emit('phieuKham:created', {
+                message: `Phiếu khám mới cho bác sĩ ${TenBacSi} đã được tạo`,
+                phieuKham: phieuKhamDetail,
+                maBacSi: MaBacSi
+            });
+
             res.status(201).json({ message: "Thêm phiếu khám thành công!", data: result });
         } catch (error) {
             console.error("Lỗi khi thêm phiếu khám:", error);
@@ -113,6 +125,18 @@ const PhieuKhamController = {
 
             if (result.affectedRows === 0) {
                 return res.status(404).json({ message: "Không tìm thấy phiếu khám để cập nhật!" });
+            }
+
+            // Nếu trạng thái là "Đã khám", gửi thông báo qua Socket.IO
+            if (TrangThai === "Đã khám") {
+                const phieuKhamDetail = await PhieuKham.getById(id);
+                const TenBacSi = phieuKhamDetail?.TenBacSi || 'Bác sĩ';
+                const io = req.app.get('io');
+                io.emit('phieuKham:completed', {
+                    message: `Phiếu khám ${id} của bác sĩ ${TenBacSi} đã hoàn thành`,
+                    phieuKham: phieuKhamDetail,
+                    trangThai: TrangThai
+                });
             }
 
             res.status(200).json({ message: "Cập nhật phiếu khám thành công!" });
