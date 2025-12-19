@@ -69,10 +69,11 @@ const LichLamViecController = {
     deleteLichLamViec: async (req, res) => {
         try {
             const { id } = req.params;
-            const result = await LichLamViec.delete(id);
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ message: "Không tìm thấy lịch làm việc để xóa!" });
+            const existingLichLamViec = await LichLamViec.getById(id);
+            if (!existingLichLamViec) {
+                return res.status(404).json({ message: "Không tìm thấy lịch làm việc!" });
             }
+            await LichLamViec.delete(id);
             res.status(200).json({ message: "Xóa lịch làm việc thành công!" });
         } catch (error) {
             res.status(500).json({ message: "Lỗi server", error: error.message });

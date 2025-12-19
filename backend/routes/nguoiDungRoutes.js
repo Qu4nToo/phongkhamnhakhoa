@@ -11,12 +11,12 @@ const upload = multer({
         fileSize: 5 * 1024 * 1024, // 5MB
     },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
         
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Chỉ được upload file ảnh (JPEG, PNG, GIF, WEBP)'), false);
+            cb(new Error('Chỉ được upload file ảnh (JPEG, PNG, GIF, WEBP, JPG)'), false);
         }
     }
 });

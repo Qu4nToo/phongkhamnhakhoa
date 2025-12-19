@@ -31,6 +31,16 @@ module.exports = {
     }
   },
 
+  getByMaPhieuKham: async (MaPhieuKham) => {
+    try {
+      const [rows] = await db.query('SELECT * FROM hoadon WHERE MaPhieuKham = ?', [MaPhieuKham]);
+      return rows;
+    } catch (err) {
+      console.error('Query Error:', err.message);
+      throw new Error('Database query failed');
+    }  
+  },
+
   create: async (data) => {
     try {
       const [result] = await db.query('INSERT INTO hoadon SET ?', data);

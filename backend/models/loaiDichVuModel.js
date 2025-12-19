@@ -1,4 +1,5 @@
 const db = require("../config/server");
+const { getByName } = require("./dichVuModel");
 
 module.exports = {
     // ✅ Lấy tất cả loại dịch vụ
@@ -21,6 +22,17 @@ module.exports = {
             return rows[0];
         } catch (error) {
             console.error('Query Error:', error);
+            throw new Error('Database query failed');
+        }
+    },
+
+    getByName: async (name) => {
+        try {
+            const sql = 'SELECT * FROM loaidichvu WHERE TenLoaiDV LIKE ?';
+            const [rows] = await db.query(sql, [`%${name}%`]);
+            return rows;
+        } catch (err) {
+            console.error('Query Error:', err.message);
             throw new Error('Database query failed');
         }
     },

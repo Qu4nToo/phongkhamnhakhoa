@@ -41,9 +41,12 @@ const DichVuController = {
     getDichVuByMaLoaiDV: async (req, res) => {
         try {
             const { maloaidv } = req.params;
-            
+
             // Lấy danh sách dịch vụ theo MaLoaiDV
             const dichVuList = await DichVu.getByLoaiDichVu(maloaidv);
+            if (!dichVuList || dichVuList.length === 0) {
+                return res.status(404).json({ message: "Không tìm thấy dịch vụ nào cho mã loại dịch vụ này!" });
+            }
             res.status(200).json(dichVuList);
         } catch (error) {
             console.error("Lỗi khi lấy dịch vụ theo mã loại:", error);
@@ -54,7 +57,7 @@ const DichVuController = {
     getDichVuBySlug: async (req, res) => {
         try {
             const { slug } = req.params;
-            
+
             // Lấy chi tiết dịch vụ theo slug
             const dichVu = await DichVu.getBySlug(slug);
             if (!dichVu) {
@@ -75,16 +78,21 @@ const DichVuController = {
                 return res.status(400).json({ message: "Thiếu trường dữ liệu" });
             }
 
+            const existingDichVu = await DichVu.getByName(TenDichVu);
+            if (existingDichVu && existingDichVu.length > 0) {
+                return res.status(409).json({ message: "Dịch vụ với tên này đã tồn tại!" });
+            }
+
             // Tạo slug từ tên dịch vụ
             const Slug = createSlug(TenDichVu);
 
-            const result = await DichVu.create({ 
-                TenDichVu, 
-                Slug, 
-                Gia, 
-                MoTa, 
-                DonVi, 
-                MaLoaiDV, 
+            const result = await DichVu.create({
+                TenDichVu,
+                Slug,
+                Gia,
+                MoTa,
+                DonVi,
+                MaLoaiDV,
                 ThoiLuong,
                 TrangThai: TrangThai || 'Đang hoạt động'
             });
@@ -103,28 +111,50 @@ const DichVuController = {
             if (!TenDichVu || !Gia || !MoTa || !DonVi || !MaLoaiDV || !ThoiLuong) {
                 return res.status(400).json({ message: "Các trường TenDichVu, Gia, MoTa, DonVi, MaLoaiDV, ThoiLuong là bắt buộc!" });
             }
+            const existingDichVu = await DichVu.getByName(TenDichVu);
+            if (existingDichVu && existingDichVu.length > 0) {
+                return res.status(409).json({ message: "Dịch vụ với tên này đã tồn tại!" });
+            }
+
+            const existingDichVuById = await DichVu.getById(id);
+            if (!existingDichVuById) {
+                return res.status(404).json({ message: "Không tìm thấy dịch vụ!" });
+            }
 
             // Tạo slug mới từ tên dịch vụ
             const Slug = createSlug(TenDichVu);
 
-            const result = await DichVu.update(id, { 
-                TenDichVu, 
-                Slug, 
-                Gia, 
-                MoTa, 
-                DonVi, 
-                MaLoaiDV, 
+            const result = await DichVu.update(id, {
+                TenDichVu,
+                Slug,
+                Gia,
+                MoTa,
+                DonVi,
+                MaLoaiDV,
                 ThoiLuong,
                 TrangThai: TrangThai || 'Đang hoạt động'
             });
 
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ message: "Không tìm thấy dịch vụ để cập nhật!" });
-            }
-
-            res.status(200).json({ message: "Cập nhật dịch vụ thành công!" });
+            res.status(200).json({ message: "Cập nhật dịch vụ thành công!", });
         } catch (error) {
             console.error("Lỗi khi cập nhật dịch vụ:", error);
+            res.status(500).json({ message: "Lỗi server", error: error.message });
+        }
+    },
+
+    getDichVuByBacSi: async (req, res) => {
+        try {
+            const { bacSiId } = req.params;
+            if (!bacSiId) {
+                return res.status(400).json({ message: "Thiếu mã bác sĩ" });
+            }
+            const dichVuList = await DichVu.getByBacSi(bacSiId);
+            if (!dichVuList || dichVuList.length === 0) {
+                return res.status(404).json({ message: "Không tìm thấy dịch vụ nào cho bác sĩ này!" });
+            }
+            res.status(200).json(dichVuList);
+        } catch (error) {
+            console.error("Lỗi khi lấy danh sách bác sĩ theo dịch vụ:", error);
             res.status(500).json({ message: "Lỗi server", error: error.message });
         }
     },
@@ -132,10 +162,11 @@ const DichVuController = {
     deleteDichVu: async (req, res) => {
         try {
             const { id } = req.params;
-            const result = await DichVu.delete(id);
-            if (!result) {
+            const existingDichVu = await DichVu.getById(id);
+            if (!existingDichVu) {
                 return res.status(404).json({ message: "Không tìm thấy dịch vụ!" });
             }
+            await DichVu.delete(id);
             res.status(200).json({ message: "Xóa dịch vụ thành công!" });
         } catch (error) {
             console.error("Lỗi khi xóa dịch vụ:", error);

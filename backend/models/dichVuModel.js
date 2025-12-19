@@ -60,23 +60,49 @@ module.exports = {
         'SELECT dv.*, ldv.MaLoaiDV, ldv.TenLoaiDV, ldv.Slug as SlugLoaiDV, ldv.MoTa as MoTaLoai FROM dichvu dv JOIN loaidichvu ldv ON dv.MaLoaiDV = ldv.MaLoaiDV WHERE dv.Slug = ?',
         [slug]
       );
-      
+
       if (rows.length === 0) return null;
-      
+
       const dichVu = rows[0];
-      
+
       // Lấy tất cả ảnh của dịch vụ
       const [images] = await db.query(
         'SELECT * FROM hinhanhdichvu WHERE MaDichVu = ? ORDER BY ThuTu ASC',
         [dichVu.MaDichVu]
       );
-      
+
       // Gắn mảng ảnh vào object dịch vụ
       dichVu.HinhAnhs = images;
-      
+
       return dichVu;
     } catch (err) {
       console.error('Query Error:', err.message);
+      throw new Error('Database query failed');
+    }
+  },
+
+  getByName: async (name) => {
+    try {
+      const [rows] = await db.query('SELECT * FROM dichvu WHERE TenDichVu LIKE ?', [`%${name}%`]);
+      return rows;
+    } catch (err) {
+      console.error('Query Error:', err.message);
+      throw new Error('Database query failed');
+    }
+  },
+
+  getByBacSi: async (dichVuId) => {
+    try {
+      const sql = `
+                SELECT DISTINCT dv.*
+                FROM dichvu dv
+                INNER JOIN chitietdichvu ctdv ON dv.MaDichVu = ctdv.MaDichVu
+                WHERE ctdv.MaBacSi = ?
+            `;
+      const [rows] = await db.query(sql, [dichVuId]);
+      return rows;
+    } catch (error) {
+      console.error('Query Error:', error.message);
       throw new Error('Database query failed');
     }
   },

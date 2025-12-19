@@ -54,6 +54,7 @@ import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { Textarea } from "@/components/ui/textarea"
 export default function phieuKhamView() {
+    const [userInfo, setUserInfo] = useState<any>(null);
     const [phieuKhams, setPhieuKhams] = useState<any[]>([]);
     const [phieuKham, setPhieuKham] = useState<any>([]);
     const [chitietphieukhams, setChiTietphieukhams] = useState<any>([]);
@@ -87,6 +88,7 @@ export default function phieuKhamView() {
         const storedUserInfo = sessionStorage.getItem("user_info");
         if (storedUserInfo) {
             const user = JSON.parse(storedUserInfo);
+            setUserInfo(user);
             axios.get(`http://localhost:5000/api/phieu-kham/getByBacSiID/${user.MaBacSi}`)
                 .then(response => {
                     console.log("Response data:", response.data);
@@ -111,18 +113,19 @@ export default function phieuKhamView() {
         loadPhieuKhams();
     }, []);
 
-    useEffect(() => {
-        axios.get("http://localhost:5000/api/dich-vu/get")
-            .then(response => setDichVuList(response.data))
-            .catch(err => console.error("Error fetching services:", err));
-    }, []);
-
     const handleViewClick = (phieuKham: any) => {
         setPhieuKham(phieuKham);
         setEditedChuanDoan(phieuKham.ChuanDoan || "");
         setEditedGhiChu(phieuKham.GhiChu || "");
         setTempServices([]);
         setShowAlertView(true);
+    }
+    const handleAddServiceDialog = () => {
+
+        axios.get(`http://localhost:5000/api/dich-vu/getDichVuByBacSi/${userInfo.MaBacSi}`)
+            .then(res => setDichVuList(res.data))
+            .catch(err => console.log(err))
+        setShowAddServiceDialog(true);
     }
 
     const handleSaveEdit = async () => {
@@ -184,7 +187,7 @@ export default function phieuKhamView() {
                 }
             }
 
-            toast.success("Cập nhật thành công!");
+            toast.success("Đã hoàn tất phiếu khám!");
             setShowAlertView(false);
         } catch (error) {
             console.error("Error updating phieu kham:", error);
@@ -339,7 +342,8 @@ export default function phieuKhamView() {
                                     </p>
                                     <Button
                                         size="sm"
-                                        onClick={() => setShowAddServiceDialog(true)}
+                                        onClick={handleAddServiceDialog}
+                                        // onClick={() => setShowAddServiceDialog(true)}
                                         className=" bg-black border-1 text-white flex items-center gap-2 hover:bg-gray-200 hover:text-black border-black"
                                     >
                                         <PlusCircle className="w-4 h-4" />

@@ -234,14 +234,13 @@ module.exports = {
     // Lấy các slot thời gian khả dụng
     getAvailableSlots: async (bacSiId, ngayHen, dichVuId) => {
         try {
-            // Lấy thời lượng của dịch vụ
+
             const [dichvu] = await db.query('SELECT ThoiLuong FROM dichvu WHERE MaDichVu = ?', [dichVuId]);
             if (!dichvu || dichvu.length === 0) {
                 throw new Error("Không tìm thấy dịch vụ!");
             }
             const thoiLuong = dichvu[0].ThoiLuong;
 
-            // Lấy các lịch hẹn đã có của bác sĩ trong ngày
             const [existingBookings] = await db.query(`
                 SELECT lh.GioHen, dv.ThoiLuong
                 FROM lichhen lh
@@ -249,25 +248,21 @@ module.exports = {
                 WHERE lh.MaBacSi = ? AND DATE(lh.NgayHen) = DATE(?)
             `, [bacSiId, ngayHen]);
 
-            // Định nghĩa các slot cố định (8h-17h, nghỉ trưa 11h30-13h, mỗi 30 phút)
             const allSlots = [];
             for (let h = 8; h < 17; h++) {
                 for (let m = 0; m < 60; m += 30) {
                     const startMinutes = h * 60 + m;
                     const endMinutes = startMinutes + thoiLuong;
 
-                    // Bỏ qua giờ nghỉ trưa (11:30 - 13:00)
-                    const lunchStart = 11 * 60 + 30; // 11:30
-                    const lunchEnd = 13 * 60; // 13:00
+                    const lunchStart = 11 * 60 + 30;
+                    const lunchEnd = 13 * 60;
 
-                    // Nếu slot bắt đầu hoặc kết thúc trong giờ nghỉ trưa thì bỏ qua
                     if ((startMinutes >= lunchStart && startMinutes < lunchEnd) ||
                         (endMinutes > lunchStart && endMinutes <= lunchEnd) ||
                         (startMinutes < lunchStart && endMinutes > lunchEnd)) {
                         continue;
                     }
 
-                    // Không cho phép vượt quá 17:00
                     if (endMinutes > 17 * 60) continue;
 
                     const startH = Math.floor(startMinutes / 60);
@@ -277,7 +272,6 @@ module.exports = {
 
                     const timeSlot = `${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')} - ${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
 
-                    // Kiểm tra xem slot này có bị trùng với lịch đã có không
                     let isAvailable = true;
                     for (const booking of existingBookings) {
                         const [existGioStr] = booking.GioHen.split(' - ');
@@ -285,7 +279,6 @@ module.exports = {
                         const existBatDau = existGio * 60 + existPhut;
                         const existKetThuc = existBatDau + booking.ThoiLuong;
 
-                        // Kiểm tra chồng lấn
                         if (startMinutes < existKetThuc && existBatDau < endMinutes) {
                             isAvailable = false;
                             break;

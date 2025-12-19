@@ -10,6 +10,10 @@ router.get('/byLoaiDichVuID/:maloaidv', dichVuController.getDichVuByMaLoaiDV);
 
 router.get('/getBySlug/:slug', dichVuController.getDichVuBySlug);
 
+router.get('/getDichVuByBacSi/:bacSiId',
+    dichVuController.getDichVuByBacSi
+);
+
 // GET single rating by ID
 router.get('/get/:id', dichVuController.getDichVuById);
 

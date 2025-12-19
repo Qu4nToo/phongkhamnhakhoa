@@ -23,23 +23,23 @@ export default function Footer() {
             <h3 className="mb-4">Liên Kết Nhanh</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#home" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/" className="text-gray-400 hover:text-white transition-colors">
                   Trang Chủ
                 </a>
               </li>
               <li>
-                <a href="#services" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/DichVu/nha-khoa-tong-quat" className="text-gray-400 hover:text-white transition-colors">
                   Dịch Vụ
                 </a>
               </li>
               <li>
-                <a href="#about" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/GioiThieu" className="text-gray-400 hover:text-white transition-colors">
                   Về Chúng Tôi
                 </a>
               </li>
               <li>
-                <a href="#contact" className="text-gray-400 hover:text-white transition-colors">
-                  Liên Hệ
+                <a href="/BangGia" className="text-gray-400 hover:text-white transition-colors">
+                  Bảng giá
                 </a>
               </li>
             </ul>

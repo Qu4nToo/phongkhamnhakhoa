@@ -47,7 +47,7 @@ const ChiTietDichVuController = {
   // 🔹 Thêm chi tiết dịch vụ mới
   createChiTietDichVu: async (req, res) => {
     try {
-      const { GhiChu, MaBacSi, MaDichVu } = req.body;
+      const { MaBacSi, MaDichVu } = req.body;
 
       // Kiểm tra bắt buộc
       if (!MaBacSi || !MaDichVu) {
@@ -65,7 +65,6 @@ const ChiTietDichVuController = {
       }
 
       const result = await ChiTietDichVu.create({
-        GhiChu,
         MaBacSi,
         MaDichVu,
       });
@@ -84,16 +83,15 @@ const ChiTietDichVuController = {
   updateChiTietDichVu: async (req, res) => {
     try {
       const { id } = req.params;
-      const { GhiChu, MaBacSi, MaDichVu } = req.body;
+      const { MaBacSi, MaDichVu } = req.body;
 
-      if (!MaBacSi || !MaDichVu || !GhiChu) {
+      if (!MaBacSi || !MaDichVu ) {
         return res.status(400).json({
-          message: "Các trường MaBacSi, MaDichVu và GhiChu là bắt buộc!",
+          message: "Các trường MaBacSi và MaDichVu là bắt buộc!",
         });
       }
 
       const result = await ChiTietDichVu.update(id, {
-        GhiChu,
         MaBacSi,
         MaDichVu,
       });

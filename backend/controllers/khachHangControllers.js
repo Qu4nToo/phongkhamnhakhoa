@@ -60,20 +60,20 @@ const KhachHangController = {
                     diaChi: khachHang.DiaChi,
                     anhDaiDien: khachHang.AnhDaiDien
                 };
-                
-        // Tạo access token (15 phút)
-        const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
-        
-        // Tạo refresh token (3 giờ)
-        const refreshToken = jwt.sign(
-          { ...payload, type: 'refresh' }, 
-          process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, 
-          { expiresIn: "3h" }
-        );                // Trả về cả 2 tokens
-                res.status(200).json({ 
+
+                // Tạo access token (15 phút)
+                const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
+
+                // Tạo refresh token (3 giờ)
+                const refreshToken = jwt.sign(
+                    { ...payload, type: 'refresh' },
+                    process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+                    { expiresIn: "3h" }
+                );                // Trả về cả 2 tokens
+                res.status(200).json({
                     accessToken,
                     refreshToken,
-                    message: 'Đăng nhập thành công' 
+                    message: 'Đăng nhập thành công'
                 });
             }
         } catch (error) {
@@ -155,11 +155,12 @@ const KhachHangController = {
                 updateData.DiaChi = DiaChi;
             }
 
-            const result = await KhachHang.update(id, updateData);
-
-            if (result.affectedRows === 0) {
+            const existingKhachHang = await KhachHang.getById(id);
+            if (!existingKhachHang) {
                 return res.status(404).json({ message: "Không tìm thấy khách hàng để cập nhật!" });
             }
+
+            await KhachHang.update(id, updateData);
 
             return res.status(200).json({ message: "Cập nhật khách hàng thành công!" });
 
@@ -196,13 +197,12 @@ const KhachHangController = {
 
             // Hash mật khẩu mới
             const hashedPassword = await bcrypt.hash(newPassword, 10);
-
+            const existingKhachHang = await KhachHang.getById(id);
+            if (!existingKhachHang) {
+                return res.status(404).json({ message: "Không tìm thấy khách hàng để cập nhật mật khẩu!" });
+            } 
             // Cập nhật mật khẩu
-            const result = await KhachHang.updatePassword(id, hashedPassword);
-
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ message: "Không thể cập nhật mật khẩu!" });
-            }
+            await KhachHang.updatePassword(id, hashedPassword);
 
             return res.status(200).json({ message: "Đổi mật khẩu thành công!" });
 
@@ -244,7 +244,7 @@ const KhachHangController = {
                 return res.status(404).json({ message: "Không thể cập nhật avatar!" });
             }
 
-            return res.status(200).json({ 
+            return res.status(200).json({
                 message: "Cập nhật avatar thành công!",
                 avatarUrl: avatarUrl
             });
@@ -257,10 +257,11 @@ const KhachHangController = {
     deleteKhachHang: async (req, res) => {
         try {
             const { id } = req.params;
-            const deletedKhachHang = await KhachHang.delete(id);
-            if (!deletedKhachHang) {
+            const existingKhachHang = await KhachHang.getById(id);
+            if (!existingKhachHang) {
                 return res.status(404).json({ message: "Không tìm thấy khách hàng" });
             }
+            await KhachHang.delete(id);
             return res.status(200).json({ message: "Xóa khách hàng thành công!" });
         } catch (error) {
             console.error("Lỗi khi xóa khách hàng:", error);
