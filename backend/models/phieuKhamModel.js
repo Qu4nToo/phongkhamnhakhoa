@@ -55,6 +55,21 @@ module.exports = {
       throw new Error("Database query failed");
     }
   },
+
+    findByLichHenID: async ({ MaLichHen }) => {
+    try {
+      const sql = `
+            SELECT * FROM phieukham 
+            WHERE MaLichHen = ?
+        `;
+      // Giả sử db.query trả về một mảng kết quả
+      const [rows] = await db.query(sql, [MaLichHen]);
+      return rows;
+    } catch (error) {
+      console.error("Query Error:", error.message);
+      throw new Error("Database query failed");
+    }
+  },
   
   create: async (data) => {
     try {

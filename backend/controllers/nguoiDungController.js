@@ -149,10 +149,11 @@ const NguoiDungController = {
       }
 
       console.log("📤 Final update data:", updateData);
-      const result = await NguoiDung.update(id, updateData);
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "Không tìm thấy người dùng để cập nhật!" });
+      const nguoiDung = await NguoiDung.getById(id);
+      if (!nguoiDung) {
+        return res.status(404).json({ message: "Không tìm thấy người dùng" });
       }
+      await NguoiDung.update(id, updateData);
       return res.status(200).json({ message: "Cập nhật người dùng thành công!" });
     } catch (error) {
       console.error("Lỗi khi cập nhật người dùng:", error);

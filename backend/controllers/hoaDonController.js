@@ -61,6 +61,11 @@ const HoaDonController = {
             if (!MaNguoiDung) {
                 return res.status(400).json({ message: "Thiếu trường MaNguoiDung" });
             }
+            
+            const existingHoaDon = await HoaDon.getByMaPhieuKham(MaPhieuKham);
+            if (existingHoaDon && existingHoaDon.length > 0) {
+                return res.status(409).json({ message: "Hóa đơn với mã phiếu khám này đã tồn tại!" });
+            }
 
             const result = await HoaDon.create({
                 TongTien,
@@ -106,7 +111,12 @@ const HoaDonController = {
                 return res.status(400).json({ message: "Thiếu trường MaNguoiDung" });
             }
 
-            const result = await HoaDon.update(id, {
+            const existingHoaDon = await HoaDon.getById(id);
+            if (!existingHoaDon) {
+                return res.status(409).json({ message: "Không tìm thấy hóa đơn!" });
+            }
+
+            await HoaDon.update(id, {
                 MaPhieuKham,
                 TongTien,
                 NgayThanhToan,
@@ -116,9 +126,6 @@ const HoaDonController = {
                 MaNguoiDung
             });
 
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ message: "Không tìm thấy hóa đơn để cập nhật!" });
-            }
 
             res.status(200).json({ message: "Cập nhật hóa đơn thành công!" });
         } catch (error) {

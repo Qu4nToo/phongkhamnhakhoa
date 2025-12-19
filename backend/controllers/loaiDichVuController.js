@@ -63,6 +63,10 @@ const LoaiDichVuController = {
             if (!TenLoaiDV || TenLoaiDV.trim() === "") {
                 return res.status(400).json({ message: "Tên loại dịch vụ là bắt buộc!" });
             }
+            const existingLoaiDichVu = await LoaiDichVu.getByName(TenLoaiDV);
+            if (existingLoaiDichVu && existingLoaiDichVu.length > 0) {
+                return res.status(409).json({ message: "Loại dịch vụ với tên này đã tồn tại!" });
+            }
 
             // Tạo slug từ tên loại dịch vụ
             const slug = createSlug(TenLoaiDV);
@@ -93,6 +97,16 @@ const LoaiDichVuController = {
                 return res.status(400).json({ message: "Tên loại dịch vụ là bắt buộc!" });
             }
 
+            const loaiDichVu = await LoaiDichVu.getById(id);
+            if (!loaiDichVu) {
+                return res.status(404).json({ message: "Không tìm thấy loại dịch vụ!" });
+            }
+
+            const existingLoaiDichVu = await LoaiDichVu.getByName(TenLoaiDV);
+            if (existingLoaiDichVu && existingLoaiDichVu.length > 0) {
+                return res.status(409).json({ message: "Loại dịch vụ với tên này đã tồn tại!" });
+            }
+
             // Tạo slug mới từ tên loại dịch vụ
             const slug = createSlug(TenLoaiDV);
 
@@ -102,11 +116,7 @@ const LoaiDichVuController = {
                 MoTa: MoTa || null
             });
 
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ message: "Không tìm thấy loại dịch vụ để cập nhật!" });
-            }
-
-            res.status(200).json({ message: "Cập nhật loại dịch vụ thành công!" });
+            res.status(200).json({ message: "Cập nhật loại dịch vụ thành công!", data: result });
         } catch (error) {
             console.error("Lỗi khi cập nhật loại dịch vụ:", error);
             res.status(500).json({ message: "Lỗi server", error: error.message });
@@ -117,12 +127,13 @@ const LoaiDichVuController = {
     deleteLoaiDichVu: async (req, res) => {
         try {
             const { id } = req.params;
-            const result = await LoaiDichVu.delete(id);
 
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ message: "Không tìm thấy loại dịch vụ để xóa!" });
+            const loaiDichVu = await LoaiDichVu.getById(id);
+            if (!loaiDichVu) {
+                return res.status(404).json({ message: "Không tìm thấy loại dịch vụ!" });
             }
 
+            await LoaiDichVu.delete(id);
             res.status(200).json({ message: "Xóa loại dịch vụ thành công!" });
         } catch (error) {
             console.error("Lỗi khi xóa loại dịch vụ:", error);

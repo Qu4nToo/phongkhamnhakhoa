@@ -152,16 +152,16 @@ const BacSiController = {
                 return res.status(400).json({ message: "Thiếu thông tin bắt buộc!" });
 
             const updateData = { HoTen, SoDienThoai, Email, KinhNghiem, NgaySinh, DiaChi, ChuyenKhoa, BangCap, ChuyenMon };
-            
+            const existingBacSi = await BacSi.getBacSiById(Email);
+            if(!existingBacSi){
+                return res.status(404).json({ message: "Bác sĩ với email này không tồn tại!" });
+            }
             // Thêm AnhDaiDien nếu có
             if (AnhDaiDien !== undefined) {
                 updateData.AnhDaiDien = AnhDaiDien;
             }
             console.log("📤 Final update data:", updateData);
-            const result = await BacSi.update(id, updateData);
-            if (result.affectedRows === 0)
-                return res.status(404).json({ message: "Không tìm thấy bác sĩ để cập nhật!" });
-
+            await BacSi.update(id, updateData);
             res.status(200).json({ message: "Cập nhật bác sĩ thành công!", data: updateData });
         } catch (error) {
             console.error("Lỗi khi cập nhật bác sĩ:", error);
@@ -172,8 +172,11 @@ const BacSiController = {
     deleteBacSi: async (req, res) => {
         try {
             const { id } = req.params;
-            const result = await BacSi.delete(id);
-            if (!result) return res.status(404).json({ message: "Không tìm thấy bác sĩ" });
+            const existingBacSi = await BacSi.getById(id);
+            if(!existingBacSi){
+                return res.status(404).json({ message: "Bác sĩ với email này không tồn tại!" });
+            }
+            await BacSi.delete(id);
             res.status(200).json({ message: "Xóa bác sĩ thành công!" });
         } catch (error) {
             console.error("Lỗi khi xóa bác sĩ:", error);

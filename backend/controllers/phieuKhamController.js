@@ -63,13 +63,9 @@ const PhieuKhamController = {
                 return res.status(400).json({ message: "Thiếu trường dữ liệu" });
             }
 
-            // 1. THÊM BƯỚC KIỂM TRA TỒN TẠI
-            const existingPhieuKham = await PhieuKham.findByFields({
-                MaKhachHang,
-                MaBacSi,
-                NgayKham,
-                MaLichHen
-            });
+
+            // 1. THÊM BƯỚC KIỂM TRA TỒN TẠI (chỉ kiểm tra theo MaLichHen: mỗi lịch hẹn chỉ 1 phiếu khám)
+            const existingPhieuKham = await PhieuKham.findByLichHenID({ MaLichHen });
 
             if (existingPhieuKham && existingPhieuKham.length > 0) {
                 return res.status(409).json({
@@ -113,8 +109,11 @@ const PhieuKhamController = {
             if (!MaKhachHang || !MaBacSi || !NgayKham || !ChuanDoan) {
                 return res.status(400).json({ message: "Thiếu trường dữ liệu" });
             }
-
-            const result = await PhieuKham.update(id, {
+            const existingPhieuKham = await PhieuKham.getById(id);
+            if (!existingPhieuKham) {
+                return res.status(404).json({ message: "Không tìm thấy phiếu khám!" });
+            }
+            await PhieuKham.update(id, {
                 MaKhachHang,
                 MaBacSi,
                 NgayKham,
@@ -122,10 +121,6 @@ const PhieuKhamController = {
                 GhiChu,
                 TrangThai
             });
-
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ message: "Không tìm thấy phiếu khám để cập nhật!" });
-            }
 
             // Nếu trạng thái là "Đã khám", gửi thông báo qua Socket.IO
             if (TrangThai === "Đã khám") {

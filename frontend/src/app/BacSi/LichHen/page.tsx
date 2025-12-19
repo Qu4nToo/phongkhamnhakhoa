@@ -50,7 +50,7 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { vi } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -100,26 +100,24 @@ export default function BookingView() {
         axios.get("http://localhost:5000/api/khach-hang/get")
             .then(customers => setCustomers(customers.data))
             .catch(err => console.log(err))
-        
-        axios.get("http://localhost:5000/api/dich-vu/get")
-            .then(res => setDichVuList(res.data))
-            .catch(err => console.log(err))
-        
         const storedUserInfo = sessionStorage.getItem("user_info");
         if (storedUserInfo) {
 
             const user = JSON.parse(storedUserInfo);
+            setDoctors(user);
             axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${user.MaBacSi}`)
                 .then(response => {
                     // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
-                    const filteredBookings = response.data.filter((booking: any) => 
+                    const filteredBookings = response.data.filter((booking: any) =>
                         booking.TinhTrang === "Đã xác nhận" || booking.TinhTrang === "Chờ xác nhận"
                     );
                     setbookings(filteredBookings);
                     setFilteredBookings(filteredBookings);
                 })
                 .catch(err => console.log(err))
-            
+            axios.get(`http://localhost:5000/api/dich-vu/getDichVuByBacSi/${user.MaBacSi}`)
+                .then(res => setDichVuList(res.data))
+                .catch(err => console.log(err))
             // Fetch lịch làm việc của bác sĩ
             axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${user.MaBacSi}`)
                 .then(res => {
@@ -138,21 +136,24 @@ export default function BookingView() {
                 })
                 .catch(err => console.log(err));
         }
+
     }, []);
 
     // Fetch khung giờ động dựa trên dịch vụ, bác sĩ và ngày hẹn
     useEffect(() => {
-        if (newbooking.MaDichVu && newbooking.NgayHen && doctors?.bacSi?.MaBacSi) {
+        console.log("Fetching time slots for:", doctors);
+        if (newbooking.MaDichVu && newbooking.NgayHen && doctors?.MaBacSi) {
             axios
                 .get(`http://localhost:5000/api/lich-hen/available-slots`, {
                     params: {
-                        bacSiId: doctors.bacSi.MaBacSi,
+                        bacSiId: doctors.MaBacSi,
                         ngayHen: newbooking.NgayHen,
                         dichVuId: newbooking.MaDichVu,
                     },
                 })
                 .then((res) => {
                     setTimeSlots(res.data);
+                    console.log("Available time slots:", res.data);
                 })
                 .catch((error) => {
                     console.log(error);
@@ -178,7 +179,7 @@ export default function BookingView() {
     // Lọc lịch hẹn theo ngày
     useEffect(() => {
         if (filterDate) {
-            const filtered = bookings.filter((booking: any) => 
+            const filtered = bookings.filter((booking: any) =>
                 booking.NgayHen === filterDate
             );
             setFilteredBookings(filtered);
@@ -194,7 +195,7 @@ export default function BookingView() {
 
     const handleCreatebooking = () => {
         console.log(newbooking);
-        
+
         // Kiểm tra ngày hẹn có thuộc lịch làm việc không
         const selectedDate = new Date(newbooking.NgayHen);
         const dayOfWeek = selectedDate.getDay();
@@ -213,10 +214,10 @@ export default function BookingView() {
             });
             return;
         }
-        
+
         const bookingToCreate = {
             ...newbooking,
-            MaBacSi: doctors.bacSi.MaBacSi,
+            MaBacSi: doctors.MaBacSi,
         };
         axios.post("http://localhost:5000/api/lich-hen/create", bookingToCreate)
             .then(() => {
@@ -233,16 +234,16 @@ export default function BookingView() {
                     },
                 });
                 // Reload lại danh sách lịch hẹn của bác sĩ
-                axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${doctors.bacSi.MaBacSi}`)
+                axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${doctors.MaBacSi}`)
                     .then((response) => {
                         // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
-                        const filteredBookings = response.data.filter((booking: any) => 
+                        const filteredBookings = response.data.filter((booking: any) =>
                             booking.TinhTrang === "Đã xác nhận"
                         );
                         setbookings(filteredBookings);
                     })
                     .catch((err) => console.error("Error fetching bookings:", err));
-                
+
                 // Reset form
                 setNewbooking({
                     MaDichVu: "",
@@ -321,16 +322,16 @@ export default function BookingView() {
                 TinhTrang: "Đang khám",
                 GhiChu: booking.GhiChu
             });
-            
+
             console.log("Cập nhật trạng thái lịch hẹn thành công");
-            
+
             // Reload danh sách lịch hẹn
             const storedUserInfo = sessionStorage.getItem("user_info");
             if (storedUserInfo) {
                 const user = JSON.parse(storedUserInfo);
                 const response = await axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${user.MaBacSi}`);
                 // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
-                const filteredBookings = response.data.filter((booking: any) => 
+                const filteredBookings = response.data.filter((booking: any) =>
                     booking.TinhTrang === "Đã xác nhận"
                 );
                 setbookings(filteredBookings);
@@ -345,7 +346,7 @@ export default function BookingView() {
                     onClick: () => toast.dismiss(),
                 },
                 style: {
-                    background: "#fef2f2", 
+                    background: "#fef2f2",
                     color: "#dc2626",
                     borderRadius: "10px",
                     border: "1px solid #fca5a5",
@@ -371,8 +372,8 @@ export default function BookingView() {
                             placeholder="Lọc theo ngày"
                         />
                         {filterDate && (
-                            <Button 
-                                size="sm" 
+                            <Button
+                                size="sm"
                                 variant="outline"
                                 onClick={() => setFilterDate("")}
                             >
@@ -478,7 +479,7 @@ export default function BookingView() {
                                             </Popover>
                                             {availableDays.length > 0 && (
                                                 <p className="text-xs text-gray-500 mt-1">
-                                                    Bác sĩ làm việc: {availableDays.map(day => 
+                                                    Bác sĩ làm việc: {availableDays.map(day =>
                                                         ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][day]
                                                     ).join(', ')}
                                                 </p>
@@ -500,10 +501,10 @@ export default function BookingView() {
                                                 {!newbooking.MaDichVu
                                                     ? "Chọn dịch vụ trước"
                                                     : !newbooking.NgayHen
-                                                    ? "Chọn ngày hẹn trước"
-                                                    : timeSlots.length === 0
-                                                    ? "Đang tải..."
-                                                    : "Chọn giờ hẹn"}
+                                                        ? "Chọn ngày hẹn trước"
+                                                        : timeSlots.length === 0
+                                                            ? "Đang tải..."
+                                                            : "Chọn giờ hẹn"}
                                             </option>
                                             {timeSlots.map((slot) => (
                                                 <option key={slot.value} value={slot.value} disabled={!slot.available}>
@@ -613,32 +614,31 @@ export default function BookingView() {
                             <div className="grid grid-cols-2 gap-2">
                                 <div className="font-semibold">Khách hàng:</div>
                                 <div>{selectedBooking.TenKhachHang}</div>
-                                
+
                                 <div className="font-semibold">Số điện thoại:</div>
                                 <div>{selectedBooking.SoDienThoai || "Chưa có"}</div>
-                                
+
                                 <div className="font-semibold">Dịch vụ:</div>
                                 <div>{selectedBooking.TenDichVu || "Chưa xác định"}</div>
-                                
+
                                 <div className="font-semibold">Ngày hẹn:</div>
                                 <div>{new Date(selectedBooking.NgayHen).toLocaleDateString("vi-VN")}</div>
-                                
+
                                 <div className="font-semibold">Giờ hẹn:</div>
                                 <div>{selectedBooking.GioHen}</div>
-                                
+
                                 <div className="font-semibold">Trạng thái:</div>
                                 <div>
-                                    <span className={`px-3 py-1 rounded-full text-sm ${
-                                        selectedBooking.TinhTrang === "Đã xác nhận" ? "bg-blue-100 text-blue-700" :
-                                        selectedBooking.TinhTrang === "Chờ xác nhận" ? "bg-yellow-100 text-yellow-700" :
-                                        selectedBooking.TinhTrang === "Đang khám" ? "bg-green-100 text-green-700" :
-                                        selectedBooking.TinhTrang === "Hoàn thành" ? "bg-gray-100 text-gray-700" :
-                                        "bg-red-100 text-red-700"
-                                    }`}>
+                                    <span className={`px-3 py-1 rounded-full text-sm ${selectedBooking.TinhTrang === "Đã xác nhận" ? "bg-blue-100 text-blue-700" :
+                                            selectedBooking.TinhTrang === "Chờ xác nhận" ? "bg-yellow-100 text-yellow-700" :
+                                                selectedBooking.TinhTrang === "Đang khám" ? "bg-green-100 text-green-700" :
+                                                    selectedBooking.TinhTrang === "Hoàn thành" ? "bg-gray-100 text-gray-700" :
+                                                        "bg-red-100 text-red-700"
+                                        }`}>
                                         {selectedBooking.TinhTrang}
                                     </span>
                                 </div>
-                                
+
                                 <div className="font-semibold">Ghi chú:</div>
                                 <div>{selectedBooking.GhiChu || "Không có"}</div>
                             </div>

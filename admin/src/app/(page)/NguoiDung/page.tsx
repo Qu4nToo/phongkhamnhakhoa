@@ -154,6 +154,9 @@ export default function User() {
         return hoTen.includes(term) || email.includes(term);
     });
 
+    const filteredUsersQuanLy = filteredUsers.filter((u: any) => u.VaiTro === "Quản lý");
+    const filteredUsersLeTan = filteredUsers.filter((u: any) => u.VaiTro === "Lễ tân");
+
     useEffect(() => {
         // Lấy danh sách Người dùng
         axios.get("http://localhost:5000/api/nguoi-dung/get")
@@ -317,6 +320,8 @@ export default function User() {
                 <div className="flex items-center">
                     <TabsList>
                         <TabsTrigger value="all">Tất cả</TabsTrigger>
+                        <TabsTrigger value="quanly">Quản lý</TabsTrigger>
+                        <TabsTrigger value="letan">Lễ tân</TabsTrigger>
                     </TabsList>
 
                     <div className="ml-auto flex items-center gap-2">
@@ -503,6 +508,134 @@ export default function User() {
                                                             size="icon"
                                                             variant="ghost"
                                                         >
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                            <span className="sr-only">Toggle menu</span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Hành động</DropdownMenuLabel>
+                                                        <DropdownMenuItem onClick={() => handleEditClick(user)}>Sửa</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleDeleteClick(user)}>Xóa</DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="quanly">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Quản lý</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Ảnh</TableHead>
+                                        <TableHead>Vai trò</TableHead>
+                                        <TableHead>Họ và Tên</TableHead>
+                                        <TableHead>Số điện thoại</TableHead>
+                                        <TableHead>Email</TableHead>
+                                        <TableHead>Ngày sinh</TableHead>
+                                        <TableHead>Địa chỉ</TableHead>
+                                        <TableHead>
+                                            <span className="sr-only">Actions</span>
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredUsersQuanLy.map((user: any) => (
+                                        <TableRow key={user.MaNguoiDung}>
+                                            <TableCell>
+                                                {user.AnhDaiDien ? (
+                                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
+                                                        <Image src={user.AnhDaiDien} alt={user.HoTen} width={40} height={40} className="w-full h-full object-cover" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                                        <UserIcon className="w-6 h-6 text-gray-400" />
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="font-medium">{user.VaiTro}</TableCell>
+                                            <TableCell className="font-medium">{user.HoTen}</TableCell>
+                                            <TableCell className="font-medium">{user.SDT}</TableCell>
+                                            <TableCell className="font-medium">{user.Email}</TableCell>
+                                            <TableCell>{user.NgaySinh ? user.NgaySinh.split('T')[0] : ''}</TableCell>
+                                            <TableCell>{user.DiaChi}</TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                            <span className="sr-only">Toggle menu</span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Hành động</DropdownMenuLabel>
+                                                        <DropdownMenuItem onClick={() => handleEditClick(user)}>Sửa</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleDeleteClick(user)}>Xóa</DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="letan">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Lễ tân</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Ảnh</TableHead>
+                                        <TableHead>Vai trò</TableHead>
+                                        <TableHead>Họ và Tên</TableHead>
+                                        <TableHead>Số điện thoại</TableHead>
+                                        <TableHead>Email</TableHead>
+                                        <TableHead>Ngày sinh</TableHead>
+                                        <TableHead>Địa chỉ</TableHead>
+                                        <TableHead>
+                                            <span className="sr-only">Actions</span>
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredUsersLeTan.map((user: any) => (
+                                        <TableRow key={user.MaNguoiDung}>
+                                            <TableCell>
+                                                {user.AnhDaiDien ? (
+                                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
+                                                        <Image src={user.AnhDaiDien} alt={user.HoTen} width={40} height={40} className="w-full h-full object-cover" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                                        <UserIcon className="w-6 h-6 text-gray-400" />
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="font-medium">{user.VaiTro}</TableCell>
+                                            <TableCell className="font-medium">{user.HoTen}</TableCell>
+                                            <TableCell className="font-medium">{user.SDT}</TableCell>
+                                            <TableCell className="font-medium">{user.Email}</TableCell>
+                                            <TableCell>{user.NgaySinh ? user.NgaySinh.split('T')[0] : ''}</TableCell>
+                                            <TableCell>{user.DiaChi}</TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
                                                             <MoreHorizontal className="h-4 w-4" />
                                                             <span className="sr-only">Toggle menu</span>
                                                         </Button>
