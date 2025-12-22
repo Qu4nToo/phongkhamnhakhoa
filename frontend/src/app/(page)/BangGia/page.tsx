@@ -8,8 +8,8 @@ import { PricingNotes } from '@/components/pricing/PricingNotes';
 import { ConsultationCTA } from '@/components/pricing/ConsultationCTA';
 import Footer from '@/components/features/footer';
 import { TitleProvider } from '@/components/features/TitleContext';
-
 export default function App() {
+
     return (
         <TitleProvider>
             <div className="min-h-screen bg-white">

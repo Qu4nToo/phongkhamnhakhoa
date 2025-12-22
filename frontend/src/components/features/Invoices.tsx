@@ -72,13 +72,19 @@ export function Invoices() {
     };
   };
 
+  const parseAmount = (val: any) => {
+    if (val === null || val === undefined) return 0;
+    const n = Number(String(val).replace(/[^0-9.-]+/g, ''));
+    return Number.isFinite(n) ? n : 0;
+  };
+
   const totalPaid = invoices
     .filter(inv => inv.TrangThai === 'Đã thanh toán')
-    .reduce((sum, inv) => sum + inv.TongTien, 0);
-  
+    .reduce((sum, inv) => sum + parseAmount(inv.TongTien), 0);
+
   const totalPending = invoices
     .filter(inv => inv.TrangThai === 'Chưa thanh toán')
-    .reduce((sum, inv) => sum + inv.TongTien, 0);
+    .reduce((sum, inv) => sum + parseAmount(inv.TongTien), 0);
 
   if (loading) {
     return <div className="text-center py-8">Đang tải dữ liệu...</div>;

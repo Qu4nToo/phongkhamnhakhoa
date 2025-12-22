@@ -111,13 +111,13 @@ const LichHenController = {
       // Lấy thông tin chi tiết lịch hẹn vừa tạo
       const lichHenDetail = await LichHen.getById(result.insertId);
 
-  
-        const io = req.app.get('io');
-        io.emit('lichHen:created', {
-          message: `Lịch hẹn mới vào ${NgayHen} lúc ${GioHen}`,
-          lichHen: lichHenDetail,
-          maBacSi: MaBacSi
-        });
+
+      const io = req.app.get('io');
+      io.emit('lichHen:created', {
+        message: `Lịch hẹn mới vào ${NgayHen} lúc ${GioHen}`,
+        lichHen: lichHenDetail,
+        maBacSi: MaBacSi
+      });
 
 
       return res.status(201).json({
@@ -158,7 +158,13 @@ const LichHenController = {
       if (result.affectedRows === 0) {
         return res.status(404).json({ message: "Không tìm thấy lịch hẹn để cập nhật!" });
       }
-
+      if (TinhTrang == "Đã hủy") {
+        io.emit('lichHen:cancelled', {
+          message: `Lịch hẹn vào ${lichHenDetail.NgayHen} lúc ${lichHenDetail.GioHen} đã bị hủy`,
+          lichHen: lichHenDetail,
+        });
+        console.log(`📤 Sent cancellation notification`);
+      }
       return res.status(200).json({ message: "Cập nhật lịch hẹn thành công!" });
     } catch (error) {
       console.error("Lỗi khi cập nhật lịch hẹn:", error);
@@ -175,21 +181,30 @@ const LichHenController = {
       if (!TinhTrang) {
         return res.status(400).json({ message: "Vui lòng cung cấp trạng thái!" });
       }
-   
+
       const result = await LichHen.updateStatus(id, TinhTrang);
 
       if (result.affectedRows === 0) {
         return res.status(404).json({ message: "Không tìm thấy lịch hẹn để cập nhật!" });
       }
-      if(TinhTrang == "Đã hủy"){
-          const lichHenDetail = await LichHen.getById(id);
-          const io = req.app.get('io');
-          io.emit('lichHen:cancelled', {
-          message: `Lịch hẹn vào ${lichHenDetail.NgayHen} lúc ${lichHenDetail.GioHen} của bác sĩ ${lichHenDetail.TenBacSi} đã bị hủy`,
+
+      // Lấy thông tin chi tiết lịch hẹn
+      const lichHenDetail = await LichHen.getById(id);
+      const io = req.app.get('io');
+
+      if (TinhTrang == "Đã hủy") {
+        io.emit('lichHen:cancelled', {
+          message: `Lịch hẹn vào ${lichHenDetail.NgayHen} lúc ${lichHenDetail.GioHen} đã bị hủy`,
           lichHen: lichHenDetail,
-      });
+        });
       }
 
+      if (TinhTrang == "Đã xác nhận") {
+        io.emit('lichHen:approved', {
+          message: `Lịch hẹn vào ${lichHenDetail.NgayHen} lúc ${lichHenDetail.GioHen} đã được xác nhận`,
+          lichHen: lichHenDetail,
+        });
+      }
       return res.status(200).json({ message: "Cập nhật trạng thái thành công!" });
     } catch (error) {
       console.error("Lỗi khi cập nhật trạng thái:", error);
@@ -220,8 +235,8 @@ const LichHenController = {
       const { bacSiId, ngayHen, dichVuId } = req.query;
 
       if (!bacSiId || !ngayHen || !dichVuId) {
-        return res.status(400).json({ 
-          message: "Cần có bacSiId, ngayHen và dichVuId" 
+        return res.status(400).json({
+          message: "Cần có bacSiId, ngayHen và dichVuId"
         });
       }
 

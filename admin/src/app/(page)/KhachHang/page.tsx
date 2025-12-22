@@ -152,6 +152,10 @@ export default function User() {
       })
       .catch((err) => {
         console.error("Error editing user:", err);
+        if(err?.response?.data?.message){
+          toast.error(err.response.data.message);
+          return;
+        }
         toast.error("Có lỗi xảy ra khi cập nhật khách hàng!");
       });
   }
@@ -378,13 +382,13 @@ export default function User() {
                 Họ và Tên
               </Label>
               {/* Dùng newUser.HoTen làm giá trị và handleInputChange để cập nhật */}
-              <Input onChange={handleInputChange} id="HoTen" type="text" className="col-span-4" defaultValue={newUser.HoTen} />
+              <Input onChange={handleInputChange} id="HoTen" type="text" className="col-span-4" defaultValue={newUser.HoTen} readOnly/>
             </div>
             <div className="grid grid-cols-6 items-center gap-4">
               <Label htmlFor="Email" className="text-right col-span-2">
                 Email
               </Label>
-              <Input onChange={handleInputChange} id="Email" type="text" className="col-span-4" defaultValue={newUser.Email} />
+              <Input onChange={handleInputChange} id="Email" type="text" className="col-span-4" defaultValue={newUser.Email} readOnly/>
             </div>
             <div className="grid grid-cols-6 items-center gap-4">
               <Label htmlFor="SoDienThoai" className="text-right col-span-2">

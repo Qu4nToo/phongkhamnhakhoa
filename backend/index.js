@@ -69,7 +69,6 @@ app.use('/api/hinh-anh-dich-vu', hinhAnhDichVuRoutes);
 // Socket.IO connection
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
-
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
   });
