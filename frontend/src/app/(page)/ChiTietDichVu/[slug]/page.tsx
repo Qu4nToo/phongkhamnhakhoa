@@ -9,7 +9,6 @@ import { Header } from '@/components/features/header';
 import Footer from "@/components/features/footer";
 import { TitleProvider } from '@/components/features/TitleContext';
 import axios from 'axios';
-
 export default function App() {
     const params = useParams();
     const slug = params?.slug as string;

@@ -274,7 +274,7 @@ export default function DoctorProfile() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-4 sm:p-6">
+        <><h1 className="ms-10 text-3xl font-bold">Quản ký thông tin cá nhân</h1><div className="max-w-4xl mx-auto p-4 sm:p-6">
             <Card className="bg-white shadow-lg rounded-xl overflow-hidden">
                 {/* Header with Avatar */}
                 <div className="p-4 sm:p-6 border-b border-slate-100">
@@ -290,8 +290,7 @@ export default function DoctorProfile() {
                                             onError={(e) => {
                                                 e.currentTarget.style.display = 'none';
                                                 e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                            }}
-                                        />
+                                            } } />
                                     ) : null}
                                     <Stethoscope className={`w-8 h-8 sm:w-10 sm:h-10 text-blue-600 ${doctorData.AnhDaiDien ? 'hidden' : ''}`} />
                                 </div>
@@ -312,7 +311,7 @@ export default function DoctorProfile() {
                                 onClick={() => {
                                     setDoctorData({ ...originalData! });
                                     setEditDialogOpen(true);
-                                }}
+                                } }
                                 variant="outline"
                                 className="gap-1 sm:gap-2 flex-1 sm:flex-initial border-blue-200 text-blue-700 hover:bg-blue-50"
                             >
@@ -438,9 +437,7 @@ export default function DoctorProfile() {
                                     id="HoTen"
                                     value={doctorData.HoTen}
                                     onChange={(e) => setDoctorData({ ...doctorData, HoTen: e.target.value })}
-                                    readOnly
-
-                                />
+                                    readOnly />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="NgaySinh">Ngày sinh</Label>
@@ -449,8 +446,7 @@ export default function DoctorProfile() {
                                     type="date"
                                     value={doctorData.NgaySinh || ''}
                                     onChange={(e) => setDoctorData({ ...doctorData, NgaySinh: e.target.value })}
-                                    readOnly
-                                />
+                                    readOnly />
                             </div>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -461,8 +457,7 @@ export default function DoctorProfile() {
                                     type="email"
                                     value={doctorData.Email}
                                     onChange={(e) => setDoctorData({ ...doctorData, Email: e.target.value })}
-                                    readOnly
-                                />
+                                    readOnly />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="SoDienThoai">Số điện thoại *</Label>
@@ -470,8 +465,7 @@ export default function DoctorProfile() {
                                     id="SoDienThoai"
                                     value={doctorData.SoDienThoai}
                                     onChange={(e) => setDoctorData({ ...doctorData, SoDienThoai: e.target.value })}
-                                    readOnly
-                                />
+                                    readOnly />
                             </div>
                         </div>
                         <div className="space-y-2">
@@ -479,16 +473,14 @@ export default function DoctorProfile() {
                             <Input
                                 id="DiaChi"
                                 value={doctorData.DiaChi || ''}
-                                onChange={(e) => setDoctorData({ ...doctorData, DiaChi: e.target.value })}
-                            />
+                                onChange={(e) => setDoctorData({ ...doctorData, DiaChi: e.target.value })} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="KinhNghiem">Kinh nghiệm</Label>
                             <Input
                                 id="KinhNghiem"
                                 value={doctorData.KinhNghiem || ''}
-                                onChange={(e) => setDoctorData({ ...doctorData, KinhNghiem: e.target.value })}
-                            />
+                                onChange={(e) => setDoctorData({ ...doctorData, KinhNghiem: e.target.value })} />
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                             <div className="space-y-2">
@@ -496,24 +488,21 @@ export default function DoctorProfile() {
                                 <Input
                                     id="ChuyenKhoa"
                                     value={doctorData.ChuyenKhoa || ''}
-                                    onChange={(e) => setDoctorData({ ...doctorData, ChuyenKhoa: e.target.value })}
-                                />
+                                    onChange={(e) => setDoctorData({ ...doctorData, ChuyenKhoa: e.target.value })} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="BangCap">Bằng cấp</Label>
                                 <Input
                                     id="BangCap"
                                     value={doctorData.BangCap || ''}
-                                    onChange={(e) => setDoctorData({ ...doctorData, BangCap: e.target.value })}
-                                />
+                                    onChange={(e) => setDoctorData({ ...doctorData, BangCap: e.target.value })} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="ChuyenMon">Chuyên môn</Label>
                                 <Input
                                     id="ChuyenMon"
                                     value={doctorData.ChuyenMon || ''}
-                                    onChange={(e) => setDoctorData({ ...doctorData, ChuyenMon: e.target.value })}
-                                />
+                                    onChange={(e) => setDoctorData({ ...doctorData, ChuyenMon: e.target.value })} />
                             </div>
                         </div>
                     </div>
@@ -545,8 +534,7 @@ export default function DoctorProfile() {
                                     type={showOldPassword ? "text" : "password"}
                                     value={passwordForm.oldPassword}
                                     onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
-                                    className="pr-10"
-                                />
+                                    className="pr-10" />
                                 <button
                                     type="button"
                                     onClick={() => setShowOldPassword(!showOldPassword)}
@@ -564,8 +552,7 @@ export default function DoctorProfile() {
                                     type={showNewPassword ? "text" : "password"}
                                     value={passwordForm.newPassword}
                                     onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                                    className="pr-10"
-                                />
+                                    className="pr-10" />
                                 <button
                                     type="button"
                                     onClick={() => setShowNewPassword(!showNewPassword)}
@@ -583,8 +570,7 @@ export default function DoctorProfile() {
                                     type={showConfirmPassword ? "text" : "password"}
                                     value={passwordForm.confirmPassword}
                                     onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                                    className="pr-10"
-                                />
+                                    className="pr-10" />
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -632,8 +618,7 @@ export default function DoctorProfile() {
                                 id="avatar"
                                 type="file"
                                 accept="image/*"
-                                onChange={handleAvatarChange}
-                            />
+                                onChange={handleAvatarChange} />
                         </div>
                     </div>
                     <div className="flex flex-col sm:flex-row justify-end gap-2">
@@ -647,6 +632,6 @@ export default function DoctorProfile() {
                     </div>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div></>
     );
 }

@@ -391,14 +391,8 @@ export default function BookingView() {
 
     const handleAcceptClick = async (booking: any) => {
         if (booking.TinhTrang === "Chờ xác nhận") {
-            await axios.put(`http://localhost:5000/api/lich-hen/update/${booking.MaLichHen}`, {
-                MaKhachHang: booking.MaKhachHang,
-                MaBacSi: booking.MaBacSi,
-                MaDichVu: booking.MaDichVu,
-                NgayHen: booking.NgayHen,
-                GioHen: booking.GioHen,
-                TinhTrang: "Đã xác nhận",
-                GhiChu: booking.GhiChu
+            await axios.put(`http://localhost:5000/api/lich-hen/update-status/${booking.MaLichHen}`, {
+                TinhTrang: "Đã xác nhận"
             });
             toast.success("Xác nhận lịch hẹn thành công");
             axios.get("http://localhost:5000/api/lich-hen/get")
