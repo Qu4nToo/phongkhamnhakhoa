@@ -36,7 +36,6 @@ export default function App() {
         fetchServiceBySlug();
     }, [slug]);
 
-    // Lấy tất cả ảnh từ database, nếu không có thì dùng ảnh mặc định
     const serviceImages = service?.HinhAnhs && service.HinhAnhs.length > 0
         ? service.HinhAnhs.map((img: any) => img.URL)
         : service?.HinhAnh 
@@ -77,7 +76,7 @@ export default function App() {
                 <Header />
 
                 <main className="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Breadcrumb */}
+
                     <nav className="flex items-center space-x-2 text-sm mb-4">
                         <a href="/" className="text-gray-600 hover:text-blue-600">
                             Trang chủ
@@ -90,17 +89,17 @@ export default function App() {
                         <span className="text-blue-600">{service.TenDichVu}</span>
                     </nav>
 
-                    {/* Page Title */}
+
                     <h1 className="text-2xl mb-6 text-blue-900 font-bold">
                         {service.TenDichVu}
                     </h1>
 
-                    {/* Main Content Grid */}
+
                     <div className="grid lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2">
                             <ServiceImageGallery images={serviceImages} />
                             
-                            {/* Service Description */}
+
                             <div className="mt-6 bg-white rounded-lg border border-gray-200 p-6">
                                 <h2 className="text-xl font-bold text-gray-900 mb-4">Mô tả dịch vụ</h2>
                                 <div className="prose max-w-none">

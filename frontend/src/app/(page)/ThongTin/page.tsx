@@ -9,11 +9,13 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { toast, Toaster } from "sonner";
 import { SocketProvider, useSocket } from "@/contexts/SocketContext";
+import { useRouter } from 'next/navigation';
 
 export default function App() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('ThongTin');
   const { socket } = useSocket();
+  const router = useRouter();
   
   useEffect(() => {
     const tabParam = searchParams.get('tab');
@@ -35,6 +37,7 @@ export default function App() {
       if (data.lichHen && data.lichHen.MaKhachHang === user.MaKhachHang) {
         const ngayHen = new Date(data.lichHen.NgayHen).toLocaleDateString('vi-VN');
         toast.success(` Lịch hẹn của bạn vào ngày ${ngayHen} lúc ${data.lichHen.GioHen} đã được xác nhận!`);
+        router.push('/ThongTin?tab=LichHen');
       }
     };
 

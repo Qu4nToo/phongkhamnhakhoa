@@ -152,7 +152,7 @@ const BacSiController = {
                 return res.status(400).json({ message: "Thiếu thông tin bắt buộc!" });
 
             const updateData = { HoTen, SoDienThoai, Email, KinhNghiem, NgaySinh, DiaChi, ChuyenKhoa, BangCap, ChuyenMon };
-            const existingBacSi = await BacSi.getBacSiById(Email);
+            const existingBacSi = await BacSi.getByEmail(Email);
             if(!existingBacSi){
                 return res.status(404).json({ message: "Bác sĩ với email này không tồn tại!" });
             }

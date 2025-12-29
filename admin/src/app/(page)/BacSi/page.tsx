@@ -141,14 +141,6 @@ export default function User() {
     return hoTen.includes(term) || email.includes(term);
   });
 
-  const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { id, value } = e.target;
-    setNewUser((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
-    console.log(newUser);
-  };
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id } = e.target;
 
@@ -232,7 +224,7 @@ export default function User() {
   const handleEditClick = (user: any) => {
     setUser(user);
     setNewUser(user);
-    setImagePreview(user.AnhDaiDien || "");
+    setImagePreview(user.AnhDaiDien ? `${user.AnhDaiDien}?t=${Date.now()}` : "");
     setImageFile(null);
     setShowAlertEdit(true);
   }
@@ -608,7 +600,7 @@ export default function User() {
                         {users.AnhDaiDien ? (
                           <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
                             <Image
-                              src={users.AnhDaiDien}
+                              src={`${users.AnhDaiDien}?t=${Date.now()}`}
                               alt={users.HoTen}
                               width={40}
                               height={40}

@@ -54,7 +54,7 @@ export function Appointments() {
       await axios.put(`http://localhost:5000/api/lich-hen/update-status/${selectedAppointmentId}`, {
         TinhTrang: 'Đã hủy'
       });
-      
+    
       toast.success('Hủy lịch hẹn thành công!');
       
       // Reload appointments

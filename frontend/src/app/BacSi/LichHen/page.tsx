@@ -121,7 +121,6 @@ export default function BookingView() {
             // Fetch lịch làm việc của bác sĩ
             axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${user.MaBacSi}`)
                 .then(res => {
-                    // Chuyển đổi thứ thành số (0=CN, 1=T2, ..., 6=T7)
                     const thuMap: Record<string, number> = {
                         "Chủ Nhật": 0,
                         "Thứ Hai": 1,
@@ -139,7 +138,6 @@ export default function BookingView() {
 
     }, []);
 
-    // Fetch khung giờ động dựa trên dịch vụ, bác sĩ và ngày hẹn
     useEffect(() => {
         console.log("Fetching time slots for:", doctors);
         if (newbooking.MaDichVu && newbooking.NgayHen && doctors?.MaBacSi) {
@@ -164,7 +162,6 @@ export default function BookingView() {
         }
     }, [newbooking.MaDichVu, newbooking.NgayHen, doctors]);
 
-    // Auto-reset khi thay đổi dịch vụ
     useEffect(() => {
         if (newbooking.MaDichVu) {
             setNewbooking((prev) => ({
@@ -176,7 +173,6 @@ export default function BookingView() {
         }
     }, [newbooking.MaDichVu]);
 
-    // Lọc lịch hẹn theo ngày
     useEffect(() => {
         if (filterDate) {
             const filtered = bookings.filter((booking: any) =>
@@ -196,7 +192,6 @@ export default function BookingView() {
     const handleCreatebooking = () => {
         console.log(newbooking);
 
-        // Kiểm tra ngày hẹn có thuộc lịch làm việc không
         const selectedDate = new Date(newbooking.NgayHen);
         const dayOfWeek = selectedDate.getDay();
         if (!availableDays.includes(dayOfWeek)) {
@@ -233,10 +228,8 @@ export default function BookingView() {
                         border: "1px solid #10b981",
                     },
                 });
-                // Reload lại danh sách lịch hẹn của bác sĩ
                 axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${doctors.MaBacSi}`)
                     .then((response) => {
-                        // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
                         const filteredBookings = response.data.filter((booking: any) =>
                             booking.TinhTrang === "Đã xác nhận"
                         );
@@ -244,7 +237,6 @@ export default function BookingView() {
                     })
                     .catch((err) => console.error("Error fetching bookings:", err));
 
-                // Reset form
                 setNewbooking({
                     MaDichVu: "",
                     GhiChu: "",

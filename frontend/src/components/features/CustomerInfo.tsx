@@ -196,7 +196,7 @@ export function CustomerInfo() {
                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-50 rounded-full flex items-center justify-center overflow-hidden border-2 border-blue-200">
                   {userInfo?.anhDaiDien ? (
                     <img 
-                      src={userInfo.anhDaiDien} 
+                      src={`${userInfo.anhDaiDien}?t=${Date.now()}`} 
                       alt="Avatar" 
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -449,9 +449,9 @@ export function CustomerInfo() {
             <div className="flex justify-center">
               <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-100 flex items-center justify-center">
                 {avatarPreview ? (
-                  <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+                  <img src={`${avatarPreview}?t=${Date.now()}`} alt="Preview" className="w-full h-full object-cover" />
                 ) : userInfo?.anhDaiDien ? (
-                  <img src={userInfo.anhDaiDien} alt="Current Avatar" className="w-full h-full object-cover" />
+                  <img src={`${userInfo.anhDaiDien}?t=${Date.now()}`} alt="Current Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <User className="w-16 h-16 text-gray-400" />
                 )}

@@ -41,40 +41,34 @@ export default function DoctorDashboard() {
   const [appointmentsByStatus, setAppointmentsByStatus] = useState([]);
 
   useEffect(() => {
-    // Lấy thông tin bác sĩ từ sessionStorage (JWT token)
     const userInfo = sessionStorage.getItem("user_info");
     
     if (userInfo) {
       const user = JSON.parse(userInfo);
-      const maBacSi = user.MaBacSi; // JWT token có id trực tiếp
+      const maBacSi = user.MaBacSi; 
       
       setDoctorId(maBacSi);
       
-      // Lấy thống kê tổng quan
       axios
         .get(`http://localhost:5000/api/bac-si/stats/${maBacSi}`)
         .then((res) => setStats(res.data))
         .catch((err) => console.error("Lỗi khi tải thống kê:", err));
 
-      // Lấy biểu đồ lịch hẹn
       axios
         .get(`http://localhost:5000/api/bac-si/appointments/chart/${maBacSi}`)
         .then((res) => setChartData(res.data))
         .catch((err) => console.error("Lỗi khi tải biểu đồ:", err));
 
-      // Lấy lịch hẹn hôm nay
       axios
         .get(`http://localhost:5000/api/bac-si/appointments/today/${maBacSi}`)
         .then((res) => setTodayAppointments(res.data))
         .catch((err) => console.error("Lỗi khi tải lịch hẹn hôm nay:", err));
 
-      // Lấy lịch hẹn sắp tới
       axios
         .get(`http://localhost:5000/api/bac-si/appointments/upcoming/${maBacSi}`)
         .then((res) => setUpcomingAppointments(res.data))
         .catch((err) => console.error("Lỗi khi tải lịch hẹn sắp tới:", err));
 
-      // Lấy thống kê theo trạng thái
       axios
         .get(`http://localhost:5000/api/bac-si/appointments/status/${maBacSi}`)
         .then((res) => setAppointmentsByStatus(res.data))
@@ -142,7 +136,7 @@ export default function DoctorDashboard() {
           </Card>
         </div>
 
-        {/* --- Tabs --- */}
+
         <Tabs defaultValue="today" className=" w-full">
           <TabsList className="grid w-full grid-cols-3 bg-gray-100 rounded-md mb-4">
             <TabsTrigger value="today">Hôm nay</TabsTrigger>
@@ -150,7 +144,7 @@ export default function DoctorDashboard() {
             <TabsTrigger value="stats">Thống kê</TabsTrigger>
           </TabsList>
 
-          {/* Tab Lịch hẹn hôm nay */}
+
           <TabsContent value="today">
             <Card>
               <CardHeader>
@@ -197,7 +191,6 @@ export default function DoctorDashboard() {
             </Card>
           </TabsContent>
 
-          {/* Tab Lịch hẹn sắp tới */}
           <TabsContent value="upcoming">
             <Card>
               <CardHeader>
@@ -246,7 +239,6 @@ export default function DoctorDashboard() {
             </Card>
           </TabsContent>
 
-          {/* Tab Thống kê */}
           <TabsContent value="stats" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Card>
