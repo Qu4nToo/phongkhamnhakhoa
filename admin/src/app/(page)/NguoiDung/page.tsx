@@ -175,7 +175,7 @@ export default function User() {
         
         // Reset image states first
         setImageFile(null);
-        setImagePreview(user.AnhDaiDien || "");
+        setImagePreview(user.AnhDaiDien ? `${user.AnhDaiDien}?t=${Date.now()}` : "");
         
         setNewUser({
             HoTen: user.HoTen,
@@ -185,7 +185,7 @@ export default function User() {
             MatKhau: user.MatKhau,
             DiaChi: user.DiaChi,
             VaiTro: user.VaiTro,
-            AnhDaiDien: user.AnhDaiDien || ""
+            AnhDaiDien: user.AnhDaiDien ? `${user.AnhDaiDien}?t=${Date.now()}` : ""
         });
         
         setShowAlertEdit(true);
@@ -215,8 +215,6 @@ export default function User() {
             }
 
             const maNguoiDung = user.MaNguoiDung;
-            console.log("📤 Dữ liệu gửi lên server:", newUser);
-            console.log("🖼️ AnhDaiDien sẽ update:", newUser.AnhDaiDien);
             await axios.put(`http://localhost:5000/api/nguoi-dung/update/${maNguoiDung}`, newUser);
             toast.success("Cập nhật người dùng thành công!");
             
@@ -471,7 +469,7 @@ export default function User() {
                                                 {user.AnhDaiDien ? (
                                                     <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
                                                         <Image
-                                                            src={user.AnhDaiDien}
+                                                            src={`${user.AnhDaiDien}?t=${Date.now()}`}
                                                             alt={user.HoTen}
                                                             width={40}
                                                             height={40}

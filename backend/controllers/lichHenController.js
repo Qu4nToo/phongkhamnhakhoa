@@ -181,6 +181,22 @@ const LichHenController = {
       if (!TinhTrang) {
         return res.status(400).json({ message: "Vui lòng cung cấp trạng thái!" });
       }
+      if (TinhTrang === "Đã hủy") {
+        const lichHenDetail = await LichHen.getById(id);
+        if (!lichHenDetail) {
+          return res.status(404).json({ message: "Không tìm thấy lịch hẹn để hủy!" });
+        }
+        let gioBatDau = lichHenDetail.GioHen;
+        if (gioBatDau.includes(' ')) gioBatDau = gioBatDau.split(' ')[0];
+        gioBatDau = gioBatDau.trim();
+        if (gioBatDau.length === 5) gioBatDau += ':00';
+        const ngayHen = new Date(`${lichHenDetail.NgayHen}T${gioBatDau}`);
+        const now = new Date();
+        const ms1ngay = 24*60*60*1000;
+        if ((ngayHen - now) < ms1ngay) {
+          return res.status(400).json({ message: "Không thể hủy lịch hẹn trong vòng 24 tiếng trước giờ hẹn!" });
+        }
+      }
 
       const result = await LichHen.updateStatus(id, TinhTrang);
 
@@ -216,6 +232,17 @@ const LichHenController = {
   deleteLichHen: async (req, res) => {
     try {
       const { id } = req.params;
+      // Kiểm tra ràng buộc không được xóa (hủy) trước 1 ngày
+      const lichHenDetail = await LichHen.getById(id);
+      if (!lichHenDetail) {
+        return res.status(404).json({ message: "Không tìm thấy lịch hẹn để xóa!" });
+      }
+      const ngayHen = new Date(lichHenDetail.NgayHen + 'T' + lichHenDetail.GioHen);
+      const now = new Date();
+      const ms1ngay = 24*60*60*1000;
+      if ((ngayHen - now) < ms1ngay) {
+        return res.status(400).json({ message: "Không thể hủy lịch hẹn trong vòng 24 tiếng trước giờ hẹn!" });
+      }
       const deleted = await LichHen.delete(id);
 
       if (!deleted) {

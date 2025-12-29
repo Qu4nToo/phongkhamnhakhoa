@@ -76,17 +76,15 @@ export default function BookingForm() {
     setUserInfo(user);
     setFormData((prev) => ({ ...prev, MaKhachHang: user.MaKhachHang }));
 
-    // Lấy danh sách dịch vụ ngay từ đầu
     axios
       .get("http://localhost:5000/api/dich-vu/get")
       .then((res) => setDichVuList(res.data))
       .catch((error) => console.log(error));
   }, [router]);
 
-  // Lấy danh sách bác sĩ khi chọn dịch vụ
+
   useEffect(() => {
     if (formData.MaDichVu) {
-      // Reset bác sĩ, ngày, giờ khi thay đổi dịch vụ
       setFormData(prev => ({ ...prev, MaBacSi: "", NgayHen: "", GioHen: "" }));
       setSelectedBacSi(null);
       setLichLamViec([]);
@@ -111,7 +109,6 @@ export default function BookingForm() {
     }
   }, [formData.MaDichVu]);
 
-  // Lấy các slot thời gian khả dụng khi thay đổi ngày, bác sĩ hoặc dịch vụ
   useEffect(() => {
     if (formData.NgayHen && formData.MaBacSi && formData.MaDichVu) {
       axios
@@ -200,7 +197,6 @@ export default function BookingForm() {
         GhiChu: "",
       });
       
-      // Chuyển đến trang thông tin với tab lịch hẹn
       setTimeout(() => {
         router.push("/ThongTin?tab=LichHen");
       }, 1500);
@@ -261,7 +257,6 @@ export default function BookingForm() {
     axios
       .get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${selected.MaBacSi}`)
       .then((res) => {
-        // res.data là mảng các lịch làm việc
         setLichLamViec(res.data);
       })
       .catch((err) => {
@@ -401,7 +396,6 @@ export default function BookingForm() {
                     const maxDate = new Date();
                     maxDate.setDate(today.getDate() + 7);
 
-                    // Chặn Chủ Nhật
                     if (date.getDay() === 0) {
                       toast.error(
                         "Không thể chọn Chủ Nhật. Vui lòng chọn từ Thứ 2 đến Thứ 7!"
@@ -409,7 +403,6 @@ export default function BookingForm() {
                       return;
                     }
 
-                    // Chặn vượt quá 30 ngày
                     if (date > maxDate) {
                       toast.error(
                         "Bạn chỉ có thể đặt lịch trong vòng 30 ngày tới!"
@@ -417,10 +410,9 @@ export default function BookingForm() {
                       return;
                     }
 
-                    // ✅ Sửa chỗ này
                     setFormData((prev) => ({
                       ...prev,
-                      NgayHen: date.toLocaleDateString("en-CA"), // hoặc format(date, "yyyy-MM-dd")
+                      NgayHen: date.toLocaleDateString("en-CA"),
                     }));
                   }}
 

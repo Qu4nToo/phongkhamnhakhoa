@@ -137,7 +137,7 @@ export function Header() {
                                     <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-gray-200">
                                         <img
                                             alt="user"
-                                            src={userInfo?.anhDaiDien || "/user.png"}
+                                            src={userInfo?.anhDaiDien ? `${userInfo.anhDaiDien}?t=${Date.now()}` : "/user.png"}
                                             className="h-full w-full object-cover"
                                         />
                                     </div>

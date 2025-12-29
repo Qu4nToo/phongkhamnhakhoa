@@ -78,7 +78,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-          <p>&copy; 2025 Nha Khoa Nụ Cười. Bảo lưu mọi quyền.</p>
+          <p>&copy; 2025 Nha Khoa Hoàng Quân.</p>
         </div>
       </div>
     </footer>

@@ -83,7 +83,6 @@ export default function phieuKhamView() {
         return formatter.format(price).replace('₫', 'VND').trim();
     };
 
-    // Hàm load danh sách phiếu khám
     const loadPhieuKhams = () => {
         const storedUserInfo = sessionStorage.getItem("user_info");
         if (storedUserInfo) {
@@ -151,7 +150,6 @@ export default function phieuKhamView() {
                 TrangThai: "Đã khám"
             });
 
-            // Cập nhật tình trạng lịch hẹn thành "Hoàn thành"
             if (phieuKham.MaLichHen) {
                 const lichHenResponse = await axios.get(`http://localhost:5000/api/lich-hen/get/${phieuKham.MaLichHen}`);
                 console.log("LichHen response:", lichHenResponse.data);
