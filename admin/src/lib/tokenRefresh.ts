@@ -3,7 +3,6 @@
 import { useEffect, useCallback } from 'react';
 import { getAccessToken, getRefreshToken } from './auth';
 
-// Tracking user activity
 let lastActivity = Date.now();
 let refreshTimer: NodeJS.Timeout | null = null;
 
@@ -11,13 +10,12 @@ const updateActivity = () => {
   lastActivity = Date.now();
 };
 
-// Check if user is still active (within last 5 minutes)
 const isUserActive = (): boolean => {
   const inactiveTime = Date.now() - lastActivity;
-  return inactiveTime < 5 * 60 * 1000; // 5 minutes
+  return inactiveTime < 5 * 60 * 1000;
 };
 
-// Decode JWT to get expiry time
+
 const getTokenExpiry = (token: string): number | null => {
   try {
     const base64Url = token.split('.')[1];
@@ -29,14 +27,13 @@ const getTokenExpiry = (token: string): number | null => {
         .join('')
     );
     const decoded = JSON.parse(jsonPayload);
-    return decoded.exp * 1000; // Convert to milliseconds
+    return decoded.exp * 1000; 
   } catch (error) {
     console.error('Error decoding token:', error);
     return null;
   }
 };
 
-// Refresh access token
 const refreshAccessToken = async (): Promise<boolean> => {
   try {
     const refreshToken = getRefreshToken();
@@ -52,10 +49,8 @@ const refreshAccessToken = async (): Promise<boolean> => {
       const data = await response.json();
       const newAccessToken = data.accessToken;
 
-      // Save new access token
       localStorage.setItem('accessToken', newAccessToken);
 
-      // Update cached user info
       const base64Url = newAccessToken.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const jsonPayload = decodeURIComponent(
@@ -77,7 +72,6 @@ const refreshAccessToken = async (): Promise<boolean> => {
   }
 };
 
-// Setup proactive token refresh
 const setupTokenRefresh = () => {
   if (refreshTimer) {
     clearTimeout(refreshTimer);
@@ -92,7 +86,6 @@ const setupTokenRefresh = () => {
   const now = Date.now();
   const timeUntilExpiry = expiry - now;
 
-  // Refresh 2 minutes before expiry (15m - 2m = 13m)
   const refreshTime = timeUntilExpiry - 2 * 60 * 1000;
 
   if (refreshTime > 0) {
@@ -109,23 +102,21 @@ const setupTokenRefresh = () => {
   }
 };
 
-// Hook to use in layout
+
 export const useTokenRefresh = () => {
   const handleActivity = useCallback(() => {
     updateActivity();
   }, []);
 
   useEffect(() => {
-    // Track user activity
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
     events.forEach(event => {
       document.addEventListener(event, handleActivity);
     });
 
-    // Setup token refresh
+
     setupTokenRefresh();
 
-    // Auto-check token expiry mỗi 30 giây
     const checkTokenExpiry = setInterval(() => {
       const accessToken = getAccessToken();
       const refreshToken = getRefreshToken();
@@ -151,9 +142,8 @@ export const useTokenRefresh = () => {
           window.location.href = '/Login';
         }, 1500);
       }
-    }, 30000); // Check every 30 seconds
+    }, 30000);
 
-    // Cleanup
     return () => {
       events.forEach(event => {
         document.removeEventListener(event, handleActivity);

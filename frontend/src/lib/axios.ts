@@ -30,21 +30,21 @@ axios.interceptors.request.use(
   }
 );
 
-// Xử lý response lỗi - Auto refresh token khi hết hạn
+
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Bỏ qua interceptor cho các request login/register
+
     if (originalRequest.skipAuthRefresh) {
       return Promise.reject(error);
     }
 
-    // Nếu lỗi 401 và chưa retry
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        // Nếu đang refresh, đợi trong queue
+
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         }).then(token => {
@@ -61,13 +61,12 @@ axios.interceptors.response.use(
       const refreshToken = localStorage.getItem('refreshToken');
 
       if (!refreshToken) {
-        // Không có refresh token, logout
+
         handleLogout();
         return Promise.reject(error);
       }
 
       try {
-        // Gọi API refresh token
         const response = await fetch('http://localhost:5000/api/auth/refresh-token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -78,23 +77,23 @@ axios.interceptors.response.use(
           const data = await response.json();
           const newAccessToken = data.accessToken;
 
-          // Lưu access token mới
+
           localStorage.setItem('accessToken', newAccessToken);
           
-          // Cập nhật cache user info
+
           const userData = jwtDecode(newAccessToken);
           if (userData) {
             sessionStorage.setItem('user_info', JSON.stringify(userData));
           }
 
-          // Xử lý queue
+
           processQueue(null, newAccessToken);
 
-          // Retry request ban đầu
+
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return axios(originalRequest);
         } else {
-          // Refresh token hết hạn hoặc invalid
+
           processQueue(error, null);
           handleLogout();
           return Promise.reject(error);
@@ -108,7 +107,6 @@ axios.interceptors.response.use(
       }
     }
 
-    // Lỗi 403 hoặc lỗi khác
     if (error.response?.status === 403) {
       toast.error('Bạn không có quyền truy cập!');
     }

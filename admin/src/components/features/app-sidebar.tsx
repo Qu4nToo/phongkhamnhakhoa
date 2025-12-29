@@ -40,55 +40,55 @@ const items = [
     title: "Dashboard",
     url: "/Dashboard",
     icon: ChartPie,
-    roles: ["Quản lý", "Lễ tân"], // Tất cả role đều truy cập được
+    roles: ["Quản lý", "Lễ tân"],
   },
   {
     title: "Khách hàng",
     url: "/KhachHang",
     icon: User,
-    roles: ["Quản lý"], // Chỉ Quản lý
+    roles: ["Quản lý"],
   },
   {
     title: "Bác sĩ",
     url: "/BacSi",
     icon: UserPen,
-    roles: ["Quản lý"], // Chỉ Quản lý
+    roles: ["Quản lý"],
   },
   {
     title: "Người dùng",
     url: "/NguoiDung",
     icon: UserStar,
-    roles: ["Quản lý"], // Chỉ Quản lý
+    roles: ["Quản lý"],
   },
   {
     title: "Lịch hẹn",
     url: "/LichHen",
     icon: Calendar,
-    roles: ["Quản lý", "Lễ tân"], // Cả hai role
+    roles: ["Quản lý", "Lễ tân"],
   },
   {
     title: "Phiếu khám",
     url: "/PhieuKham",
     icon: ReceiptText,
-    roles: ["Quản lý", "Lễ tân"], // Cả hai role
+    roles: ["Quản lý", "Lễ tân"],
   },
   {
     title: "Dịch vụ",
     url: "/DichVu",
     icon: BookPlusIcon,
-    roles: ["Quản lý"], // Cả hai role
+    roles: ["Quản lý"],
   },
   {
     title: "Hóa đơn",
     url: "/HoaDon",
     icon: Receipt,
-    roles: ["Quản lý", "Lễ tân"], // Cả hai role
+    roles: ["Quản lý", "Lễ tân"],
   },
   {
     title: "Loại dịch vụ",
     url: "/LoaiDichVu",
     icon: Book,
-    roles: ["Quản lý"], // Cả hai role
+    roles: ["Quản lý"],
   },
 ];
 
@@ -97,7 +97,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
-    // Giải mã token để lấy thông tin user
     const user = getCurrentUser();
     if (user) {
       setUserInfo(user);
@@ -109,7 +108,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     logout();
   };
 
-  // Lọc menu items dựa trên role của user
   const filteredItems = items.filter((item) => 
     item.roles.includes(userRole)
   );

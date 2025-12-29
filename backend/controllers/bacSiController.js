@@ -48,7 +48,7 @@ const BacSiController = {
             }
             const isMatch = await bcrypt.compare(MatKhau, bacSi.MatKhau);
             if (!isMatch) {
-                return res.status(401).json({ message: "Email hoặc mật khẩu không hợp lệ." });
+                return res.status(404).json({ message: "Email hoặc mật khẩu không hợp lệ." });
             }
             if (bacSi && isMatch) {
                 const payload = {
@@ -279,7 +279,7 @@ const BacSiController = {
 
             const isMatch = await bcrypt.compare(oldPassword, bacSi.MatKhau);
             if (!isMatch) {
-                return res.status(401).json({ message: "Mật khẩu cũ không đúng!" });
+                return res.status(404).json({ message: "Mật khẩu cũ không đúng!" });
             }
 
             const hashedPassword = await bcrypt.hash(newPassword, 10);

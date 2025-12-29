@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { toast } from 'sonner';
 
-// Helper function to decode JWT
 const decodeToken = (token: string): any => {
   try {
     const base64Url = token.split('.')[1];
@@ -32,7 +31,6 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-// Cấu hình axios toàn cục - Tự động thêm access token vào mọi request
 axios.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem('accessToken');
@@ -46,16 +44,13 @@ axios.interceptors.request.use(
   }
 );
 
-// Xử lý response lỗi - Auto refresh token khi hết hạn
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Nếu lỗi 401 và chưa retry
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        // Nếu đang refresh, đợi trong queue
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         }).then(token => {
@@ -72,13 +67,11 @@ axios.interceptors.response.use(
       const refreshToken = localStorage.getItem('refreshToken');
 
       if (!refreshToken) {
-        // Không có refresh token, logout
         handleLogout();
         return Promise.reject(error);
       }
 
       try {
-        // Gọi API refresh token
         const response = await fetch('http://localhost:5000/api/auth/refresh-token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -89,23 +82,18 @@ axios.interceptors.response.use(
           const data = await response.json();
           const newAccessToken = data.accessToken;
 
-          // Lưu access token mới
           localStorage.setItem('accessToken', newAccessToken);
           
-          // Cập nhật cache user info
           const userData = decodeToken(newAccessToken);
           if (userData) {
             sessionStorage.setItem('user_info', JSON.stringify(userData));
           }
 
-          // Xử lý queue
           processQueue(null, newAccessToken);
 
-          // Retry request ban đầu
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return axios(originalRequest);
         } else {
-          // Refresh token hết hạn hoặc invalid
           processQueue(error, null);
           handleLogout();
           return Promise.reject(error);
@@ -119,7 +107,6 @@ axios.interceptors.response.use(
       }
     }
 
-    // Lỗi 403 hoặc lỗi khác
     if (error.response?.status === 403) {
       toast.error('Bạn không có quyền truy cập!');
     }

@@ -50,7 +50,7 @@ const NguoiDungController = {
       }
       const isMatch = await bcrypt.compare(MatKhau, nguoiDung.MatKhau);
       if (!isMatch) {
-        return res.status(401).json({ message: "Email hoặc mật khẩu không hợp lệ." });
+        return res.status(404).json({ message: "Email hoặc mật khẩu không hợp lệ." });
       }
       if (nguoiDung && isMatch) {
         const payload = {
@@ -181,7 +181,7 @@ const NguoiDungController = {
 
       const isMatch = await bcrypt.compare(oldPassword, nguoiDung.MatKhau);
       if (!isMatch) {
-        return res.status(401).json({ message: "Mật khẩu cũ không đúng!" });
+        return res.status(404).json({ message: "Mật khẩu cũ không đúng!" });
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
