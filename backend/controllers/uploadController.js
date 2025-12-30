@@ -12,10 +12,8 @@ const uploadSingleFile = async (req, res) => {
             });
         }
 
-        // Lấy folder từ query params (mặc định là 'uploads')
         const folder = req.query.folder || 'uploads';
 
-        // Upload file
         const fileUrl = await uploadFile(req.file, folder);
 
         res.status(200).json({
@@ -47,8 +45,7 @@ const uploadMultiple = async (req, res) => {
 
         const folder = req.query.folder || 'uploads';
 
-        // Upload nhiều file
-        const urls = await uploadMultipleFiles(req.files, folder);
+            const urls = await uploadMultipleFiles(req.files, folder);
 
         res.status(200).json({
             success: true,

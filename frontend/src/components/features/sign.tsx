@@ -7,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import axios from "@/lib/axios";
-import { saveAuthData } from "@/lib/auth";
+import axios from "@/lib/axiosUser";
+import { saveAuthData, saveAuthDataDoctor } from "@/lib/auth";
 import { toast, Toaster } from "sonner";
 import { FaEyeSlash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
@@ -64,7 +64,7 @@ export function Login() {
 
             if (response2.data.accessToken && response2.data.refreshToken) {
                 // Lưu JWT tokens
-                saveAuthData(response2.data.accessToken, response2.data.refreshToken);
+                saveAuthDataDoctor(response2.data.accessToken, response2.data.refreshToken);
                 // Lưu thêm flag để biết là bác sĩ
                 sessionStorage.setItem("is_doctor", "true");
                 toast.success("Đăng nhập Bác sĩ thành công!");

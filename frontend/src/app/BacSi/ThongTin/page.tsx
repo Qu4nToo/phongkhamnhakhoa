@@ -57,7 +57,7 @@ export default function DoctorProfile() {
     const [avatarPreview, setAvatarPreview] = useState<string>('');
 
     useEffect(() => {
-        const storedUserInfo = sessionStorage.getItem("user_info");
+        const storedUserInfo = sessionStorage.getItem("doctor_info");
 
         if (storedUserInfo) {
             try {
@@ -101,7 +101,7 @@ export default function DoctorProfile() {
 
         try {
             setIsLoading(true);
-            const token = localStorage.getItem("accessToken");
+            const token = localStorage.getItem("accessTokenDoctor");
 
             const response = await axios.put(
                 `http://localhost:5000/api/bac-si/update/${doctorData.MaBacSi}`,
@@ -122,7 +122,7 @@ export default function DoctorProfile() {
             );
 
             // Update session storage
-            const storedUserInfo = sessionStorage.getItem("user_info");
+            const storedUserInfo = sessionStorage.getItem("doctor_info");
             if (storedUserInfo) {
                 const user = JSON.parse(storedUserInfo);
                 const newUserInfo = {
@@ -137,7 +137,7 @@ export default function DoctorProfile() {
                     bangCap: doctorData.BangCap,
                     chuyenMon: doctorData.ChuyenMon
                 };
-                sessionStorage.setItem("user_info", JSON.stringify(newUserInfo));
+                sessionStorage.setItem("doctor_info", JSON.stringify(newUserInfo));
             }
 
             setOriginalData(doctorData);
@@ -175,7 +175,7 @@ export default function DoctorProfile() {
 
         try {
             setIsLoading(true);
-            const token = localStorage.getItem("accessToken");
+            const token = localStorage.getItem("accessTokenDoctor");
 
             await axios.put(
                 `http://localhost:5000/api/bac-si/change-password/${doctorData?.MaBacSi}`,
@@ -218,7 +218,7 @@ export default function DoctorProfile() {
 
         try {
             setIsLoading(true);
-            const token = localStorage.getItem("accessToken");
+            const token = localStorage.getItem("accessTokenDoctor");
             const formData = new FormData();
             formData.append('avatar', avatarFile);
 
@@ -240,11 +240,11 @@ export default function DoctorProfile() {
             setOriginalData(prev => prev ? { ...prev, AnhDaiDien: newAvatarUrl } : null);
 
             // Update session storage
-            const storedUserInfo = sessionStorage.getItem("user_info");
+            const storedUserInfo = sessionStorage.getItem("doctor_info");
             if (storedUserInfo) {
                 const user = JSON.parse(storedUserInfo);
                 const newUserInfo = { ...user, anhDaiDien: newAvatarUrl };
-                sessionStorage.setItem("user_info", JSON.stringify(newUserInfo));
+                sessionStorage.setItem("doctor_info", JSON.stringify(newUserInfo));
             }
 
             setAvatarFile(null);

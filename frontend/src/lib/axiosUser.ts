@@ -1,21 +1,6 @@
 import axios from 'axios';
 import { toast } from 'sonner';
-
-const decodeToken = (token: string): any => {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    return null;
-  }
-};
+import { jwtDecode } from 'jwt-decode';
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -31,6 +16,7 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+// Cấu hình axios toàn cục - Tự động thêm access token vào mọi request
 axios.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem('accessToken');
@@ -44,13 +30,21 @@ axios.interceptors.request.use(
   }
 );
 
+
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
+
+    if (originalRequest.skipAuthRefresh) {
+      return Promise.reject(error);
+    }
+
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
+
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         }).then(token => {
@@ -67,6 +61,7 @@ axios.interceptors.response.use(
       const refreshToken = localStorage.getItem('refreshToken');
 
       if (!refreshToken) {
+
         handleLogout();
         return Promise.reject(error);
       }
@@ -82,18 +77,23 @@ axios.interceptors.response.use(
           const data = await response.json();
           const newAccessToken = data.accessToken;
 
+
           localStorage.setItem('accessToken', newAccessToken);
           
-          const userData = decodeToken(newAccessToken);
+
+          const userData = jwtDecode(newAccessToken);
           if (userData) {
             sessionStorage.setItem('user_info', JSON.stringify(userData));
           }
 
+
           processQueue(null, newAccessToken);
+
 
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return axios(originalRequest);
         } else {
+
           processQueue(error, null);
           handleLogout();
           return Promise.reject(error);
@@ -119,14 +119,9 @@ const handleLogout = () => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   sessionStorage.removeItem('user_info');
-  
-  toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!', {
-    duration: 3000,
-    position: 'top-center',
-  });
-  
+  toast.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!');
   setTimeout(() => {
-    window.location.href = '/Login';
+    window.location.href = '/DangNhap';
   }, 1500);
 };
 

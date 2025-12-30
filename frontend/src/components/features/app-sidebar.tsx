@@ -30,7 +30,6 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useEffect, useState } from "react";
-import Image from "next/image";
 
 // Menu items.
 const items = [
@@ -59,15 +58,15 @@ const items = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [userInfo, setUserInfo] = useState<any>(null);
   useEffect(() => {
-    const storedUserInfo = sessionStorage.getItem("user_info");
+    const storedUserInfo = sessionStorage.getItem("doctor_info");
     if (storedUserInfo) {
       const user = JSON.parse(storedUserInfo);
       setUserInfo(user);
     }
   }, []);
   const handleSignOut = () => {
-    import('@/lib/auth').then(({ logout }) => {
-      logout();
+    import('@/lib/auth').then(({ logoutDoctor }) => {
+      logoutDoctor();
     });
   };
   return (

@@ -6,7 +6,7 @@ import { Menu as MenuIcon, X } from 'lucide-react';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { SocketProvider, useSocket } from "@/contexts/SocketContext";
 import { useRouter } from "next/navigation";
-import axios from '@/lib/axios';
+import axios from '@/lib/axiosUser';
 import { toast, Toaster } from "sonner";
 
 export function Header() {

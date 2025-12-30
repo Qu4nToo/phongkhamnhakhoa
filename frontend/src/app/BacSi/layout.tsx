@@ -9,7 +9,7 @@ import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast, Toaster } from "sonner";
-import { isAuthenticated, getCurrentUser } from "@/lib/auth";
+import { isAuthenticatedDoctor, getCurrentDoctor } from "@/lib/auth";
 import { useTokenRefresh } from "@/lib/tokenRefresh";
 import { SocketProvider, useSocket } from "@/contexts/SocketContext";
 
@@ -23,14 +23,14 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Kiểm tra token có tồn tại không
-    if (!isAuthenticated()) {
+    if (!isAuthenticatedDoctor()) {
       toast.error("Bạn chưa đăng nhập");
       router.push("/DangNhap");
       return;
     }
 
     // Giải mã token để lấy thông tin user
-    const user = getCurrentUser();
+    const user = getCurrentDoctor();
     
     if (!user) {
       toast.error("Token không hợp lệ");
@@ -52,7 +52,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!socket) return;
 
-    const storedUserInfo = sessionStorage.getItem("user_info");
+    const storedUserInfo = sessionStorage.getItem("doctor_info");
     if (!storedUserInfo) return;
 
     const user = JSON.parse(storedUserInfo);

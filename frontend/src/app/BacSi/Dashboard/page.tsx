@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "@/lib/axios";
+import axios from "@/lib/axiosDoctor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart,
@@ -41,7 +41,7 @@ export default function DoctorDashboard() {
   const [appointmentsByStatus, setAppointmentsByStatus] = useState([]);
 
   useEffect(() => {
-    const userInfo = sessionStorage.getItem("user_info");
+    const userInfo = sessionStorage.getItem("doctor_info");
     
     if (userInfo) {
       const user = JSON.parse(userInfo);

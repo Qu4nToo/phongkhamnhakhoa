@@ -66,6 +66,12 @@ import { Label } from "@/components/ui/label"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 
 
@@ -92,6 +98,25 @@ export default function User() {
   const [newSchedule, setNewSchedule] = useState({
     ThuTrongTuan: ""
   });
+
+  // Lịch nghỉ
+  const [showDayOffDialog, setShowDayOffDialog] = useState(false);
+  const [showAddDayOffDialog, setShowAddDayOffDialog] = useState(false);
+
+  // Fetch lịch làm việc khi mở dialog thêm ngày nghỉ
+  useEffect(() => {
+    if (showAddDayOffDialog && selectedUser?.MaBacSi) {
+      axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${selectedUser.MaBacSi}`)
+        .then(res => {
+          setScheduleList(Array.isArray(res.data) ? res.data : []);
+        })
+        .catch(() => setScheduleList([]));
+    }
+  }, [showAddDayOffDialog, selectedUser]);
+  const [showDeleteDayOffDialog, setShowDeleteDayOffDialog] = useState(false);
+  const [dayOffList, setDayOffList] = useState<any[]>([]);
+  const [selectedDayOffToDelete, setSelectedDayOffToDelete] = useState<string>("");
+  const [newDayOff, setNewDayOff] = useState({ NgayNghi: "" });
 
   const [newUser, setNewUser] = useState({
     HoTen: "",
@@ -384,6 +409,64 @@ export default function User() {
     }
   };
 
+  // Lịch nghỉ handlers
+  const handleDayOffClick = async (user: any) => {
+    setSelectedUser(user);
+    try {
+      const response = await axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${user.MaBacSi}`);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setDayOffList(data);
+      setShowDayOffDialog(true);
+    } catch (err) {
+      console.error("Error fetching day off:", err);
+      setDayOffList([]);
+      setShowDayOffDialog(true);
+    }
+  };
+
+  const handleAddDayOff = async () => {
+    if (!newDayOff.NgayNghi) {
+      toast.error("Vui lòng chọn ngày nghỉ!");
+      return;
+    }
+    try {
+      const dataToSend = {
+        MaBacSi: selectedUser.MaBacSi,
+        NgayNghi: newDayOff.NgayNghi
+      };
+      await axios.post("http://localhost:5000/api/bac-si-ngay-nghi/create", dataToSend);
+      toast.success("Thêm ngày nghỉ thành công!");
+      const response = await axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${selectedUser.MaBacSi}`);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setDayOffList(data);
+      setNewDayOff({ NgayNghi: "" });
+      setShowAddDayOffDialog(false);
+    } catch (err: any) {
+      console.error("Error adding day off:", err);
+      toast.error("Có lỗi xảy ra khi thêm ngày nghỉ!");
+    }
+  };
+
+  const handleDeleteDayOffClick = (maNgayNghi: string) => {
+    setSelectedDayOffToDelete(maNgayNghi);
+    setShowDeleteDayOffDialog(true);
+  };
+
+  const handleConfirmDeleteDayOff = async () => {
+    try {
+      await axios.delete(`http://localhost:5000/api/bac-si-ngay-nghi/delete/${selectedDayOffToDelete}`);
+      toast.success("Xóa ngày nghỉ thành công!");
+      const response = await axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${selectedUser.MaBacSi}`);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setDayOffList(data);
+      setShowDeleteDayOffDialog(false);
+      setSelectedDayOffToDelete("");
+    } catch (err: any) {
+      console.error("Error deleting day off:", err);
+      toast.error("Có lỗi xảy ra khi xóa ngày nghỉ!");
+    }
+  };
+
   const handleAddSchedule = async () => {
     if (!newSchedule.ThuTrongTuan) {
       toast.error("Vui lòng chọn ngày làm việc!");
@@ -644,6 +727,7 @@ export default function User() {
                             <DropdownMenuItem onClick={() => handleDeleteClick(users)}>Xóa</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleServiceClick(users)}>Thêm dịch vụ</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleScheduleClick(users)}>Lịch làm việc</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDayOffClick(users)}>Lịch nghỉ</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -1070,7 +1154,175 @@ export default function User() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Dialog Lịch Nghỉ (giống lịch làm việc) */}
+      <Dialog open={showDayOffDialog} onOpenChange={setShowDayOffDialog}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Lịch Nghỉ</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 flex flex-col md:flex-row gap-8">
+            <div className="w-full md:w-2/3 flex flex-col gap-6">
+              <div className="flex flex-col justify-start items-start bg-gray-50 px-4 py-4 w-full">
+                <div className="flex justify-between items-center w-full">
+                  <p className="text-lg font-semibold leading-6 text-gray-800">
+                    Danh Sách Ngày Nghỉ
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={() => setShowAddDayOffDialog(true)}
+                    className="bg-black border text-white flex items-center gap-2 hover:bg-gray-200 hover:text-black border-black"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    Thêm ngày nghỉ
+                  </Button>
+                </div>
+                <ScrollArea className="h-60 w-full rounded-md border p-3 mt-2">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="sticky top-0 bg-gray-200 text-black">
+                        <TableHead>Ngày Nghỉ</TableHead>
+                        <TableHead className="w-[50px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {dayOffList && dayOffList.length > 0 ? (
+                        dayOffList.map((item: any, index: number) => (
+                          <TableRow key={item.MaNgayNghiBS || index} className="bg-white">
+                            <TableCell className="font-medium">{item.NgayNghi}</TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteDayOffClick(item.MaNgayNghiBS)}
+                                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={2} className="text-center text-gray-500 py-8">
+                            Chưa có ngày nghỉ
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </div>
+            </div>
+            <div className="w-full md:w-1/3 bg-gray-50 px-4 py-6 md:p-6 flex flex-col gap-6">
+              <div>
+                <h3 className="text-xl font-semibold leading-5 text-gray-800">Bác sĩ</h3>
+                <div className="flex flex-col justify-start items-start mt-4 space-y-4">
+                  <div className="flex justify-start items-center space-x-4 w-full border-b border-gray-200 pb-4">
+                    <UserIcon className="w-6 h-6" />
+                    <p className="text-base font-semibold leading-4 text-gray-800">
+                      {selectedUser?.HoTen || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="mt-4 flex gap-2">
+            <Button className="hover:bg-gray-300" variant="outline" onClick={() => setShowDayOffDialog(false)}>Đóng</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Dialog Thêm Ngày Nghỉ */}
+      <Dialog open={showAddDayOffDialog} onOpenChange={setShowAddDayOffDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Thêm Ngày Nghỉ</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Chọn ngày nghỉ</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !newDayOff.NgayNghi && "text-gray-500"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {newDayOff.NgayNghi ? (
+                      format(new Date(newDayOff.NgayNghi), "dd/MM/yyyy", { locale: vi })
+                    ) : (
+                      <span>Chọn ngày nghỉ</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-white" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={newDayOff.NgayNghi ? new Date(newDayOff.NgayNghi) : undefined}
+                    onSelect={(date: Date | undefined) => {
+                      if (!date) return;
+                      setNewDayOff({ NgayNghi: date.toLocaleDateString("en-CA") });
+                    }}
+                    disabled={(date: Date) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const dayOfWeek = date.getDay();
+                      // Map scheduleList.ThuTrongTuan sang số thứ (0-6)
+                      const thuMap: Record<string, number> = {
+                        "Chủ Nhật": 0,
+                        "Thứ Hai": 1,
+                        "Thứ Ba": 2,
+                        "Thứ Tư": 3,
+                        "Thứ Năm": 4,
+                        "Thứ Sáu": 5,
+                        "Thứ Bảy": 6,
+                      };
+                      const allowedDays = scheduleList.map((item: any) => thuMap[item.ThuTrongTuan?.trim()]);
+                      return date < today || !allowedDays.includes(dayOfWeek);
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+              <div className="text-xs text-gray-500">Chỉ được chọn ngày thuộc lịch làm việc của bác sĩ đã chọn.</div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button className="hover:bg-gray-300" variant="outline" onClick={() => setShowAddDayOffDialog(false)}>
+              Hủy
+            </Button>
+            <Button className="bg-black text-white border hover:text-black hover:bg-white border-black" onClick={handleAddDayOff}>
+              Thêm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
+      {/* Delete Day Off Confirmation Dialog */}
+      <AlertDialog open={showDeleteDayOffDialog} onOpenChange={setShowDeleteDayOffDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa ngày nghỉ</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa ngày nghỉ này không?
+              Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteDayOffDialog(false)}>
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDeleteDayOff}
+              className="bg-black text-white hover:bg-white hover:text-black border border-black"
+            >
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <Toaster />
     </RoleGuard>
   )

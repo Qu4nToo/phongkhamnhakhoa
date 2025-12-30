@@ -17,7 +17,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useTitle } from "./TitleContext";
-import axios from "@/lib/axios";
+import axios from "@/lib/axiosUser";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
