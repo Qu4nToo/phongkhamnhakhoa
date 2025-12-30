@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import axios from "@/lib/axios";
+import axios from "@/lib/axiosUser";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -54,6 +54,7 @@ export default function BookingForm() {
   const [bacsi, setBacsi] = useState<BacSi[]>([]);
   const [selectedBacSi, setSelectedBacSi] = useState<BacSi | null>(null);
   const [lichlamviec, setLichLamViec] = useState<LichLamViec[]>([]);
+  const [ngayNghi, setNgayNghi] = useState<string[]>([]); // yyyy-mm-dd
   const [dichVuList, setDichVuList] = useState<DichVu[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
@@ -248,22 +249,24 @@ export default function BookingForm() {
     );
   }
 
-  function handleCalendar(selected: BacSi | null) {
+  async function handleCalendar(selected: BacSi | null) {
     if (!selected) {
       setLichLamViec([]);
+      setNgayNghi([]);
       return;
     }
-
-    axios
-      .get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${selected.MaBacSi}`)
-      .then((res) => {
-        setLichLamViec(res.data);
-      })
-      .catch((err) => {
-        console.error("Lỗi lấy lịch làm việc:", err);
-        setLichLamViec([]);
-        toast.error("Không thể lấy lịch làm việc của bác sĩ!");
-      });
+    try {
+      const [lichRes, nghiRes] = await Promise.all([
+        axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${selected.MaBacSi}`),
+        axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${selected.MaBacSi}`)
+      ]);
+      setLichLamViec(lichRes.data);
+      setNgayNghi(Array.isArray(nghiRes.data) ? nghiRes.data.map((d: any) => d.NgayNghi) : []);
+    } catch (err) {
+      setLichLamViec([]);
+      setNgayNghi([]);
+      toast.error("Không thể lấy lịch làm việc hoặc ngày nghỉ của bác sĩ!");
+    }
   }
 
 
@@ -428,18 +431,16 @@ export default function BookingForm() {
                       "Thứ Sáu": 5,
                       "Thứ Bảy": 6,
                     };
-
-
                     const workingDays = lichlamviec.map((lv) => thuMap[lv.ThuTrongTuan.trim()]);
                     const today = new Date();
                     const maxDate = new Date();
                     maxDate.setDate(today.getDate() + 7);
-
-                    // Nếu ngày không thuộc workingDays hoặc quá sớm/quá muộn → disabled
+                    const dateStr = date.toLocaleDateString("en-CA");
                     return (
                       !workingDays.includes(date.getDay()) ||
                       date < today ||
-                      date > maxDate
+                      date > maxDate ||
+                      ngayNghi.includes(dateStr)
                     );
                   }}
                 />

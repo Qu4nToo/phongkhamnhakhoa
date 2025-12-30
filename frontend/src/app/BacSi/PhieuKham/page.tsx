@@ -49,7 +49,7 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs"
-import axios from "@/lib/axios"
+import axios from "@/lib/axiosDoctor"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { Textarea } from "@/components/ui/textarea"
@@ -84,7 +84,7 @@ export default function phieuKhamView() {
     };
 
     const loadPhieuKhams = () => {
-        const storedUserInfo = sessionStorage.getItem("user_info");
+        const storedUserInfo = sessionStorage.getItem("doctor_info");
         if (storedUserInfo) {
             const user = JSON.parse(storedUserInfo);
             setUserInfo(user);
@@ -173,7 +173,7 @@ export default function phieuKhamView() {
             });
 
             // Cập nhật danh sách
-            const storedUserInfo = sessionStorage.getItem("user_info");
+            const storedUserInfo = sessionStorage.getItem("doctor_info");
             if (storedUserInfo) {
                 const user = JSON.parse(storedUserInfo);
                 const response = await axios.get(`http://localhost:5000/api/phieu-kham/getByBacSiID/${user.MaBacSi}`);

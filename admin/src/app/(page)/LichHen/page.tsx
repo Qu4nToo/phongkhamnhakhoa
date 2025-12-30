@@ -103,6 +103,8 @@ export default function BookingView() {
 
     const [availableDays, setAvailableDays] = useState<number[]>([]);
     const [availableDaysEdit, setAvailableDaysEdit] = useState<number[]>([]);
+    const [dayOffList, setDayOffList] = useState<string[]>([]); // yyyy-mm-dd
+    const [dayOffListEdit, setDayOffListEdit] = useState<string[]>([]);
     const [timeSlotsEdit, setTimeSlotsEdit] = useState<any[]>([]);
     const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { id, value } = e.target;
@@ -237,8 +239,15 @@ export default function BookingView() {
                     setAvailableDays(days);
                 })
                 .catch(err => console.log(err));
+            // Lấy ngày nghỉ
+            axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${newbooking.MaBacSi}`)
+                .then(res => {
+                    setDayOffList(Array.isArray(res.data) ? res.data.map((d: any) => d.NgayNghi) : []);
+                })
+                .catch(() => setDayOffList([]));
         } else {
             setAvailableDays([]);
+            setDayOffList([]);
         }
     }, [newbooking.MaBacSi]);
 
@@ -271,6 +280,12 @@ export default function BookingView() {
                     setAvailableDaysEdit(days);
                 })
                 .catch(err => console.log(err));
+            // Lấy ngày nghỉ
+            axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${booking.MaBacSi}`)
+                .then(res => {
+                    setDayOffListEdit(Array.isArray(res.data) ? res.data.map((d: any) => d.NgayNghi) : []);
+                })
+                .catch(() => setDayOffListEdit([]));
         }
         
         // Fetch time slots nếu có đủ thông tin
@@ -590,7 +605,8 @@ export default function BookingView() {
                                                             const today = new Date();
                                                             today.setHours(0, 0, 0, 0);
                                                             const dayOfWeek = date.getDay();
-                                                            return date < today || !availableDays.includes(dayOfWeek);
+                                                            const dateStr = date.toLocaleDateString("en-CA");
+                                                            return date < today || !availableDays.includes(dayOfWeek) || dayOffList.includes(dateStr);
                                                         }}
                                                     />
                                                 </PopoverContent>
@@ -886,7 +902,8 @@ export default function BookingView() {
                                                 const today = new Date();
                                                 today.setHours(0, 0, 0, 0);
                                                 const dayOfWeek = date.getDay();
-                                                return date < today || !availableDaysEdit.includes(dayOfWeek);
+                                                const dateStr = date.toLocaleDateString("en-CA");
+                                                return date < today || !availableDaysEdit.includes(dayOfWeek) || dayOffListEdit.includes(dateStr);
                                             }}
                                         />
                                     </PopoverContent>

@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 
 const express = require('express');
@@ -36,6 +35,7 @@ const lichLamViecRoutes = require('./routes/lichLamViecRoutes');
 const loaiDichVuRoutes = require('./routes/loaiDichVuRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const hinhAnhDichVuRoutes = require('./routes/hinhAnhDichVuRoutes');
+const bacSiNgayNghiRoutes = require('./routes/bacSiNgayNghiRoutes');
 
 app.get('/', async (req, res) => {
   try {
@@ -65,6 +65,7 @@ app.use('/api/chi-tiet-dich-vu', chiTietDichVuRoutes);
 app.use('/api/chi-tiet-phieu-kham', chiTietPhieuKhamRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/hinh-anh-dich-vu', hinhAnhDichVuRoutes);
+app.use('/api/bac-si-ngay-nghi', bacSiNgayNghiRoutes);
 
 // Socket.IO connection
 io.on('connection', (socket) => {

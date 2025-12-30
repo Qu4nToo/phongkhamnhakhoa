@@ -42,7 +42,7 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs"
-import axios from "@/lib/axios"
+import axios from "@/lib/axiosDoctor"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Toaster } from "@/components/ui/sonner"
@@ -54,6 +54,8 @@ import { format, set } from "date-fns";
 import { vi } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isAxiosError } from "axios";
+
 export default function BookingView() {
     const router = useRouter();
     const [bookings, setbookings] = useState([]);
@@ -62,10 +64,22 @@ export default function BookingView() {
     const [doctors, setDoctors] = useState<any>(null);
     const [isDialogOpen, setDialogOpen] = useState(false);
     const [isViewDialogOpen, setViewDialogOpen] = useState(false);
+    const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState<any>(null);
+    const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
     const [dichVuList, setDichVuList] = useState([]);
     const [timeSlots, setTimeSlots] = useState<any[]>([]);
     const [filterDate, setFilterDate] = useState("");
+    const [searchName, setSearchName] = useState("");
+    const [filterStatus, setFilterStatus] = useState("");
+
+    const statusTabs = [
+        { value: '', label: 'Tất cả' },
+        { value: 'Chờ xác nhận', label: 'Chờ xác nhận' },
+        { value: 'Đã xác nhận', label: 'Đã xác nhận' },
+        { value: 'Đang khám', label: 'Đang khám' },
+        { value: 'Hoàn thành', label: 'Hoàn thành' },
+    ];
 
     const [newbooking, setNewbooking] = useState({
         MaDichVu: "",
@@ -75,6 +89,7 @@ export default function BookingView() {
     });
 
     const [availableDays, setAvailableDays] = useState<number[]>([]);
+    const [ngayNghi, setNgayNghi] = useState<string[]>([]); // yyyy-mm-dd
 
     const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { id, value } = e.target;
@@ -100,16 +115,15 @@ export default function BookingView() {
         axios.get("http://localhost:5000/api/khach-hang/get")
             .then(customers => setCustomers(customers.data))
             .catch(err => console.log(err))
-        const storedUserInfo = sessionStorage.getItem("user_info");
+        const storedUserInfo = sessionStorage.getItem("doctor_info");
         if (storedUserInfo) {
-
             const user = JSON.parse(storedUserInfo);
             setDoctors(user);
             axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${user.MaBacSi}`)
                 .then(response => {
                     // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
                     const filteredBookings = response.data.filter((booking: any) =>
-                        booking.TinhTrang === "Đã xác nhận" || booking.TinhTrang === "Chờ xác nhận"
+                        booking.TinhTrang !== "không đến" && booking.TinhTrang !== "Đã hủy"
                     );
                     setbookings(filteredBookings);
                     setFilteredBookings(filteredBookings);
@@ -134,8 +148,20 @@ export default function BookingView() {
                     setAvailableDays(days);
                 })
                 .catch(err => console.log(err));
+            // Fetch ngày nghỉ của bác sĩ
+            axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${user.MaBacSi}`)
+                .then(res => {
+                    if (Array.isArray(res.data)) {
+                        setNgayNghi(res.data.map((d: any) => d.NgayNghi));
+                    } else {
+                        setNgayNghi([]);
+                    }
+                })
+                .catch(err => {
+                    setNgayNghi([]);
+                    console.log(err);
+                });
         }
-
     }, []);
 
     useEffect(() => {
@@ -173,20 +199,30 @@ export default function BookingView() {
         }
     }, [newbooking.MaDichVu]);
 
+
     useEffect(() => {
+        let filtered = bookings;
         if (filterDate) {
-            const filtered = bookings.filter((booking: any) =>
-                booking.NgayHen === filterDate
-            );
-            setFilteredBookings(filtered);
-        } else {
-            setFilteredBookings(bookings);
+            filtered = filtered.filter((booking: any) => booking.NgayHen === filterDate);
         }
-    }, [filterDate, bookings]);
+        if (searchName) {
+            filtered = filtered.filter((booking: any) =>
+                booking.TenKhachHang?.toLowerCase().includes(searchName.toLowerCase())
+            );
+        }
+        if (filterStatus && filterStatus !== '') {
+            filtered = filtered.filter((booking: any) => booking.TinhTrang === filterStatus);
+        }
+        setFilteredBookings(filtered);
+    }, [filterDate, bookings, searchName, filterStatus]);
 
     const handleViewClick = (booking: any) => {
         setSelectedBooking(booking);
         setViewDialogOpen(true);
+    };
+    const handleCreateClick = (booking: any) => {
+        setSelectedCustomer({ MaKhachHang: booking.MaKhachHang, HoTen: booking.TenKhachHang });
+        setCreateDialogOpen(true);
     };
 
     const handleCreatebooking = () => {
@@ -213,25 +249,15 @@ export default function BookingView() {
         const bookingToCreate = {
             ...newbooking,
             MaBacSi: doctors.MaBacSi,
+            MaKhachHang: selectedCustomer.MaKhachHang,
         };
         axios.post("http://localhost:5000/api/lich-hen/create", bookingToCreate)
             .then(() => {
-                toast.success("Đặt lịch thành công!", {
-                    action: {
-                        label: "Đóng",
-                        onClick: () => toast.dismiss(),
-                    },
-                    style: {
-                        background: "#ecfdf5",
-                        color: "#065f46",
-                        borderRadius: "10px",
-                        border: "1px solid #10b981",
-                    },
-                });
+                toast.success("Đặt lịch thành công!");
                 axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${doctors.MaBacSi}`)
                     .then((response) => {
                         const filteredBookings = response.data.filter((booking: any) =>
-                            booking.TinhTrang === "Đã xác nhận"
+                            booking.TinhTrang !== "không đến" && booking.TinhTrang !== "Đã hủy"
                         );
                         setbookings(filteredBookings);
                     })
@@ -249,31 +275,11 @@ export default function BookingView() {
             })
             .catch((error) => {
                 console.error("Lỗi đặt lịch:", error);
-                if (axios.isAxiosError(error)) {
+                if (isAxiosError(error)) {
                     toast.error(error.response?.data?.message || "Lỗi không xác định!", {
-                        action: {
-                            label: "Đóng",
-                            onClick: () => toast.dismiss(),
-                        },
-                        style: {
-                            background: "#bf0407",
-                            color: "#bf0407",
-                            borderRadius: "10px",
-                            border: "1px solid #10b981",
-                        },
                     });
                 } else {
                     toast.error("Lỗi không xác định!", {
-                        action: {
-                            label: "Đóng",
-                            onClick: () => toast.dismiss(),
-                        },
-                        style: {
-                            background: "#bf0407",
-                            color: "#bf0407",
-                            borderRadius: "10px",
-                            border: "1px solid #10b981",
-                        },
                     });
                 }
             });
@@ -318,13 +324,12 @@ export default function BookingView() {
             console.log("Cập nhật trạng thái lịch hẹn thành công");
 
             // Reload danh sách lịch hẹn
-            const storedUserInfo = sessionStorage.getItem("user_info");
+            const storedUserInfo = sessionStorage.getItem("doctor_info");
             if (storedUserInfo) {
                 const user = JSON.parse(storedUserInfo);
                 const response = await axios.get(`http://localhost:5000/api/lich-hen/getByBacSiID/${user.MaBacSi}`);
-                // Lọc chỉ lấy lịch hẹn có tình trạng "Đã xác nhận"
                 const filteredBookings = response.data.filter((booking: any) =>
-                    booking.TinhTrang === "Đã xác nhận"
+                    booking.TinhTrang !== "không đến" && booking.TinhTrang !== "Đã hủy"
                 );
                 setbookings(filteredBookings);
                 setFilteredBookings(filteredBookings);
@@ -350,12 +355,21 @@ export default function BookingView() {
     return (
         <>
             <title>Lịch Hẹn - Bác Sĩ</title>
-            <Tabs defaultValue="all">
-                <div className="flex items-center">
+            <Tabs value={filterStatus} onValueChange={setFilterStatus}>
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
                     <TabsList>
-                        <TabsTrigger value="all">Tất cả</TabsTrigger>
+                        {statusTabs.map(tab => (
+                            <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
+                        ))}
                     </TabsList>
-                    <div className="ml-auto flex items-center gap-2">
+                    <div className="flex flex-col md:flex-row md:items-center gap-2 ml-auto">
+                        <Input
+                            type="text"
+                            value={searchName}
+                            onChange={(e) => setSearchName(e.target.value)}
+                            className="w-auto"
+                            placeholder="Tìm theo tên khách hàng"
+                        />
                         <Input
                             type="date"
                             value={filterDate}
@@ -372,227 +386,81 @@ export default function BookingView() {
                                 Xóa lọc
                             </Button>
                         )}
-                        <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
-                            <DialogTrigger asChild>
-                                <Button size="sm" className="h-7 gap-1 bg-black text-white hover:bg-white hover:text-black border border-black">
-                                    <PlusCircle className="h-3.5 w-3.5" />
-                                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                        Hẹn tái khám
-                                    </span>
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[425px]">
-                                <DialogHeader>
-                                    <DialogTitle>Hẹn tái khám</DialogTitle>
-                                    <DialogDescription>
-                                        Tạo lịch hẹn tái khám cho bệnh nhân.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="MaKhachHang" className="text-right col-span-2">
-                                            Khách Hàng
-                                        </Label>
-                                        <select
-                                            id="MaKhachHang"
-                                            onChange={handleInputChange2}
-                                            className="col-span-4"
-                                        >
-                                            <option value="">Chọn khách hàng</option>
-                                            {customers.map((customer: any) => (
-                                                <option key={customer.MaKhachHang} value={customer.MaKhachHang}>{customer.HoTen}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="MaDichVu" className="text-right col-span-2">
-                                            Dịch vụ
-                                        </Label>
-                                        <select
-                                            id="MaDichVu"
-                                            onChange={handleInputChange2}
-                                            className="col-span-4"
-                                            value={newbooking.MaDichVu}
-                                        >
-                                            <option value="">Chọn dịch vụ</option>
-                                            {dichVuList.map((dichVu: any) => (
-                                                <option key={dichVu.MaDichVu} value={dichVu.MaDichVu}>
-                                                    {dichVu.TenDichVu} ({dichVu.ThoiLuong} phút)
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="NgayHen" className="text-right col-span-2">
-                                            Ngày hẹn
-                                        </Label>
-                                        <div className="col-span-4">
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        className={cn(
-                                                            "w-full justify-start text-left font-normal",
-                                                            !newbooking.NgayHen && "text-gray-500"
-                                                        )}
-                                                        disabled={!newbooking.MaDichVu}
-                                                    >
-                                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                                        {newbooking.NgayHen ? (
-                                                            format(new Date(newbooking.NgayHen), "dd/MM/yyyy", { locale: vi })
-                                                        ) : (
-                                                            <span>{!newbooking.MaDichVu ? "Chọn dịch vụ trước" : "Chọn ngày hẹn"}</span>
-                                                        )}
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                {newbooking.MaDichVu && (
-                                                    <PopoverContent className="w-auto p-0 bg-white" align="start">
-                                                        <Calendar
-                                                            mode="single"
-                                                            selected={newbooking.NgayHen ? new Date(newbooking.NgayHen) : undefined}
-                                                            onSelect={(date) => {
-                                                                if (!date) return;
-                                                                setNewbooking((prev) => ({
-                                                                    ...prev,
-                                                                    NgayHen: date.toLocaleDateString("en-CA"),
-                                                                }));
-                                                            }}
-                                                            disabled={(date) => {
-                                                                const today = new Date();
-                                                                today.setHours(0, 0, 0, 0);
-                                                                const dayOfWeek = date.getDay();
-                                                                return date < today || !availableDays.includes(dayOfWeek);
-                                                            }}
-                                                        />
-                                                    </PopoverContent>
-                                                )}
-                                            </Popover>
-                                            {availableDays.length > 0 && (
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                    Bác sĩ làm việc: {availableDays.map(day =>
-                                                        ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][day]
-                                                    ).join(', ')}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="GioHen" className="text-right col-span-2">
-                                            Giờ hẹn
-                                        </Label>
-                                        <select
-                                            id="GioHen"
-                                            onChange={handleInputChange2}
-                                            className="col-span-4 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                            disabled={!newbooking.NgayHen || !newbooking.MaDichVu}
-                                            value={newbooking.GioHen}
-                                        >
-                                            <option value="">
-                                                {!newbooking.MaDichVu
-                                                    ? "Chọn dịch vụ trước"
-                                                    : !newbooking.NgayHen
-                                                        ? "Chọn ngày hẹn trước"
-                                                        : timeSlots.length === 0
-                                                            ? "Đang tải..."
-                                                            : "Chọn giờ hẹn"}
-                                            </option>
-                                            {timeSlots.map((slot) => (
-                                                <option key={slot.value} value={slot.value} disabled={!slot.available}>
-                                                    {slot.label} {!slot.available ? "❌ (Đã đặt)" : "✅"}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {timeSlots.length > 0 && timeSlots.every((slot) => !slot.available) && (
-                                            <p className="col-span-6 text-sm text-red-500 text-center">
-                                                ⚠️ Tất cả các khung giờ đã được đặt. Vui lòng chọn ngày khác.
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="grid grid-cols-6 items-center gap-4">
-                                        <Label htmlFor="GhiChu" className="text-right col-span-2">
-                                            Ghi chú
-                                        </Label>
-                                        <Input onChange={handleInputChange} id="GhiChu" type="text" className="col-span-4" />
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button className="bg-black text-white hover:bg-white hover:text-black border-1" type="button" onClick={handleCreatebooking}>
-                                        Confirm
-                                    </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
                     </div>
                 </div>
-                <TabsContent value="all">
-                    <Card x-chunk="dashboard-06-chunk-0">
-                        <CardHeader>
-                            <CardTitle>Danh sách lich hẹn</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Khách hàng</TableHead>
-                                        <TableHead>Ngày hẹn</TableHead>
-                                        <TableHead>Giờ hẹn</TableHead>
-                                        <TableHead>Tình trạng</TableHead>
-                                        <TableHead>Ghi chú</TableHead>
-                                        <TableHead>
-                                            <span className="sr-only">Actions</span>
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                {filteredBookings.map((bookings: any) => (
-                                    <TableBody key={bookings.MaLichHen}>
-                                        <TableRow >
-                                            <TableCell className="font-medium">
-                                                {bookings.TenKhachHang}
-                                            </TableCell>
-                                            <TableCell className="font-medium">
-                                                {bookings.NgayHen}
-                                            </TableCell>
-                                            <TableCell className="font-medium">
-                                                {bookings.GioHen}
-                                            </TableCell>
-                                            <TableCell className="font-medium">
-                                                {bookings.TinhTrang}
-                                            </TableCell>
-                                            <TableCell className="font-medium">
-                                                {bookings.GhiChu}
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button
-                                                            aria-haspopup="true"
-                                                            size="icon"
-                                                            variant="ghost"
-                                                        // onClick={() => handleToggleMenuClick(product)}
-                                                        >
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                            <span className="sr-only">Toggle menu</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent className="bg-white" align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem onClick={() => handleViewClick(bookings)}>Xem chi tiết</DropdownMenuItem>
-                                                        {bookings.TinhTrang == ""}
-                                                        {bookings.TinhTrang === "Đã xác nhận" && (
-                                                            <DropdownMenuItem onClick={() => handleCreatePhieuKhamClick(bookings)}>Tạo phiếu khám</DropdownMenuItem>
-                                                        )}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
+
+                {statusTabs.map(tab => (
+                    <TabsContent key={tab.value} value={tab.value}>
+                        <Card x-chunk="dashboard-06-chunk-0">
+                            <CardHeader>
+                                <CardTitle>Danh sách lịch hẹn {tab.label !== 'Tất cả' ? `- ${tab.label}` : ''}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Khách hàng</TableHead>
+                                            <TableHead>Ngày hẹn</TableHead>
+                                            <TableHead>Giờ hẹn</TableHead>
+                                            <TableHead>Tình trạng</TableHead>
+                                            <TableHead>Ghi chú</TableHead>
+                                            <TableHead>
+                                                <span className="sr-only">Actions</span>
+                                            </TableHead>
                                         </TableRow>
-                                    </TableBody>
-                                ))}
-                            </Table>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+                                    </TableHeader>
+                                    {filteredBookings
+                                        .filter((booking: any) => tab.value === '' || booking.TinhTrang === tab.value)
+                                        .map((bookings: any) => (
+                                            <TableBody key={bookings.MaLichHen}>
+                                                <TableRow >
+                                                    <TableCell className="font-medium">
+                                                        {bookings.TenKhachHang}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {bookings.NgayHen}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {bookings.GioHen}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {bookings.TinhTrang}
+                                                    </TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {bookings.GhiChu}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button
+                                                                    aria-haspopup="true"
+                                                                    size="icon"
+                                                                    variant="ghost"
+                                                                >
+                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                    <span className="sr-only">Toggle menu</span>
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent className="bg-white" align="end">
+                                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                                <DropdownMenuItem onClick={() => handleViewClick(bookings)}>Xem chi tiết</DropdownMenuItem>
+                                                                {bookings.TinhTrang === "Đã xác nhận" && (
+                                                                    <DropdownMenuItem onClick={() => handleCreatePhieuKhamClick(bookings)}>Tạo phiếu khám</DropdownMenuItem>
+                                                                )}
+                                                                {bookings.TinhTrang === "Hoàn thành" && (
+                                                                    <DropdownMenuItem onClick={() => handleCreateClick(bookings)}>Tạo lịch tái khám</DropdownMenuItem>
+                                                                )}
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        ))}
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                ))}
             </Tabs>
 
             {/* Dialog xem chi tiết */}
@@ -622,10 +490,10 @@ export default function BookingView() {
                                 <div className="font-semibold">Trạng thái:</div>
                                 <div>
                                     <span className={`px-3 py-1 rounded-full text-sm ${selectedBooking.TinhTrang === "Đã xác nhận" ? "bg-blue-100 text-blue-700" :
-                                            selectedBooking.TinhTrang === "Chờ xác nhận" ? "bg-yellow-100 text-yellow-700" :
-                                                selectedBooking.TinhTrang === "Đang khám" ? "bg-green-100 text-green-700" :
-                                                    selectedBooking.TinhTrang === "Hoàn thành" ? "bg-gray-100 text-gray-700" :
-                                                        "bg-red-100 text-red-700"
+                                        selectedBooking.TinhTrang === "Chờ xác nhận" ? "bg-yellow-100 text-yellow-700" :
+                                            selectedBooking.TinhTrang === "Đang khám" ? "bg-green-100 text-green-700" :
+                                                selectedBooking.TinhTrang === "Hoàn thành" ? "bg-gray-100 text-gray-700" :
+                                                    "bg-red-100 text-red-700"
                                         }`}>
                                         {selectedBooking.TinhTrang}
                                     </span>
@@ -643,7 +511,147 @@ export default function BookingView() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-            <Toaster />
+
+            <Dialog open={isCreateDialogOpen} onOpenChange={setCreateDialogOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>Chi tiết lịch hẹn</DialogTitle>
+                    </DialogHeader>
+                    {selectedCustomer && (
+                        
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-6 items-center gap-4">
+                                <Label htmlFor="MaKhachHang" className="text-right col-span-2">
+                                    Khách Hàng
+                                </Label>
+                                <Input type="text" className="col-span-4" defaultValue={selectedCustomer.HoTen} readOnly />
+                            </div>
+
+                            <div className="grid grid-cols-6 items-center gap-4">
+                                <Label htmlFor="MaDichVu" className="text-right col-span-2">
+                                    Dịch vụ
+                                </Label>
+                                <select
+                                    id="MaDichVu"
+                                    onChange={handleInputChange2}
+                                    className="col-span-4"
+                                    value={newbooking.MaDichVu}
+                                >
+                                    <option value="">Chọn dịch vụ</option>
+                                    {dichVuList.map((dichVu: any) => (
+                                        <option key={dichVu.MaDichVu} value={dichVu.MaDichVu}>
+                                            {dichVu.TenDichVu} ({dichVu.ThoiLuong} phút)
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="grid grid-cols-6 items-center gap-4">
+                                <Label htmlFor="NgayHen" className="text-right col-span-2">
+                                    Ngày hẹn
+                                </Label>
+                                <div className="col-span-4">
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className={cn(
+                                                    "w-full justify-start text-left font-normal",
+                                                    !newbooking.NgayHen && "text-gray-500"
+                                                )}
+                                                disabled={!newbooking.MaDichVu}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {newbooking.NgayHen ? (
+                                                    format(new Date(newbooking.NgayHen), "dd/MM/yyyy", { locale: vi })
+                                                ) : (
+                                                    <span>{!newbooking.MaDichVu ? "Chọn dịch vụ trước" : "Chọn ngày hẹn"}</span>
+                                                )}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        {newbooking.MaDichVu && (
+                                            <PopoverContent className="w-auto p-0 bg-white" align="start">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={newbooking.NgayHen ? new Date(newbooking.NgayHen) : undefined}
+                                                    onSelect={(date) => {
+                                                        if (!date) return;
+                                                        setNewbooking((prev) => ({
+                                                            ...prev,
+                                                            NgayHen: date.toLocaleDateString("en-CA"),
+                                                        }));
+                                                    }}
+                                                    disabled={(date) => {
+                                                        const today = new Date();
+                                                        today.setHours(0, 0, 0, 0);
+                                                        const dayOfWeek = date.getDay();
+                                                        const dateStr = date.toLocaleDateString("en-CA");
+                                                        return (
+                                                            date < today ||
+                                                            !availableDays.includes(dayOfWeek) ||
+                                                            ngayNghi.includes(dateStr)
+                                                        );
+                                                    }}
+                                                />
+                                            </PopoverContent>
+                                        )}
+                                    </Popover>
+                                    {availableDays.length > 0 && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Bác sĩ làm việc: {availableDays.map(day =>
+                                                ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][day]
+                                            ).join(', ')}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-6 items-center gap-4">
+                                <Label htmlFor="GioHen" className="text-right col-span-2">
+                                    Giờ hẹn
+                                </Label>
+                                <select
+                                    id="GioHen"
+                                    onChange={handleInputChange2}
+                                    className="col-span-4 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                    disabled={!newbooking.NgayHen || !newbooking.MaDichVu}
+                                    value={newbooking.GioHen}
+                                >
+                                    <option value="">
+                                        {!newbooking.MaDichVu
+                                            ? "Chọn dịch vụ trước"
+                                            : !newbooking.NgayHen
+                                                ? "Chọn ngày hẹn trước"
+                                                : timeSlots.length === 0
+                                                    ? "Đang tải..."
+                                                    : "Chọn giờ hẹn"}
+                                    </option>
+                                    {timeSlots.map((slot) => (
+                                        <option key={slot.value} value={slot.value} disabled={!slot.available}>
+                                            {slot.label} {!slot.available ? "❌ (Đã đặt)" : "✅"}
+                                        </option>
+                                    ))}
+                                </select>
+                                {timeSlots.length > 0 && timeSlots.every((slot) => !slot.available) && (
+                                    <p className="col-span-6 text-sm text-red-500 text-center">
+                                        ⚠️ Tất cả các khung giờ đã được đặt. Vui lòng chọn ngày khác.
+                                    </p>
+                                )}
+                            </div>
+                            <div className="grid grid-cols-6 items-center gap-4">
+                                <Label htmlFor="GhiChu" className="text-right col-span-2">
+                                    Ghi chú
+                                </Label>
+                                <Input onChange={handleInputChange} id="GhiChu" type="text" className="col-span-4" />
+                            </div>
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <Button className="bg-black text-white hover:bg-white hover:text-black border-1" type="button" onClick={handleCreatebooking}>
+                            Confirm
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     )
 }
