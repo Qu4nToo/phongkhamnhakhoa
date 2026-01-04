@@ -54,9 +54,23 @@ export default function BookingForm() {
   const [bacsi, setBacsi] = useState<BacSi[]>([]);
   const [selectedBacSi, setSelectedBacSi] = useState<BacSi | null>(null);
   const [lichlamviec, setLichLamViec] = useState<LichLamViec[]>([]);
-  const [ngayNghi, setNgayNghi] = useState<string[]>([]); // yyyy-mm-dd
+  const [ngayNghi, setNgayNghi] = useState<string[]>([]); // yyyy-mm-dd (ngày nghỉ cá nhân bác sĩ)
+  const [clinicHolidays, setClinicHolidays] = useState<string[]>([]); // yyyy-mm-dd (ngày nghỉ lễ phòng khám)
   const [dichVuList, setDichVuList] = useState<DichVu[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+
+  // Helper function: Chuyển đổi từ range (NgayBatDau -> NgayKetThuc) thành array các ngày
+  const generateDateRange = (startDate: string, endDate: string): string[] => {
+    const dates: string[] = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+      dates.push(date.toLocaleDateString("en-CA")); // yyyy-mm-dd
+    }
+    
+    return dates;
+  };
 
   const [formData, setFormData] = useState({
     MaKhachHang: "",
@@ -81,6 +95,22 @@ export default function BookingForm() {
       .get("http://localhost:5000/api/dich-vu/get")
       .then((res) => setDichVuList(res.data))
       .catch((error) => console.log(error));
+    
+    // Fetch lịch nghỉ phòng khám
+    axios
+      .get("http://localhost:5000/api/lich-nghi-phong-kham/getUpcoming")
+      .then(res => {
+        const allHolidayDates: string[] = [];
+        res.data.forEach((holiday: any) => {
+          const dates = generateDateRange(holiday.NgayBatDau, holiday.NgayKetThuc);
+          allHolidayDates.push(...dates);
+        });
+        setClinicHolidays(allHolidayDates);
+      })
+      .catch(err => {
+        console.log("Không thể tải lịch nghỉ phòng khám:", err);
+        setClinicHolidays([]);
+      });
   }, [router]);
 
 
@@ -258,7 +288,7 @@ export default function BookingForm() {
     try {
       const [lichRes, nghiRes] = await Promise.all([
         axios.get(`http://localhost:5000/api/lich-lam-viec/getByBacSi/${selected.MaBacSi}`),
-        axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${selected.MaBacSi}`)
+        axios.get(`http://localhost:5000/api/ngay-nghi-bac-si/getByBacSi/${selected.MaBacSi}`)
       ]);
       setLichLamViec(lichRes.data);
       setNgayNghi(Array.isArray(nghiRes.data) ? nghiRes.data.map((d: any) => d.NgayNghi) : []);
@@ -440,7 +470,8 @@ export default function BookingForm() {
                       !workingDays.includes(date.getDay()) ||
                       date < today ||
                       date > maxDate ||
-                      ngayNghi.includes(dateStr)
+                      ngayNghi.includes(dateStr) ||
+                      clinicHolidays.includes(dateStr) // Disable ngày nghỉ lễ phòng khám
                     );
                   }}
                 />

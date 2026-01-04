@@ -103,9 +103,23 @@ export default function BookingView() {
 
     const [availableDays, setAvailableDays] = useState<number[]>([]);
     const [availableDaysEdit, setAvailableDaysEdit] = useState<number[]>([]);
-    const [dayOffList, setDayOffList] = useState<string[]>([]); // yyyy-mm-dd
+    const [dayOffList, setDayOffList] = useState<string[]>([]); 
     const [dayOffListEdit, setDayOffListEdit] = useState<string[]>([]);
+    const [clinicHolidays, setClinicHolidays] = useState<string[]>([]); 
     const [timeSlotsEdit, setTimeSlotsEdit] = useState<any[]>([]);
+
+    const generateDateRange = (startDate: string, endDate: string): string[] => {
+        const dates: string[] = [];
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        
+        for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+            dates.push(date.toLocaleDateString("en-CA"));
+        }
+        
+        return dates;
+    };
+
     const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { id, value } = e.target;
         setNewbooking((prev) => ({
@@ -149,6 +163,21 @@ export default function BookingView() {
         axios.get("http://localhost:5000/api/dich-vu/get")
             .then(dichvu => setDichVuList(dichvu.data))
             .catch(err => console.log(err))
+        
+        // Fetch lịch nghỉ phòng khám và chuyển thành array các ngày
+        axios.get("http://localhost:5000/api/lich-nghi-phong-kham/getUpcoming")
+            .then(res => {
+                const allHolidayDates: string[] = [];
+                res.data.forEach((holiday: any) => {
+                    const dates = generateDateRange(holiday.NgayBatDau, holiday.NgayKetThuc);
+                    allHolidayDates.push(...dates);
+                });
+                setClinicHolidays(allHolidayDates);
+            })
+            .catch(err => {
+                console.log("Không thể tải lịch nghỉ phòng khám:", err);
+                setClinicHolidays([]);
+            });
     }, []);
 
     // Fetch time slots khi ngày hẹn thay đổi trong form edit
@@ -240,7 +269,7 @@ export default function BookingView() {
                 })
                 .catch(err => console.log(err));
             // Lấy ngày nghỉ
-            axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${newbooking.MaBacSi}`)
+            axios.get(`http://localhost:5000/api/ngay-nghi-bac-si/getByBacSi/${newbooking.MaBacSi}`)
                 .then(res => {
                     setDayOffList(Array.isArray(res.data) ? res.data.map((d: any) => d.NgayNghi) : []);
                 })
@@ -281,7 +310,7 @@ export default function BookingView() {
                 })
                 .catch(err => console.log(err));
             // Lấy ngày nghỉ
-            axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${booking.MaBacSi}`)
+            axios.get(`http://localhost:5000/api/ngay-nghi-bac-si/getByBacSi/${booking.MaBacSi}`)
                 .then(res => {
                     setDayOffListEdit(Array.isArray(res.data) ? res.data.map((d: any) => d.NgayNghi) : []);
                 })
@@ -606,7 +635,12 @@ export default function BookingView() {
                                                             today.setHours(0, 0, 0, 0);
                                                             const dayOfWeek = date.getDay();
                                                             const dateStr = date.toLocaleDateString("en-CA");
-                                                            return date < today || !availableDays.includes(dayOfWeek) || dayOffList.includes(dateStr);
+                                                            return (
+                                                                date < today || 
+                                                                !availableDays.includes(dayOfWeek) || 
+                                                                dayOffList.includes(dateStr) ||
+                                                                clinicHolidays.includes(dateStr) // Thêm check ngày nghỉ lễ phòng khám
+                                                            );
                                                         }}
                                                     />
                                                 </PopoverContent>
@@ -903,7 +937,12 @@ export default function BookingView() {
                                                 today.setHours(0, 0, 0, 0);
                                                 const dayOfWeek = date.getDay();
                                                 const dateStr = date.toLocaleDateString("en-CA");
-                                                return date < today || !availableDaysEdit.includes(dayOfWeek) || dayOffListEdit.includes(dateStr);
+                                                return (
+                                                    date < today || 
+                                                    !availableDaysEdit.includes(dayOfWeek) || 
+                                                    dayOffListEdit.includes(dateStr) ||
+                                                    clinicHolidays.includes(dateStr) // Thêm check ngày nghỉ lễ phòng khám
+                                                );
                                             }}
                                         />
                                     </PopoverContent>

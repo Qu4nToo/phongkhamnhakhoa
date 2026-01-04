@@ -1,12 +1,21 @@
 
-const BacSiNgayNghi = require("../models/bacSiNgayNghiModel");
+const NgayNghiBacSi = require("../models/ngayNghiBacSiModel");
 
-const BacSiNgayNghiController = {
+const NgayNghiBacSiController = {  // Lấy tất cả ngày nghỉ của tất cả bác sĩ
+  getAll: async (req, res) => {
+    try {
+      const data = await NgayNghiBacSi.getAll();
+      res.status(200).json(data);
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách ngày nghỉ:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
   // Lấy tất cả ngày nghỉ của 1 bác sĩ
   getByBacSi: async (req, res) => {
     try {
       const { maBacSi } = req.params;
-      const data = await BacSiNgayNghi.getByBacSi(maBacSi);
+      const data = await NgayNghiBacSi.getByBacSi(maBacSi);
       res.status(200).json(data);
     } catch (error) {
       console.error("Lỗi khi lấy ngày nghỉ bác sĩ:", error);
@@ -18,7 +27,7 @@ const BacSiNgayNghiController = {
   getById: async (req, res) => {
     try {
       const { id } = req.params;
-      const data = await BacSiNgayNghi.getById(id);
+      const data = await NgayNghiBacSi.getById(id);
       if (!data) {
         return res.status(404).json({ message: "Không tìm thấy ngày nghỉ" });
       }
@@ -36,8 +45,29 @@ const BacSiNgayNghiController = {
       if (!MaBacSi || !NgayNghi) {
         return res.status(400).json({ message: "Thiếu thông tin!" });
       }
-      const result = await BacSiNgayNghi.create({ MaBacSi, NgayNghi });
-      res.status(201).json({ message: "Thêm ngày nghỉ thành công!", data: result });
+
+      // Kiểm tra trùng với ngày nghỉ khác của cùng bác sĩ
+      const isDuplicate = await NgayNghiBacSi.checkDuplicate(MaBacSi, NgayNghi);
+      if (isDuplicate) {
+        return res.status(400).json({ message: "Bác sĩ đã có ngày nghỉ vào ngày này!" });
+      }
+
+      // Kiểm tra trùng với lịch nghỉ phòng khám (cảnh báo nhẹ)
+      const clinicHolidays = await NgayNghiBacSi.checkClinicHolidayOverlap(NgayNghi);
+      let warning = null;
+      if (clinicHolidays.length > 0) {
+        warning = {
+          message: `Ngày này trùng với lịch nghỉ phòng khám: ${clinicHolidays[0].TenNgayLe}`,
+          details: clinicHolidays[0]
+        };
+      }
+
+      const result = await NgayNghiBacSi.create({ MaBacSi, NgayNghi });
+      res.status(201).json({ 
+        message: "Thêm ngày nghỉ thành công!", 
+        data: result,
+        warning: warning
+      });
     } catch (error) {
       console.error("Lỗi khi thêm ngày nghỉ:", error);
       res.status(500).json({ message: "Lỗi server", error: error.message });
@@ -48,7 +78,7 @@ const BacSiNgayNghiController = {
   delete: async (req, res) => {
     try {
       const { id } = req.params;
-      const result = await BacSiNgayNghi.delete(id);
+      const result = await NgayNghiBacSi.delete(id);
       if (result.affectedRows === 0) {
         return res.status(404).json({ message: "Không tìm thấy ngày nghỉ để xóa!" });
       }
@@ -60,4 +90,4 @@ const BacSiNgayNghiController = {
   },
 };
 
-module.exports = BacSiNgayNghiController;
+module.exports = NgayNghiBacSiController;
