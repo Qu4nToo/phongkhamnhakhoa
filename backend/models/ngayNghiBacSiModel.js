@@ -1,6 +1,18 @@
 const db = require('../config/server');
 
-const BacSiNgayNghiModel = {
+const NgayNghiBacSiModel = {
+  // Lấy tất cả ngày nghỉ của tất cả bác sĩ
+  getAll: async () => {
+    const sql = `
+      SELECT nnn.*, bs.HoTen as TenBacSi
+      FROM NgayNghiBacSi nnn
+      JOIN BacSi bs ON nnn.MaBacSi = bs.MaBacSi
+      ORDER BY nnn.NgayNghi DESC
+    `;
+    const [rows] = await db.query(sql);
+    return rows;
+  },
+
   // Lấy tất cả ngày nghỉ của 1 bác sĩ
   getByBacSi: async (MaBacSi) => {
     const sql = 'SELECT * FROM NgayNghiBacSi WHERE MaBacSi = ? ORDER BY NgayNghi DESC';
@@ -28,6 +40,23 @@ const BacSiNgayNghiModel = {
     const [rows] = await db.query(sql, [MaNgayNghiBS]);
     return rows[0];
   },
+
+  // Kiểm tra trùng ngày nghỉ của cùng bác sĩ
+  checkDuplicate: async (MaBacSi, NgayNghi) => {
+    const sql = 'SELECT * FROM NgayNghiBacSi WHERE MaBacSi = ? AND NgayNghi = ?';
+    const [rows] = await db.query(sql, [MaBacSi, NgayNghi]);
+    return rows.length > 0;
+  },
+
+  // Kiểm tra trùng với lịch nghỉ phòng khám
+  checkClinicHolidayOverlap: async (NgayNghi) => {
+    const sql = `
+      SELECT * FROM LichNghiPhongKham 
+      WHERE ? BETWEEN NgayBatDau AND NgayKetThuc
+    `;
+    const [rows] = await db.query(sql, [NgayNghi]);
+    return rows;
+  },
 };
 
-module.exports = BacSiNgayNghiModel;
+module.exports = NgayNghiBacSiModel;

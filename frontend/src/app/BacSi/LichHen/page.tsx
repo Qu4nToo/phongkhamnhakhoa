@@ -89,7 +89,21 @@ export default function BookingView() {
     });
 
     const [availableDays, setAvailableDays] = useState<number[]>([]);
-    const [ngayNghi, setNgayNghi] = useState<string[]>([]); // yyyy-mm-dd
+    const [ngayNghi, setNgayNghi] = useState<string[]>([]); // yyyy-mm-dd (ngày nghỉ cá nhân bác sĩ)
+    const [clinicHolidays, setClinicHolidays] = useState<string[]>([]); // yyyy-mm-dd (ngày nghỉ lễ phòng khám)
+
+    // Helper function: Chuyển đổi từ range (NgayBatDau -> NgayKetThuc) thành array các ngày
+    const generateDateRange = (startDate: string, endDate: string): string[] => {
+        const dates: string[] = [];
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        
+        for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+            dates.push(date.toLocaleDateString("en-CA")); // yyyy-mm-dd
+        }
+        
+        return dates;
+    };
 
     const handleInputChange2 = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { id, value } = e.target;
@@ -115,6 +129,22 @@ export default function BookingView() {
         axios.get("http://localhost:5000/api/khach-hang/get")
             .then(customers => setCustomers(customers.data))
             .catch(err => console.log(err))
+        
+        // Fetch lịch nghỉ phòng khám
+        axios.get("http://localhost:5000/api/lich-nghi-phong-kham/getUpcoming")
+            .then(res => {
+                const allHolidayDates: string[] = [];
+                res.data.forEach((holiday: any) => {
+                    const dates = generateDateRange(holiday.NgayBatDau, holiday.NgayKetThuc);
+                    allHolidayDates.push(...dates);
+                });
+                setClinicHolidays(allHolidayDates);
+            })
+            .catch(err => {
+                console.log("Không thể tải lịch nghỉ phòng khám:", err);
+                setClinicHolidays([]);
+            });
+        
         const storedUserInfo = sessionStorage.getItem("doctor_info");
         if (storedUserInfo) {
             const user = JSON.parse(storedUserInfo);
@@ -149,7 +179,7 @@ export default function BookingView() {
                 })
                 .catch(err => console.log(err));
             // Fetch ngày nghỉ của bác sĩ
-            axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${user.MaBacSi}`)
+            axios.get(`http://localhost:5000/api/ngay-nghi-bac-si/getByBacSi/${user.MaBacSi}`)
                 .then(res => {
                     if (Array.isArray(res.data)) {
                         setNgayNghi(res.data.map((d: any) => d.NgayNghi));
@@ -589,7 +619,8 @@ export default function BookingView() {
                                                         return (
                                                             date < today ||
                                                             !availableDays.includes(dayOfWeek) ||
-                                                            ngayNghi.includes(dateStr)
+                                                            ngayNghi.includes(dateStr) ||
+                                                            clinicHolidays.includes(dateStr) // Disable ngày nghỉ lễ phòng khám
                                                         );
                                                     }}
                                                 />

@@ -35,7 +35,8 @@ const lichLamViecRoutes = require('./routes/lichLamViecRoutes');
 const loaiDichVuRoutes = require('./routes/loaiDichVuRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const hinhAnhDichVuRoutes = require('./routes/hinhAnhDichVuRoutes');
-const bacSiNgayNghiRoutes = require('./routes/bacSiNgayNghiRoutes');
+const ngayNghiBacSiRoutes = require('./routes/ngayNghiBacSiRoutes');
+const lichNghiPhongKhamRoutes = require('./routes/lichNghiPhongKhamRoutes');
 
 app.get('/', async (req, res) => {
   try {
@@ -65,7 +66,8 @@ app.use('/api/chi-tiet-dich-vu', chiTietDichVuRoutes);
 app.use('/api/chi-tiet-phieu-kham', chiTietPhieuKhamRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/hinh-anh-dich-vu', hinhAnhDichVuRoutes);
-app.use('/api/bac-si-ngay-nghi', bacSiNgayNghiRoutes);
+app.use('/api/ngay-nghi-bac-si', ngayNghiBacSiRoutes);
+app.use('/api/lich-nghi-phong-kham', lichNghiPhongKhamRoutes);
 
 // Socket.IO connection
 io.on('connection', (socket) => {

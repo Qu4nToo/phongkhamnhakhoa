@@ -117,6 +117,20 @@ export default function User() {
   const [dayOffList, setDayOffList] = useState<any[]>([]);
   const [selectedDayOffToDelete, setSelectedDayOffToDelete] = useState<string>("");
   const [newDayOff, setNewDayOff] = useState({ NgayNghi: "" });
+  const [clinicHolidays, setClinicHolidays] = useState<string[]>([]); // Lịch nghỉ lễ phòng khám
+
+  // Helper function: Chuyển đổi từ range (NgayBatDau -> NgayKetThuc) thành array các ngày
+  const generateDateRange = (startDate: string, endDate: string): string[] => {
+    const dates: string[] = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+      dates.push(date.toLocaleDateString("en-CA")); // yyyy-mm-dd
+    }
+    
+    return dates;
+  };
 
   const [newUser, setNewUser] = useState({
     HoTen: "",
@@ -137,6 +151,23 @@ export default function User() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
+
+  // Fetch lịch nghỉ phòng khám khi component mount
+  useEffect(() => {
+    axios.get("http://localhost:5000/api/lich-nghi-phong-kham/getUpcoming")
+      .then(res => {
+        const allHolidayDates: string[] = [];
+        res.data.forEach((holiday: any) => {
+          const dates = generateDateRange(holiday.NgayBatDau, holiday.NgayKetThuc);
+          allHolidayDates.push(...dates);
+        });
+        setClinicHolidays(allHolidayDates);
+      })
+      .catch(err => {
+        console.log("Không thể tải lịch nghỉ phòng khám:", err);
+        setClinicHolidays([]);
+      });
+  }, []);
 
   const formatPrice = (price: any): string => {
     // Kiểm tra và chuyển đổi giá trị đầu vào
@@ -413,7 +444,7 @@ export default function User() {
   const handleDayOffClick = async (user: any) => {
     setSelectedUser(user);
     try {
-      const response = await axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${user.MaBacSi}`);
+      const response = await axios.get(`http://localhost:5000/api/ngay-nghi-bac-si/getByBacSi/${user.MaBacSi}`);
       const data = Array.isArray(response.data) ? response.data : [];
       setDayOffList(data);
       setShowDayOffDialog(true);
@@ -434,16 +465,25 @@ export default function User() {
         MaBacSi: selectedUser.MaBacSi,
         NgayNghi: newDayOff.NgayNghi
       };
-      await axios.post("http://localhost:5000/api/bac-si-ngay-nghi/create", dataToSend);
+      const response = await axios.post("http://localhost:5000/api/ngay-nghi-bac-si/create", dataToSend);
       toast.success("Thêm ngày nghỉ thành công!");
-      const response = await axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${selectedUser.MaBacSi}`);
-      const data = Array.isArray(response.data) ? response.data : [];
+      
+      // Hiển thị cảnh báo nếu có từ backend
+      if (response.data.warning) {
+        toast.warning(response.data.warning.message, {
+          duration: 5000,
+        });
+      }
+      
+      const refreshResponse = await axios.get(`http://localhost:5000/api/ngay-nghi-bac-si/getByBacSi/${selectedUser.MaBacSi}`);
+      const data = Array.isArray(refreshResponse.data) ? refreshResponse.data : [];
       setDayOffList(data);
       setNewDayOff({ NgayNghi: "" });
       setShowAddDayOffDialog(false);
     } catch (err: any) {
       console.error("Error adding day off:", err);
-      toast.error("Có lỗi xảy ra khi thêm ngày nghỉ!");
+      const errorMsg = err.response?.data?.message || "Có lỗi xảy ra khi thêm ngày nghỉ!";
+      toast.error(errorMsg);
     }
   };
 
@@ -454,9 +494,9 @@ export default function User() {
 
   const handleConfirmDeleteDayOff = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/bac-si-ngay-nghi/delete/${selectedDayOffToDelete}`);
+      await axios.delete(`http://localhost:5000/api/ngay-nghi-bac-si/delete/${selectedDayOffToDelete}`);
       toast.success("Xóa ngày nghỉ thành công!");
-      const response = await axios.get(`http://localhost:5000/api/bac-si-ngay-nghi/getByBacSi/${selectedUser.MaBacSi}`);
+      const response = await axios.get(`http://localhost:5000/api/ngay-nghi-bac-si/getByBacSi/${selectedUser.MaBacSi}`);
       const data = Array.isArray(response.data) ? response.data : [];
       setDayOffList(data);
       setShowDeleteDayOffDialog(false);
@@ -1270,6 +1310,7 @@ export default function User() {
                       const today = new Date();
                       today.setHours(0, 0, 0, 0);
                       const dayOfWeek = date.getDay();
+                      const dateStr = date.toLocaleDateString("en-CA");
                       // Map scheduleList.ThuTrongTuan sang số thứ (0-6)
                       const thuMap: Record<string, number> = {
                         "Chủ Nhật": 0,
@@ -1281,7 +1322,11 @@ export default function User() {
                         "Thứ Bảy": 6,
                       };
                       const allowedDays = scheduleList.map((item: any) => thuMap[item.ThuTrongTuan?.trim()]);
-                      return date < today || !allowedDays.includes(dayOfWeek);
+                      return (
+                        date < today || 
+                        !allowedDays.includes(dayOfWeek) ||
+                        clinicHolidays.includes(dateStr) // Disable ngày nghỉ lễ phòng khám
+                      );
                     }}
                   />
                 </PopoverContent>

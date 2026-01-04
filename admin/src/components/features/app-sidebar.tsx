@@ -67,6 +67,12 @@ const items = [
     roles: ["Quản lý", "Lễ tân"],
   },
   {
+    title: "Lịch nghỉ phòng khám",
+    url: "/LichNghiPhongKham",
+    icon: Calendar,
+    roles: ["Quản lý"],
+  },
+  {
     title: "Phiếu khám",
     url: "/PhieuKham",
     icon: ReceiptText,
