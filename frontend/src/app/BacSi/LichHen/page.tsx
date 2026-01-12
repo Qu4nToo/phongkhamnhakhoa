@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -55,6 +56,7 @@ import { vi } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isAxiosError } from "axios";
+import { PaginationCustom } from "@/components/ui/pagination-custom";
 
 export default function BookingView() {
     const router = useRouter();
@@ -72,6 +74,9 @@ export default function BookingView() {
     const [filterDate, setFilterDate] = useState("");
     const [searchName, setSearchName] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
+    
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const statusTabs = [
         { value: '', label: 'Tất cả' },
@@ -386,8 +391,8 @@ export default function BookingView() {
         <>
             <title>Lịch Hẹn - Bác Sĩ</title>
             <Tabs value={filterStatus} onValueChange={setFilterStatus}>
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-                    <TabsList>
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4 ">
+                    <TabsList className="bg-gray-100 p-4 rounded-md">
                         {statusTabs.map(tab => (
                             <TabsTrigger key={tab.value} value={tab.value}>{tab.label}</TabsTrigger>
                         ))}
@@ -419,7 +424,14 @@ export default function BookingView() {
                     </div>
                 </div>
 
-                {statusTabs.map(tab => (
+                {statusTabs.map(tab => {
+                    const tabFilteredBookings = filteredBookings.filter((booking: any) => tab.value === '' || booking.TinhTrang === tab.value);
+                    const totalPages = Math.ceil(tabFilteredBookings.length / itemsPerPage);
+                    const startIndex = (currentPage - 1) * itemsPerPage;
+                    const endIndex = startIndex + itemsPerPage;
+                    const paginatedBookings = tabFilteredBookings.slice(startIndex, endIndex);
+                    
+                    return (
                     <TabsContent key={tab.value} value={tab.value}>
                         <Card x-chunk="dashboard-06-chunk-0">
                             <CardHeader>
@@ -439,9 +451,7 @@ export default function BookingView() {
                                             </TableHead>
                                         </TableRow>
                                     </TableHeader>
-                                    {filteredBookings
-                                        .filter((booking: any) => tab.value === '' || booking.TinhTrang === tab.value)
-                                        .map((bookings: any) => (
+                                    {paginatedBookings.map((bookings: any) => (
                                             <TableBody key={bookings.MaLichHen}>
                                                 <TableRow >
                                                     <TableCell className="font-medium">
@@ -488,9 +498,19 @@ export default function BookingView() {
                                         ))}
                                 </Table>
                             </CardContent>
+                            <CardFooter className="w-full p-0">
+                                <PaginationCustom
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={(page) => setCurrentPage(page)}
+                                    itemsPerPage={itemsPerPage}
+                                    totalItems={tabFilteredBookings.length}
+                                />
+                            </CardFooter>
                         </Card>
                     </TabsContent>
-                ))}
+                    );
+                })}
             </Tabs>
 
             {/* Dialog xem chi tiết */}

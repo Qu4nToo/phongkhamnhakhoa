@@ -21,9 +21,11 @@ import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { Pagination } from "@/components/ui/pagination"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -74,6 +76,18 @@ export default function ServiceView() {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [uploading, setUploading] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
+
+    // Phân trang
+    const totalPages = Math.ceil(services.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedServices = services.slice(startIndex, endIndex);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
 
     const [newService, setNewService] = useState({
@@ -448,7 +462,7 @@ export default function ServiceView() {
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                {services.map((services: any) => (
+                                {paginatedServices.map((services: any) => (
                                     <TableBody key={services.MaDichVu}>
                                         <TableRow >
                                             <TableCell className="font-medium">
@@ -514,6 +528,15 @@ export default function ServiceView() {
                                 ))}
                             </Table>
                         </CardContent>
+                        <CardFooter className="w-full p-0">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={services.length}
+                            />
+                        </CardFooter>
                     </Card>
                 </TabsContent>
             </Tabs>

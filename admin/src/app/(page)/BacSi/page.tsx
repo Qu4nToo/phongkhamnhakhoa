@@ -72,6 +72,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { Pagination } from "@/components/ui/pagination";
 
 
 
@@ -83,6 +84,8 @@ export default function User() {
   const [selectedUser, setSelectedUser] = useState<any>([]);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [showAlertService, setShowAlertService] = useState(false);
   const [showAddServiceDialog, setShowAddServiceDialog] = useState(false);
   const [showDeleteServiceDialog, setShowDeleteServiceDialog] = useState(false);
@@ -196,6 +199,16 @@ export default function User() {
 
     return hoTen.includes(term) || email.includes(term);
   });
+
+  // Phân trang
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id } = e.target;
@@ -716,7 +729,7 @@ export default function User() {
                     </TableHead>
                   </TableRow>
                 </TableHeader>
-                {filteredUsers.map((users: any) => (
+                {paginatedUsers.map((users: any) => (
                   <TableBody key={users.MaBacSi}>
                     <TableRow>
                       <TableCell>
@@ -777,12 +790,15 @@ export default function User() {
                 ))}
               </Table>
             </CardContent>
-            {/* <CardFooter>
-              <div className="text-xs text-muted-foreground">
-                Showing <strong>1-10</strong> of <strong>32</strong>{" "}
-                users
-              </div>
-            </CardFooter> */}
+            <CardFooter>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                itemsPerPage={itemsPerPage}
+                totalItems={filteredUsers.length}
+              />
+            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>

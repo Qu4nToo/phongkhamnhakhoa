@@ -4,6 +4,7 @@ import React from "react"
 import {
     MoreHorizontal,
     PlusCircle,
+    Filter,
 } from "lucide-react"
 import {
     Dialog,
@@ -18,9 +19,11 @@ import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { Pagination } from "@/components/ui/pagination"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -47,11 +50,12 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/components/ui/tabs"
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import axios from "@/lib/axios"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -75,6 +79,14 @@ export default function BookingView() {
     const [searchTerm, setSearchTerm] = useState("");
     const [timeSlots, setTimeSlots] = useState<any[]>([]);
     const [filteredDoctors, setFilteredDoctors] = useState<any[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
+    const [selectedStatus, setSelectedStatus] = useState<string>("all");
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     const TINH_TRANG = [
         { value: "Chờ xác nhận", label: "Chờ xác nhận" },
@@ -508,23 +520,78 @@ export default function BookingView() {
     return (
         <>
             <title>Quản Lý Lịch Hẹn</title>
-            <Tabs defaultValue="all">
-                <div className="flex items-center">
-                    <TabsList>
-                        <TabsTrigger value="all">Tất cả</TabsTrigger>
-                        {TINH_TRANG.map((status) => (
-                            <TabsTrigger key={status.value} value={status.value}>
-                                {status.label}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                    <div className="ml-auto flex items-center gap-2">
+            <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <Filter className="h-4 w-4 text-gray-500" />
+                            <Select value={selectedStatus} onValueChange={(value) => {
+                                setSelectedStatus(value);
+                                setCurrentPage(1);
+                            }}>
+                                <SelectTrigger className="w-[200px]">
+                                    <SelectValue placeholder="Tất cả trạng thái" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Tất cả</SelectItem>
+                                    {TINH_TRANG.map((status) => (
+                                        <SelectItem key={status.value} value={status.value}>
+                                            {status.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        "w-[200px] justify-start text-left font-normal",
+                                        !selectedDate && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {selectedDate ? format(selectedDate, "dd/MM/yyyy", { locale: vi }) : "Chọn ngày"}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="single"
+                                    selected={selectedDate}
+                                    onSelect={(date) => {
+                                        setSelectedDate(date);
+                                        setCurrentPage(1);
+                                    }}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
                         <Input
                             placeholder="Tìm theo tên khách hàng..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setCurrentPage(1);
+                            }}
                             className="w-64"
                         />
+                        {(selectedDate || searchTerm || selectedStatus !== "all") && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setSelectedDate(undefined);
+                                    setSearchTerm("");
+                                    setSelectedStatus("all");
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                Xóa bộ lọc
+                            </Button>
+                        )}
+                    </div>
+                    <div className="ml-auto">
                         <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
                             <DialogTrigger asChild>
                                 <Button size="sm" className="h-7 gap-1">
@@ -703,12 +770,14 @@ export default function BookingView() {
                         </Dialog>
                     </div>
                 </div>
-                <TabsContent value="all">
-                    <Card x-chunk="dashboard-06-chunk-0">
-                        <CardHeader>
-                            <CardTitle>Danh sách lich hẹn</CardTitle>
-                        </CardHeader>
-                        <CardContent>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>
+                            Danh sách lịch hẹn
+                            {selectedStatus !== "all" && ` - ${TINH_TRANG.find(s => s.value === selectedStatus)?.label}`}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -724,11 +793,18 @@ export default function BookingView() {
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                {bookings
-                                    .filter((booking: any) =>
-                                        booking.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase())
-                                    )
-                                    .map((bookings: any) => (
+                                {(() => {
+                                    let filteredBookings = bookings.filter((booking: any) => {
+                                        const matchesSearch = booking.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase());
+                                        const matchesStatus = selectedStatus === "all" || booking.TinhTrang === selectedStatus;
+                                        const matchesDate = !selectedDate || booking.NgayHen === format(selectedDate, "yyyy-MM-dd");
+                                        return matchesSearch && matchesStatus && matchesDate;
+                                    });
+                                    const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+                                    const startIndex = (currentPage - 1) * itemsPerPage;
+                                    const endIndex = startIndex + itemsPerPage;
+                                    const paginatedBookings = filteredBookings.slice(startIndex, endIndex);
+                                    return paginatedBookings.map((bookings: any) => (
                                         <TableBody key={bookings.MaLichHen}>
                                             <TableRow >
                                                 <TableCell className="font-medium">
@@ -781,98 +857,31 @@ export default function BookingView() {
                                                 </TableCell>
                                             </TableRow>
                                         </TableBody>
-                                    ))}
+                                    ));
+                                })()}
                             </Table>
                         </CardContent>
+                        <CardFooter>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={Math.ceil(bookings.filter((booking: any) => {
+                                    const matchesSearch = booking.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase());
+                                    const matchesStatus = selectedStatus === "all" || booking.TinhTrang === selectedStatus;
+                                    const matchesDate = !selectedDate || booking.NgayHen === format(selectedDate, "yyyy-MM-dd");
+                                    return matchesSearch && matchesStatus && matchesDate;
+                                }).length / itemsPerPage)}
+                                onPageChange={handlePageChange}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={bookings.filter((booking: any) => {
+                                    const matchesSearch = booking.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase());
+                                    const matchesStatus = selectedStatus === "all" || booking.TinhTrang === selectedStatus;
+                                    const matchesDate = !selectedDate || booking.NgayHen === format(selectedDate, "yyyy-MM-dd");
+                                    return matchesSearch && matchesStatus && matchesDate;
+                                }).length}
+                            />
+                        </CardFooter>
                     </Card>
-                </TabsContent>
-                {TINH_TRANG.map((status) => (
-                    <TabsContent key={status.value} value={status.value}>
-                        <Card x-chunk="dashboard-06-chunk-0">
-                            <CardHeader>
-                                <CardTitle>Danh sách lịch hẹn - {status.label}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Khách hàng</TableHead>
-                                            <TableHead>Bác sĩ</TableHead>
-                                            <TableHead>Dịch vụ</TableHead>
-                                            <TableHead>Ngày hẹn</TableHead>
-                                            <TableHead>Giờ hẹn</TableHead>
-                                            <TableHead>Tình trạng</TableHead>
-                                            <TableHead>Ghi chú</TableHead>
-                                            <TableHead>
-                                                <span className="sr-only">Actions</span>
-                                            </TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    {bookings
-                                        .filter((booking: any) =>
-                                            booking.TinhTrang === status.value &&
-                                            booking.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase())
-                                        )
-                                        .map((bookings: any) => (
-                                            <TableBody key={bookings.MaLichHen}>
-                                                <TableRow>
-                                                    <TableCell className="font-medium">
-                                                        {bookings.TenKhachHang}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {bookings.TenBacSi}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {bookings.TenDichVu || "Chưa có"} {bookings.ThoiLuong ? `(${bookings.ThoiLuong} phút)` : ""}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {bookings.NgayHen}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {bookings.GioHen}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {bookings.TinhTrang}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {bookings.GhiChu}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button
-                                                                    aria-haspopup="true"
-                                                                    size="icon"
-                                                                    variant="ghost"
-                                                                >
-                                                                    <MoreHorizontal className="h-4 w-4" />
-                                                                    <span className="sr-only">Toggle menu</span>
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                                <DropdownMenuLabel>Hành động</DropdownMenuLabel>
-                                                                <DropdownMenuItem onClick={() => handleViewClick(bookings)}>Xem chi tiết</DropdownMenuItem>
-                                                                {bookings.TinhTrang !== "Đang khám" && bookings.TinhTrang !== "Hoàn thành" && (
-                                                                    <DropdownMenuItem onClick={() => handleEditClick(bookings)}>Sửa</DropdownMenuItem>
-                                                                )}
-                                                                {bookings.TinhTrang === "Chờ xác nhận" && (
-                                                                    <DropdownMenuItem onClick={() => handleAcceptClick(bookings)}>Xác nhận</DropdownMenuItem>
-                                                                )}
-                                                                {bookings.TinhTrang === "Đã xác nhận" && (
-                                                                    <DropdownMenuItem onClick={() => handleCreatePhieuKhamClick(bookings)}>Tạo phiếu khám</DropdownMenuItem>
-                                                                )}
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </TableCell>
-                                                </TableRow>
-                                            </TableBody>
-                                        ))}
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                ))}
-            </Tabs>
+                </div>
             <AlertDialog open={showAlertEdit} onOpenChange={setShowAlertEdit}>
                 <AlertDialogContent className="max-w-[500px]">
                     <AlertDialogHeader>

@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -53,6 +54,7 @@ import axios from "@/lib/axiosDoctor"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { Textarea } from "@/components/ui/textarea"
+import { PaginationCustom } from "@/components/ui/pagination-custom"
 export default function phieuKhamView() {
     const [userInfo, setUserInfo] = useState<any>(null);
     const [phieuKhams, setPhieuKhams] = useState<any[]>([]);
@@ -67,6 +69,12 @@ export default function phieuKhamView() {
     const [selectedDichVu, setSelectedDichVu] = useState("");
     const [soLuong, setSoLuong] = useState(1);
     const [tempServices, setTempServices] = useState<any[]>([]);
+    
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+    const [searchName, setSearchName] = useState("");
+    const [filterStatus, setFilterStatus] = useState("");
+    const [filterDate, setFilterDate] = useState("");
 
 
     const formatPrice = (price: number): string => {
@@ -92,10 +100,14 @@ export default function phieuKhamView() {
                 .then(response => {
                     console.log("Response data:", response.data);
                     if (Array.isArray(response.data)) {
-                        const filteredData = response.data.filter((pk: any) =>
-                            pk.TrangThai === "Chưa khám" || pk.TrangThai === null || pk.TrangThai === ""
-                        );
-                        setPhieuKhams(filteredData);
+                        const sortedData = response.data.sort((a: any, b: any) => {
+                            const statusA = a.TrangThai || "Chưa khám";
+                            const statusB = b.TrangThai || "Chưa khám";
+                            if (statusA === "Chưa khám" && statusB !== "Chưa khám") return -1;
+                            if (statusA !== "Chưa khám" && statusB === "Chưa khám") return 1;
+                            return 0;
+                        });
+                        setPhieuKhams(sortedData);
                     } else {
                         console.error("Data is not an array:", response.data);
                         setPhieuKhams([]);
@@ -242,13 +254,44 @@ export default function phieuKhamView() {
     return (
         <>
             <title>phieuKham</title>
-            <Tabs defaultValue="all">
-                <div className="flex items-center">
-                    <TabsList>
-                        <TabsTrigger value="all">Tất cả</TabsTrigger>
+            <Tabs value={filterStatus} onValueChange={setFilterStatus}>
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
+                    <TabsList className="bg-gray-100 p-4 rounded-md">
+                        <TabsTrigger value="">Tất cả</TabsTrigger>
+                        <TabsTrigger value="Chưa khám">Chưa khám</TabsTrigger>
+                        <TabsTrigger value="Đã khám">Đã khám</TabsTrigger>
                     </TabsList>
+                    <div className="flex flex-col md:flex-row md:items-center gap-2 ml-auto">
+                        <Input
+                            type="text"
+                            value={searchName}
+                            onChange={(e) => setSearchName(e.target.value)}
+                            className="w-auto"
+                            placeholder="Tìm theo tên khách hàng"
+                        />
+                        <Input
+                            type="date"
+                            value={filterDate}
+                            onChange={(e) => setFilterDate(e.target.value)}
+                            className="w-auto"
+                            placeholder="Lọc theo ngày"
+                        />
+                        {(searchName || filterStatus || filterDate) && (
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                    setSearchName("");
+                                    setFilterStatus("");
+                                    setFilterDate("");
+                                }}
+                            >
+                                Xóa lọc
+                            </Button>
+                        )}
+                    </div>
                 </div>
-                <TabsContent value="all">
+                <TabsContent value="">
                     <Card x-chunk="dashboard-06-chunk-0">
                         <CardHeader>
                             <CardTitle>Danh sách phiếu khám</CardTitle>
@@ -268,7 +311,20 @@ export default function phieuKhamView() {
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                {phieuKhams.map((phieuKhams: any) => (
+                                {(() => {
+                                    const filteredPhieuKhams = phieuKhams.filter((pk: any) => {
+                                        const matchesName = !searchName || 
+                                            (pk.TenKhachHang && pk.TenKhachHang.toLowerCase().includes(searchName.toLowerCase()));
+                                        const matchesStatus = !filterStatus || 
+                                            (pk.TrangThai || "Chưa khám") === filterStatus;
+                                        const matchesDate = !filterDate || pk.NgayKham === filterDate;
+                                        return matchesName && matchesStatus && matchesDate;
+                                    });
+                                    const totalPages = Math.ceil(filteredPhieuKhams.length / itemsPerPage);
+                                    const startIndex = (currentPage - 1) * itemsPerPage;
+                                    const endIndex = startIndex + itemsPerPage;
+                                    const paginatedPhieuKhams = filteredPhieuKhams.slice(startIndex, endIndex);
+                                    return paginatedPhieuKhams.map((phieuKhams: any) => (
                                     <TableBody key={phieuKhams.MaPhieuKham}>
                                         <TableRow >
                                             <TableCell className="font-medium">
@@ -310,9 +366,239 @@ export default function phieuKhamView() {
                                             </TableCell>
                                         </TableRow>
                                     </TableBody>
-                                ))}
+                                    ));
+                                })()}
                             </Table>
                         </CardContent>
+                        <CardFooter className="w-full p-0">
+                            <PaginationCustom
+                                currentPage={currentPage}
+                                totalPages={Math.ceil(
+                                    phieuKhams.filter((pk: any) => {
+                                        const matchesName = !searchName || 
+                                            (pk.TenKhachHang && pk.TenKhachHang.toLowerCase().includes(searchName.toLowerCase()));
+                                        const matchesStatus = !filterStatus || 
+                                            (pk.TrangThai || "Chưa khám") === filterStatus;
+                                        const matchesDate = !filterDate || pk.NgayKham === filterDate;
+                                        return matchesName && matchesStatus && matchesDate;
+                                    }).length / itemsPerPage
+                                )}
+                                onPageChange={(page) => setCurrentPage(page)}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={phieuKhams.filter((pk: any) => {
+                                    const matchesName = !searchName || 
+                                        (pk.TenKhachHang && pk.TenKhachHang.toLowerCase().includes(searchName.toLowerCase()));
+                                    const matchesStatus = !filterStatus || 
+                                        (pk.TrangThai || "Chưa khám") === filterStatus;
+                                    const matchesDate = !filterDate || pk.NgayKham === filterDate;
+                                    return matchesName && matchesStatus && matchesDate;
+                                }).length}
+                            />
+                        </CardFooter>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="Chưa khám">
+                    <Card x-chunk="dashboard-06-chunk-0">
+                        <CardHeader>
+                            <CardTitle>Danh sách phiếu khám - Chưa khám</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Tên khách hàng</TableHead>
+                                        <TableHead>Giờ hẹn</TableHead>
+                                        <TableHead>Ngày khám</TableHead>
+                                        <TableHead>chuẩn đoán</TableHead>
+                                        <TableHead>Ghi chú</TableHead>
+                                        <TableHead>Trạng thái</TableHead>
+                                        <TableHead>
+                                            <span className="sr-only">Actions</span>
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                {(() => {
+                                    const filteredPhieuKhams = phieuKhams.filter((pk: any) => {
+                                        const matchesName = !searchName || 
+                                            (pk.TenKhachHang && pk.TenKhachHang.toLowerCase().includes(searchName.toLowerCase()));
+                                        const matchesStatus = (pk.TrangThai || "Chưa khám") === "Chưa khám";
+                                        const matchesDate = !filterDate || pk.NgayKham === filterDate;
+                                        return matchesName && matchesStatus && matchesDate;
+                                    });
+                                    const totalPages = Math.ceil(filteredPhieuKhams.length / itemsPerPage);
+                                    const startIndex = (currentPage - 1) * itemsPerPage;
+                                    const endIndex = startIndex + itemsPerPage;
+                                    const paginatedPhieuKhams = filteredPhieuKhams.slice(startIndex, endIndex);
+                                    return paginatedPhieuKhams.map((phieuKhams: any) => (
+                                        <TableBody key={phieuKhams.MaPhieuKham}>
+                                            <TableRow >
+                                                <TableCell className="font-medium">
+                                                    {phieuKhams.TenKhachHang}
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {phieuKhams.GioHen}
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {phieuKhams.NgayKham}
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {phieuKhams.ChuanDoan ? phieuKhams.ChuanDoan : "Chưa có"}
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {phieuKhams.GhiChu ? phieuKhams.GhiChu : "Chưa có"}
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {phieuKhams.TrangThai}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button
+                                                                aria-haspopup="true"
+                                                                size="icon"
+                                                                variant="ghost"
+                                                            >
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                                <span className="sr-only">Toggle menu</span>
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent className="bg-white" align="end">
+                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                            <DropdownMenuItem onClick={() => handleViewClick(phieuKhams)}>Hoàn tất phiếu khám</DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    ));
+                                })()}
+                            </Table>
+                        </CardContent>
+                        <CardFooter className="w-full p-0">
+                            <PaginationCustom
+                                currentPage={currentPage}
+                                totalPages={Math.ceil(
+                                    phieuKhams.filter((pk: any) => {
+                                        const matchesName = !searchName || 
+                                            (pk.TenKhachHang && pk.TenKhachHang.toLowerCase().includes(searchName.toLowerCase()));
+                                        const matchesStatus = (pk.TrangThai || "Chưa khám") === "Chưa khám";
+                                        const matchesDate = !filterDate || pk.NgayKham === filterDate;
+                                        return matchesName && matchesStatus && matchesDate;
+                                    }).length / itemsPerPage
+                                )}
+                                onPageChange={(page) => setCurrentPage(page)}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={phieuKhams.filter((pk: any) => {
+                                    const matchesName = !searchName || 
+                                        (pk.TenKhachHang && pk.TenKhachHang.toLowerCase().includes(searchName.toLowerCase()));
+                                    const matchesStatus = (pk.TrangThai || "Chưa khám") === "Chưa khám";
+                                    const matchesDate = !filterDate || pk.NgayKham === filterDate;
+                                    return matchesName && matchesStatus && matchesDate;
+                                }).length}
+                            />
+                        </CardFooter>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="Đã khám">
+                    <Card x-chunk="dashboard-06-chunk-0">
+                        <CardHeader>
+                            <CardTitle>Danh sách phiếu khám - Đã khám</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Tên khách hàng</TableHead>
+                                        <TableHead>Giờ hẹn</TableHead>
+                                        <TableHead>Ngày khám</TableHead>
+                                        <TableHead>chuẩn đoán</TableHead>
+                                        <TableHead>Ghi chú</TableHead>
+                                        <TableHead>Trạng thái</TableHead>
+                                        <TableHead>
+                                            <span className="sr-only">Actions</span>
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                {(() => {
+                                    const filteredPhieuKhams = phieuKhams.filter((pk: any) => {
+                                        const matchesName = !searchName || 
+                                            (pk.TenKhachHang && pk.TenKhachHang.toLowerCase().includes(searchName.toLowerCase()));
+                                        const matchesStatus = (pk.TrangThai || "Chưa khám") === "Đã khám";
+                                        const matchesDate = !filterDate || pk.NgayKham === filterDate;
+                                        return matchesName && matchesStatus && matchesDate;
+                                    });
+                                    const totalPages = Math.ceil(filteredPhieuKhams.length / itemsPerPage);
+                                    const startIndex = (currentPage - 1) * itemsPerPage;
+                                    const endIndex = startIndex + itemsPerPage;
+                                    const paginatedPhieuKhams = filteredPhieuKhams.slice(startIndex, endIndex);
+                                    return paginatedPhieuKhams.map((phieuKhams: any) => (
+                                        <TableBody key={phieuKhams.MaPhieuKham}>
+                                            <TableRow >
+                                                <TableCell className="font-medium">
+                                                    {phieuKhams.TenKhachHang}
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {phieuKhams.GioHen}
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {phieuKhams.NgayKham}
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {phieuKhams.ChuanDoan ? phieuKhams.ChuanDoan : "Chưa có"}
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {phieuKhams.GhiChu ? phieuKhams.GhiChu : "Chưa có"}
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {phieuKhams.TrangThai}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button
+                                                                aria-haspopup="true"
+                                                                size="icon"
+                                                                variant="ghost"
+                                                            >
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                                <span className="sr-only">Toggle menu</span>
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent className="bg-white" align="end">
+                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                            <DropdownMenuItem onClick={() => handleViewClick(phieuKhams)}>Hoàn tất phiếu khám</DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    ));
+                                })()}
+                            </Table>
+                        </CardContent>
+                        <CardFooter className="w-full p-0">
+                            <PaginationCustom
+                                currentPage={currentPage}
+                                totalPages={Math.ceil(
+                                    phieuKhams.filter((pk: any) => {
+                                        const matchesName = !searchName || 
+                                            (pk.TenKhachHang && pk.TenKhachHang.toLowerCase().includes(searchName.toLowerCase()));
+                                        const matchesStatus = (pk.TrangThai || "Chưa khám") === "Đã khám";
+                                        const matchesDate = !filterDate || pk.NgayKham === filterDate;
+                                        return matchesName && matchesStatus && matchesDate;
+                                    }).length / itemsPerPage
+                                )}
+                                onPageChange={(page) => setCurrentPage(page)}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={phieuKhams.filter((pk: any) => {
+                                    const matchesName = !searchName || 
+                                        (pk.TenKhachHang && pk.TenKhachHang.toLowerCase().includes(searchName.toLowerCase()));
+                                    const matchesStatus = (pk.TrangThai || "Chưa khám") === "Đã khám";
+                                    const matchesDate = !filterDate || pk.NgayKham === filterDate;
+                                    return matchesName && matchesStatus && matchesDate;
+                                }).length}
+                            />
+                        </CardFooter>
                     </Card>
                 </TabsContent>
             </Tabs>

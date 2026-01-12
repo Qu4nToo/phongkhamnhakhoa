@@ -18,9 +18,11 @@ import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { Pagination } from "@/components/ui/pagination"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -64,6 +66,18 @@ export default function categoryView() {
     const [showAlertEdit, setShowAlertEdit] = useState(false);
     const [selectedcategory, setSelectedcategory] = useState<any>([]);
     const [isDialogOpen, setDialogOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
+
+    // Phân trang
+    const totalPages = Math.ceil(categorys.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedCategorys = categorys.slice(startIndex, endIndex);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
 
     const [newCategory, setNewCategory] = useState({
@@ -240,7 +254,7 @@ export default function categoryView() {
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                {categorys.map((categorys: any) => (
+                                {paginatedCategorys.map((categorys: any) => (
                                     <TableBody key={categorys.MaLoaiDV}>
                                         <TableRow >
                                             <TableCell className="font-medium">
@@ -274,6 +288,15 @@ export default function categoryView() {
                                 ))}
                             </Table>
                         </CardContent>
+                        <CardFooter>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={categorys.length}
+                            />
+                        </CardFooter>
                     </Card>
                 </TabsContent>
             </Tabs>
