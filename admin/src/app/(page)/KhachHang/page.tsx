@@ -21,9 +21,11 @@ import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Pagination } from "@/components/ui/pagination"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -70,6 +72,8 @@ export default function User() {
   const [selectedUser, setSelectedUser] = useState<any>([]);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState(""); // State mới cho tìm kiếm
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const [newUser, setNewUser] = useState({
     HoTen: "",
@@ -98,6 +102,16 @@ export default function User() {
 
     return hoTen.includes(term) || email.includes(term);
   });
+
+  // Phân trang
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   useEffect(() => {
     axios.get("http://localhost:5000/api/khach-hang/get")
@@ -307,9 +321,9 @@ export default function User() {
                     </TableHead>
                   </TableRow>
                 </TableHeader>
-                {/* Dùng filteredUsers để hiển thị kết quả */}
+                {/* Dùng paginatedUsers để hiển thị kết quả phân trang */}
                 <TableBody>
-                  {filteredUsers.map((user: any) => (
+                  {paginatedUsers.map((user: any) => (
                     <TableRow key={user.MaKhachHang}>
                       <TableCell className="font-medium">
                         {user.HoTen}
@@ -348,6 +362,15 @@ export default function User() {
                 </TableBody>
               </Table>
             </CardContent>
+            <CardFooter>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                itemsPerPage={itemsPerPage}
+                totalItems={filteredUsers.length}
+              />
+            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>

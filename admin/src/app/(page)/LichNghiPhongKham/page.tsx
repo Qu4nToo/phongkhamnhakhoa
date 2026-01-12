@@ -19,9 +19,11 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Pagination } from "@/components/ui/pagination"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,6 +76,12 @@ export default function LichNghiPhongKham() {
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedYear, setSelectedYear] = useState<string>("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
 
   const [newHoliday, setNewHoliday] = useState({
     TenNgayLe: "",
@@ -302,8 +310,14 @@ export default function LichNghiPhongKham() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredHolidays.length > 0 ? (
-                        filteredHolidays.map((holiday) => (
+                      {(() => {
+                        const totalPages = Math.ceil(filteredHolidays.length / itemsPerPage);
+                        const startIndex = (currentPage - 1) * itemsPerPage;
+                        const endIndex = startIndex + itemsPerPage;
+                        const paginatedHolidays = filteredHolidays.slice(startIndex, endIndex);
+                        
+                        return paginatedHolidays.length > 0 ? (
+                          paginatedHolidays.map((holiday) => (
                           <TableRow key={holiday.MaLichNghi}>
                             <TableCell className="font-medium">{holiday.TenNgayLe}</TableCell>
                             <TableCell>{formatDate(holiday.NgayBatDau)}</TableCell>
@@ -342,10 +356,20 @@ export default function LichNghiPhongKham() {
                             Không có dữ liệu
                           </TableCell>
                         </TableRow>
-                      )}
+                      );
+                      })()}
                     </TableBody>
                   </Table>
                 </CardContent>
+                <CardFooter>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(filteredHolidays.length / itemsPerPage)}
+                    onPageChange={handlePageChange}
+                    itemsPerPage={itemsPerPage}
+                    totalItems={filteredHolidays.length}
+                  />
+                </CardFooter>
               </Card>
             </TabsContent>
 
@@ -373,9 +397,14 @@ export default function LichNghiPhongKham() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredHolidays
-                        .filter(h => new Date(h.NgayKetThuc) >= new Date())
-                        .map((holiday) => (
+                      {(() => {
+                        const upcomingHolidays = filteredHolidays.filter(h => new Date(h.NgayKetThuc) >= new Date());
+                        const totalPages = Math.ceil(upcomingHolidays.length / itemsPerPage);
+                        const startIndex = (currentPage - 1) * itemsPerPage;
+                        const endIndex = startIndex + itemsPerPage;
+                        const paginatedHolidays = upcomingHolidays.slice(startIndex, endIndex);
+                        
+                        return paginatedHolidays.map((holiday) => (
                           <TableRow key={holiday.MaLichNghi}>
                             <TableCell className="font-medium">{holiday.TenNgayLe}</TableCell>
                             <TableCell>{formatDate(holiday.NgayBatDau)}</TableCell>
@@ -407,10 +436,20 @@ export default function LichNghiPhongKham() {
                               </DropdownMenu>
                             </TableCell>
                           </TableRow>
-                        ))}
+                        ));
+                      })()}
                     </TableBody>
                   </Table>
                 </CardContent>
+                <CardFooter>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(filteredHolidays.filter(h => new Date(h.NgayKetThuc) >= new Date()).length / itemsPerPage)}
+                    onPageChange={handlePageChange}
+                    itemsPerPage={itemsPerPage}
+                    totalItems={filteredHolidays.filter(h => new Date(h.NgayKetThuc) >= new Date()).length}
+                  />
+                </CardFooter>
               </Card>
             </TabsContent>
 
@@ -438,9 +477,14 @@ export default function LichNghiPhongKham() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredHolidays
-                        .filter(h => new Date(h.NgayKetThuc) < new Date())
-                        .map((holiday) => (
+                      {(() => {
+                        const pastHolidays = filteredHolidays.filter(h => new Date(h.NgayKetThuc) < new Date());
+                        const totalPages = Math.ceil(pastHolidays.length / itemsPerPage);
+                        const startIndex = (currentPage - 1) * itemsPerPage;
+                        const endIndex = startIndex + itemsPerPage;
+                        const paginatedHolidays = pastHolidays.slice(startIndex, endIndex);
+                        
+                        return paginatedHolidays.map((holiday) => (
                           <TableRow key={holiday.MaLichNghi} className="opacity-60">
                             <TableCell className="font-medium">{holiday.TenNgayLe}</TableCell>
                             <TableCell>{formatDate(holiday.NgayBatDau)}</TableCell>
@@ -469,10 +513,20 @@ export default function LichNghiPhongKham() {
                               </DropdownMenu>
                             </TableCell>
                           </TableRow>
-                        ))}
+                        ));
+                      })()}
                     </TableBody>
                   </Table>
                 </CardContent>
+                <CardFooter>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(filteredHolidays.filter(h => new Date(h.NgayKetThuc) < new Date()).length / itemsPerPage)}
+                    onPageChange={handlePageChange}
+                    itemsPerPage={itemsPerPage}
+                    totalItems={filteredHolidays.filter(h => new Date(h.NgayKetThuc) < new Date()).length}
+                  />
+                </CardFooter>
               </Card>
             </TabsContent>
           </Tabs>
@@ -526,6 +580,11 @@ export default function LichNghiPhongKham() {
                         if (!date) return
                         setNewHoliday({ ...newHoliday, NgayBatDau: date.toLocaleDateString("en-CA") })
                       }}
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return date < today;
+                      }}
                     />
                   </PopoverContent>
                 </Popover>
@@ -556,6 +615,11 @@ export default function LichNghiPhongKham() {
                       onSelect={(date: Date | undefined) => {
                         if (!date) return
                         setNewHoliday({ ...newHoliday, NgayKetThuc: date.toLocaleDateString("en-CA") })
+                      }}
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return date < today;
                       }}
                     />
                   </PopoverContent>
@@ -636,6 +700,11 @@ export default function LichNghiPhongKham() {
                         if (!date) return
                         setEditHoliday({ ...editHoliday, NgayBatDau: date.toLocaleDateString("en-CA") })
                       }}
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return date < today;
+                      }}
                     />
                   </PopoverContent>
                 </Popover>
@@ -666,6 +735,11 @@ export default function LichNghiPhongKham() {
                       onSelect={(date: Date | undefined) => {
                         if (!date) return
                         setEditHoliday({ ...editHoliday, NgayKetThuc: date.toLocaleDateString("en-CA") })
+                      }}
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return date < today;
                       }}
                     />
                   </PopoverContent>

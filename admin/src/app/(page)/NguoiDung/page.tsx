@@ -23,9 +23,11 @@ import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { Pagination } from "@/components/ui/pagination"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -73,6 +75,8 @@ export default function User() {
     const [selectedUser, setSelectedUser] = useState<any>([]);
     const [isDialogOpen, setDialogOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
     const [newUser, setNewUser] = useState({
         HoTen: "",
@@ -156,6 +160,24 @@ export default function User() {
 
     const filteredUsersQuanLy = filteredUsers.filter((u: any) => u.VaiTro === "Quản lý");
     const filteredUsersLeTan = filteredUsers.filter((u: any) => u.VaiTro === "Lễ tân");
+
+    // Phân trang cho tab All
+    const totalPagesAll = Math.ceil(filteredUsers.length / itemsPerPage);
+    const startIndexAll = (currentPage - 1) * itemsPerPage;
+    const endIndexAll = startIndexAll + itemsPerPage;
+    const paginatedUsersAll = filteredUsers.slice(startIndexAll, endIndexAll);
+
+    // Phân trang cho tab Quản lý
+    const totalPagesQuanLy = Math.ceil(filteredUsersQuanLy.length / itemsPerPage);
+    const paginatedUsersQuanLy = filteredUsersQuanLy.slice(startIndexAll, endIndexAll);
+
+    // Phân trang cho tab Lễ tân
+    const totalPagesLeTan = Math.ceil(filteredUsersLeTan.length / itemsPerPage);
+    const paginatedUsersLeTan = filteredUsersLeTan.slice(startIndexAll, endIndexAll);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     useEffect(() => {
         // Lấy danh sách Người dùng
@@ -463,7 +485,7 @@ export default function User() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredUsers.map((user: any) => (
+                                    {paginatedUsersAll.map((user: any) => (
                                         <TableRow key={user.MaNguoiDung}>
                                             <TableCell>
                                                 {user.AnhDaiDien ? (
@@ -522,6 +544,15 @@ export default function User() {
                                 </TableBody>
                             </Table>
                         </CardContent>
+                        <CardFooter>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPagesAll}
+                                onPageChange={handlePageChange}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={filteredUsers.length}
+                            />
+                        </CardFooter>
                     </Card>
                 </TabsContent>
 
@@ -547,7 +578,7 @@ export default function User() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredUsersQuanLy.map((user: any) => (
+                                    {paginatedUsersQuanLy.map((user: any) => (
                                         <TableRow key={user.MaNguoiDung}>
                                             <TableCell>
                                                 {user.AnhDaiDien ? (
@@ -586,6 +617,15 @@ export default function User() {
                                 </TableBody>
                             </Table>
                         </CardContent>
+                        <CardFooter>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPagesQuanLy}
+                                onPageChange={handlePageChange}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={filteredUsersQuanLy.length}
+                            />
+                        </CardFooter>
                     </Card>
                 </TabsContent>
 
@@ -611,7 +651,7 @@ export default function User() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredUsersLeTan.map((user: any) => (
+                                    {paginatedUsersLeTan.map((user: any) => (
                                         <TableRow key={user.MaNguoiDung}>
                                             <TableCell>
                                                 {user.AnhDaiDien ? (
@@ -650,6 +690,15 @@ export default function User() {
                                 </TableBody>
                             </Table>
                         </CardContent>
+                        <CardFooter>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPagesLeTan}
+                                onPageChange={handlePageChange}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={filteredUsersLeTan.length}
+                            />
+                        </CardFooter>
                     </Card>
                 </TabsContent>
             </Tabs>

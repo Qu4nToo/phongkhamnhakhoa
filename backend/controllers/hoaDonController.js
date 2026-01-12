@@ -41,8 +41,11 @@ const HoaDonController = {
 
     createHoaDon: async (req, res) => {
         try {
-            const { MaPhieuKham, TongTien, TrangThai, PhuongThuc, MaKhachHang, MaNguoiDung } = req.body;
+            const { MaHoaDon, MaPhieuKham, TongTien, TrangThai, PhuongThuc, MaKhachHang, MaNguoiDung } = req.body;
 
+            if (!MaHoaDon) {
+                return res.status(400).json({ message: "Thiếu trường MaHoaDon" });
+            }
             if (!MaPhieuKham) {
                 return res.status(400).json({ message: "Thiếu trường MaPhieuKham" });
             }
@@ -68,6 +71,7 @@ const HoaDonController = {
             }
 
             const result = await HoaDon.create({
+                MaHoaDon,
                 TongTien,
                 PhuongThuc,
                 TrangThai,

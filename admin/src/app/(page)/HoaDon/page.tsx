@@ -21,9 +21,11 @@ import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { Pagination } from "@/components/ui/pagination"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -59,6 +61,20 @@ import axios from "@/lib/axios"
 import { Label } from "@/components/ui/label"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import { CalendarIcon, Filter } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 export default function hoaDonView() {
     const [hoaDons, setHoaDons] = useState([]);
     const [hoaDon, setHoaDon] = useState<any>([]);
@@ -71,6 +87,11 @@ export default function hoaDonView() {
     const [tongtien, setTongtien] = useState<number>();
     const [selectedStatus, setSelectedStatus] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
+    const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>("all");
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+    const [searchTerm, setSearchTerm] = useState("");
 
 
     const TRANG_THAI = [
@@ -183,24 +204,98 @@ export default function hoaDonView() {
         }
     };
 
-    // Lọc hóa đơn theo trạng thái
+    // Lọc hóa đơn theo trạng thái, ngày và tên
     const filteredHoaDons = hoaDons.filter((hoaDon: any) => {
-        if (filterStatus === "all") return true;
-        if (filterStatus === "paid") return hoaDon.TrangThai === "Đã thanh toán";
-        if (filterStatus === "unpaid") return hoaDon.TrangThai === "Chưa thanh toán";
-        return true;
+        const matchesSearch = hoaDon.HoTen?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = selectedStatusFilter === "all" || hoaDon.TrangThai === selectedStatusFilter;
+        const matchesDate = !selectedDate || hoaDon.NgayTao === format(selectedDate, "yyyy-MM-dd");
+        return matchesSearch && matchesStatus && matchesDate;
     });
+
+    // Phân trang
+    const totalPages = Math.ceil(filteredHoaDons.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedHoaDons = filteredHoaDons.slice(startIndex, endIndex);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     return (
         <>
             <title>Quản Lý Hóa Đơn</title>
             <Tabs defaultValue="all" onValueChange={setFilterStatus}>
-                <div className="flex items-center">
-                    <TabsList>
-                        <TabsTrigger value="all">Tất cả</TabsTrigger>
-                        <TabsTrigger value="paid">Đã thanh toán</TabsTrigger>
-                        <TabsTrigger value="unpaid">Chưa thanh toán</TabsTrigger>
-                    </TabsList>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <Filter className="h-4 w-4 text-gray-500" />
+                            <Select value={selectedStatusFilter} onValueChange={(value) => {
+                                setSelectedStatusFilter(value);
+                                setCurrentPage(1);
+                            }}>
+                                <SelectTrigger className="w-[200px]">
+                                    <SelectValue placeholder="Tất cả trạng thái" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Tất cả</SelectItem>
+                                    {TRANG_THAI.map((status) => (
+                                        <SelectItem key={status.value} value={status.value}>
+                                            {status.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        "w-[200px] justify-start text-left font-normal",
+                                        !selectedDate && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {selectedDate ? format(selectedDate, "dd/MM/yyyy", { locale: vi }) : "Chọn ngày"}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="single"
+                                    selected={selectedDate}
+                                    onSelect={(date) => {
+                                        setSelectedDate(date);
+                                        setCurrentPage(1);
+                                    }}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
+                        <Input
+                            placeholder="Tìm theo tên khách hàng..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            className="w-64"
+                        />
+                        {(selectedDate || searchTerm || selectedStatusFilter !== "all") && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setSelectedDate(undefined);
+                                    setSearchTerm("");
+                                    setSelectedStatusFilter("all");
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                Xóa bộ lọc
+                            </Button>
+                        )}
+                    </div>
                 </div>
                 <TabsContent value="all">
                     <Card x-chunk="dashboard-06-chunk-0">
@@ -270,6 +365,15 @@ export default function hoaDonView() {
                                 ))}
                             </Table>
                         </CardContent>
+                        <CardFooter>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={filteredHoaDons.length}
+                            />
+                        </CardFooter>
                     </Card>
                 </TabsContent>
                 <TabsContent value="paid">
@@ -292,7 +396,7 @@ export default function hoaDonView() {
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                {filteredHoaDons.map((hoaDons: any) => (
+                                {paginatedHoaDons.map((hoaDons: any) => (
                                     <TableBody key={hoaDons.MaHoaDon}>
                                         <TableRow >
                                             <TableCell className="font-medium">
@@ -339,6 +443,15 @@ export default function hoaDonView() {
                                 ))}
                             </Table>
                         </CardContent>
+                        <CardFooter>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={filteredHoaDons.length}
+                            />
+                        </CardFooter>
                     </Card>
                 </TabsContent>
                 <TabsContent value="unpaid">
@@ -408,6 +521,15 @@ export default function hoaDonView() {
                                 ))}
                             </Table>
                         </CardContent>
+                        <CardFooter>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={filteredHoaDons.length}
+                            />
+                        </CardFooter>
                     </Card>
                 </TabsContent>
             </Tabs>

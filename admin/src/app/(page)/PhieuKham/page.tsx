@@ -15,9 +15,11 @@ import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { Pagination } from "@/components/ui/pagination"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -53,6 +55,19 @@ import axios from "@/lib/axios"
 import { Input } from "@/components/ui/input"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
+import { CalendarIcon, Filter } from "lucide-react";
+import { cn } from "@/lib/utils";
 export default function phieuKhamView() {
     const [phieuKhams, setPhieuKhams] = useState([]);
     const [phieuKham, setPhieuKham] = useState<any>([]);
@@ -65,6 +80,14 @@ export default function phieuKhamView() {
     const [showCreateInvoiceDialog, setShowCreateInvoiceDialog] = useState(false);
     const [selectedPhieuKhamForInvoice, setSelectedPhieuKhamForInvoice] = useState<any>(null);
     const [paymentMethod, setPaymentMethod] = useState("Tiền mặt");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
+    const [selectedStatus, setSelectedStatus] = useState<string>("all");
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     const TRANG_THAI = [
         { value: "Chưa khám", label: "Chưa khám" },
@@ -208,7 +231,18 @@ export default function phieuKhamView() {
                 return;
             }
             
+            // Tạo mã hóa đơn theo format: HD-YYYYMMDD-HHmmss
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const maHoaDon = `HD-${year}${month}${day}-${hours}${minutes}${seconds}`;
+            
             const newInvoice = {
+                MaHoaDon: maHoaDon,
                 MaPhieuKham: selectedPhieuKhamForInvoice.MaPhieuKham,
                 MaKhachHang: selectedPhieuKhamForInvoice.MaKhachHang,
                 MaNguoiDung: maNguoiDung,
@@ -249,22 +283,75 @@ export default function phieuKhamView() {
         <>
             <title>Quản Lý Phiếu Khám</title>
             <Tabs defaultValue="all">
-                <div className="flex items-center">
-                    <TabsList>
-                        <TabsTrigger value="all">Tất cả</TabsTrigger>
-                        {TRANG_THAI.map((status) => (
-                            <TabsTrigger key={status.value} value={status.value}>
-                                {status.label}
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                    <div className="ml-auto flex items-center gap-2">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <Filter className="h-4 w-4 text-gray-500" />
+                            <Select value={selectedStatus} onValueChange={(value) => {
+                                setSelectedStatus(value);
+                                setCurrentPage(1);
+                            }}>
+                                <SelectTrigger className="w-[200px]">
+                                    <SelectValue placeholder="Tất cả trạng thái" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Tất cả</SelectItem>
+                                    {TRANG_THAI.map((status) => (
+                                        <SelectItem key={status.value} value={status.value}>
+                                            {status.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        "w-[200px] justify-start text-left font-normal",
+                                        !selectedDate && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {selectedDate ? format(selectedDate, "dd/MM/yyyy", { locale: vi }) : "Chọn ngày"}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="single"
+                                    selected={selectedDate}
+                                    onSelect={(date) => {
+                                        setSelectedDate(date);
+                                        setCurrentPage(1);
+                                    }}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
                         <Input
                             placeholder="Tìm theo tên khách hàng..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setCurrentPage(1);
+                            }}
                             className="w-64"
                         />
+                        {(selectedDate || searchTerm || selectedStatus !== "all") && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setSelectedDate(undefined);
+                                    setSearchTerm("");
+                                    setSelectedStatus("all");
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                Xóa bộ lọc
+                            </Button>
+                        )}
                     </div>
                 </div>
                 <TabsContent value="all">
@@ -287,11 +374,18 @@ export default function phieuKhamView() {
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                {phieuKhams
-                                    .filter((phieuKham: any) => 
-                                        phieuKham.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase())
-                                    )
-                                    .map((phieuKhams: any) => (
+                                {(() => {
+                                    let filteredPhieuKhams = phieuKhams.filter((phieuKham: any) => {
+                                        const matchesSearch = phieuKham.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase());
+                                        const matchesStatus = selectedStatus === "all" || phieuKham.TrangThai === selectedStatus;
+                                        const matchesDate = !selectedDate || phieuKham.NgayKham === format(selectedDate, "yyyy-MM-dd");
+                                        return matchesSearch && matchesStatus && matchesDate;
+                                    });
+                                    const totalPages = Math.ceil(filteredPhieuKhams.length / itemsPerPage);
+                                    const startIndex = (currentPage - 1) * itemsPerPage;
+                                    const endIndex = startIndex + itemsPerPage;
+                                    const paginatedPhieuKhams = filteredPhieuKhams.slice(startIndex, endIndex);
+                                    return paginatedPhieuKhams.map((phieuKhams: any) => (
                                     <TableBody key={phieuKhams.MaPhieuKham}>
                                         <TableRow >
                                             <TableCell className="font-medium">
@@ -335,87 +429,31 @@ export default function phieuKhamView() {
                                             </TableCell>
                                         </TableRow>
                                     </TableBody>
-                                ))}
+                                    ));
+                                })()}
                             </Table>
                         </CardContent>
+                        <CardFooter className="w-full p-0">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={Math.ceil(phieuKhams.filter((phieuKham: any) => {
+                                    const matchesSearch = phieuKham.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase());
+                                    const matchesStatus = selectedStatus === "all" || phieuKham.TrangThai === selectedStatus;
+                                    const matchesDate = !selectedDate || phieuKham.NgayKham === format(selectedDate, "yyyy-MM-dd");
+                                    return matchesSearch && matchesStatus && matchesDate;
+                                }).length / itemsPerPage)}
+                                onPageChange={handlePageChange}
+                                itemsPerPage={itemsPerPage}
+                                totalItems={phieuKhams.filter((phieuKham: any) => {
+                                    const matchesSearch = phieuKham.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase());
+                                    const matchesStatus = selectedStatus === "all" || phieuKham.TrangThai === selectedStatus;
+                                    const matchesDate = !selectedDate || phieuKham.NgayKham === format(selectedDate, "yyyy-MM-dd");
+                                    return matchesSearch && matchesStatus && matchesDate;
+                                }).length}
+                            />
+                        </CardFooter>
                     </Card>
                 </TabsContent>
-                {TRANG_THAI.map((status) => (
-                    <TabsContent key={status.value} value={status.value}>
-                        <Card x-chunk="dashboard-06-chunk-0">
-                            <CardHeader>
-                                <CardTitle>Danh sách phiếu khám - {status.label}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Tên khách hàng</TableHead>
-                                            <TableHead>Tên bác sĩ</TableHead>
-                                            <TableHead>Ngày khám</TableHead>
-                                            <TableHead>chuẩn đoán</TableHead>
-                                            <TableHead>Ghi chú</TableHead>
-                                            <TableHead>Tình trạng</TableHead>
-                                            <TableHead>
-                                                <span className="sr-only">Actions</span>
-                                            </TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    {phieuKhams
-                                        .filter((phieuKham: any) => 
-                                            phieuKham.TrangThai === status.value &&
-                                            phieuKham.TenKhachHang?.toLowerCase().includes(searchTerm.toLowerCase())
-                                        )
-                                        .map((phieuKhams: any) => (
-                                            <TableBody key={phieuKhams.MaPhieuKham}>
-                                                <TableRow>
-                                                    <TableCell className="font-medium">
-                                                        {phieuKhams.TenKhachHang}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {phieuKhams.TenBacSi}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {phieuKhams.NgayKham}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {phieuKhams.ChuanDoan ? phieuKhams.ChuanDoan : "Chưa có"}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {phieuKhams.GhiChu ? phieuKhams.GhiChu : "Chưa có"}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {phieuKhams.TrangThai}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button
-                                                                    aria-haspopup="true"
-                                                                    size="icon"
-                                                                    variant="ghost"
-                                                                >
-                                                                    <MoreHorizontal className="h-4 w-4" />
-                                                                    <span className="sr-only">Toggle menu</span>
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                                <DropdownMenuLabel>Hành động</DropdownMenuLabel>
-                                                                <DropdownMenuItem onClick={() => handleViewClick(phieuKhams)}>Xem chi tiết</DropdownMenuItem>
-                                                                {phieuKhams.TrangThai === "Đã khám" && (
-                                                                    <DropdownMenuItem onClick={() => handleCreateInvoiceClick(phieuKhams)}>Tạo hóa đơn</DropdownMenuItem>
-                                                                )}
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </TableCell>
-                                                </TableRow>
-                                            </TableBody>
-                                        ))}
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                ))}
             </Tabs>
             <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
                 <AlertDialogContent>
