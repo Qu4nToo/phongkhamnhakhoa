@@ -65,9 +65,13 @@ const HoaDonController = {
                 return res.status(400).json({ message: "Thiếu trường MaNguoiDung" });
             }
             
+            // Kiểm tra hóa đơn đã tồn tại, chỉ chặn nếu trạng thái không phải "Đã hủy"
             const existingHoaDon = await HoaDon.getByMaPhieuKham(MaPhieuKham);
             if (existingHoaDon && existingHoaDon.length > 0) {
-                return res.status(409).json({ message: "Hóa đơn với mã phiếu khám này đã tồn tại!" });
+                const hasActiveInvoice = existingHoaDon.some(hd => hd.TrangThai !== "Đã hủy");
+                if (hasActiveInvoice) {
+                    return res.status(409).json({ message: "Hóa đơn với mã phiếu khám này đã tồn tại!" });
+                }
             }
 
             const result = await HoaDon.create({
