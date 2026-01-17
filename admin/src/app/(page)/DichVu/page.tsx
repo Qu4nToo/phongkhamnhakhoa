@@ -62,6 +62,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Filter } from "lucide-react"
 export default function ServiceView() {
     const [services, setServices] = useState([]);
     const [categorys, setCategorys] = useState([]);
@@ -78,12 +86,19 @@ export default function ServiceView() {
     const [uploading, setUploading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+    const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all");
+
+    // Lọc dịch vụ theo loại dịch vụ
+    const filteredServices = services.filter((service: any) => {
+        if (selectedCategoryFilter === "all") return true;
+        return service.MaLoaiDV === selectedCategoryFilter;
+    });
 
     // Phân trang
-    const totalPages = Math.ceil(services.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const paginatedServices = services.slice(startIndex, endIndex);
+    const paginatedServices = filteredServices.slice(startIndex, endIndex);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -340,11 +355,27 @@ export default function ServiceView() {
         <>
             <title>Quản Lý Dịch Vụ</title>
             <Tabs defaultValue="all">
-                <div className="flex items-center">
-                    <TabsList>
-                        <TabsTrigger value="all">Tất cả</TabsTrigger>
-                    </TabsList>
-                    <div className="ml-auto flex items-center gap-2">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Filter className="h-4 w-4 text-gray-500" />
+                        <Select value={selectedCategoryFilter} onValueChange={(value) => {
+                            setSelectedCategoryFilter(value);
+                            setCurrentPage(1);
+                        }}>
+                            <SelectTrigger className="w-[200px]">
+                                <SelectValue placeholder="Tất cả loại dịch vụ" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Tất cả loại dịch vụ</SelectItem>
+                                {categorys.map((category: any) => (
+                                    <SelectItem key={category.MaLoaiDV} value={category.MaLoaiDV}>
+                                        {category.TenLoaiDV}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex items-center gap-2">
                         <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
                             <DialogTrigger asChild>
                                 <Button size="sm" className="h-7 gap-1">
@@ -534,7 +565,7 @@ export default function ServiceView() {
                                 totalPages={totalPages}
                                 onPageChange={handlePageChange}
                                 itemsPerPage={itemsPerPage}
-                                totalItems={services.length}
+                                totalItems={filteredServices.length}
                             />
                         </CardFooter>
                     </Card>
