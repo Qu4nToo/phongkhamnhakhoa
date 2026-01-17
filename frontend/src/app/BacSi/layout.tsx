@@ -22,14 +22,12 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   useTokenRefresh();
 
   useEffect(() => {
-    // Kiểm tra token có tồn tại không
     if (!isAuthenticatedDoctor()) {
       toast.error("Bạn chưa đăng nhập");
       router.push("/DangNhap");
       return;
     }
 
-    // Giải mã token để lấy thông tin user
     const user = getCurrentDoctor();
     
     if (!user) {
@@ -48,7 +46,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, [router]);
 
-  // Lắng nghe Socket.IO events cho tất cả các trang
   useEffect(() => {
     if (!socket) return;
 
@@ -57,11 +54,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
     const user = JSON.parse(storedUserInfo);
 
-    // Lắng nghe khi có phiếu khám mới được tạo cho bác sĩ này
     socket.on('phieuKham:created', (data) => {
       console.log('Received phieuKham:created event:', data);
       
-      // Kiểm tra xem phiếu khám có dành cho bác sĩ này không
       if (data.maBacSi === user.MaBacSi) {
         toast.success('Có phiếu khám mới!', {
           description: `Khách hàng: ${data.phieuKham?.TenKhachHang || 'N/A'}`,
@@ -70,11 +65,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Lắng nghe khi có lịch hẹn mới được tạo cho bác sĩ này
     socket.on('lichHen:created', (data) => {
       console.log('Received lichHen:created event:', data);
       
-      // Kiểm tra xem lịch hẹn có dành cho bác sĩ này không
       if (data.maBacSi === user.MaBacSi) {
         toast.info('Có lịch hẹn mới!', {
           description: `${data.lichHen?.TenKhachHang || 'N/A'} - ${data.lichHen?.NgayHen} lúc ${data.lichHen?.GioHen}`,
@@ -83,7 +76,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Cleanup khi component unmount
     return () => {
       socket.off('phieuKham:created');
       socket.off('lichHen:created');

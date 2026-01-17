@@ -127,12 +127,12 @@ export default function hoaDonView() {
     useEffect(() => {
         loadHoaDons();
     }, []);
-    const handleDeleteClick = (hoaDon: React.SetStateAction<null>) => {
-        console.log(hoaDon);
-        setSelectedhoaDon(hoaDon);
-        setShowAlert(true);
-    }
     const handleUpdateStatusClick = (hoaDon: any) => {
+        // Không cho phép cập nhật nếu trạng thái là "Đã hủy"
+        if (hoaDon.TrangThai === "Đã hủy") {
+            toast.error("Không thể cập nhật trạng thái hóa đơn đã hủy!");
+            return;
+        }
         setSelectedhoaDon(hoaDon);
         setSelectedStatus(hoaDon.TrangThai);
         setShowAlertUpdateStatus(true);
@@ -354,7 +354,7 @@ export default function hoaDonView() {
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                                                         <DropdownMenuItem onClick={() => handleViewClick(hoaDons)}>Xem chi tiết</DropdownMenuItem>
-                                                        {hoaDons.TrangThai !== "Đã thanh toán" && (
+                                                        {hoaDons.TrangThai !== "Đã thanh toán" && hoaDons.TrangThai !== "Đã hủy" && (
                                                             <DropdownMenuItem onClick={() => handleUpdateStatusClick(hoaDons)}>Cập nhật trạng thái</DropdownMenuItem>
                                                         )}
                                                     </DropdownMenuContent>
@@ -432,7 +432,7 @@ export default function hoaDonView() {
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                                                         <DropdownMenuItem onClick={() => handleViewClick(hoaDons)}>Xem chi tiết</DropdownMenuItem>
-                                                        {hoaDons.TrangThai !== "Đã thanh toán" && (
+                                                        {hoaDons.TrangThai !== "Đã thanh toán" && hoaDons.TrangThai !== "Đã hủy" && (
                                                             <DropdownMenuItem onClick={() => handleUpdateStatusClick(hoaDons)}>Cập nhật trạng thái</DropdownMenuItem>
                                                         )}
                                                     </DropdownMenuContent>
@@ -510,7 +510,7 @@ export default function hoaDonView() {
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                                                         <DropdownMenuItem onClick={() => handleViewClick(hoaDons)}>Xem chi tiết</DropdownMenuItem>
-                                                        {hoaDons.TrangThai !== "Đã thanh toán" && (
+                                                        {hoaDons.TrangThai !== "Đã thanh toán" && hoaDons.TrangThai !== "Đã hủy" && (
                                                             <DropdownMenuItem onClick={() => handleUpdateStatusClick(hoaDons)}>Cập nhật trạng thái</DropdownMenuItem>
                                                         )}
                                                     </DropdownMenuContent>

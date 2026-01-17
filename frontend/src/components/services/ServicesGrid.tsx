@@ -1,5 +1,6 @@
 "use client"
 import { useState } from 'react';
+import { PaginationCustom } from '@/components/ui/pagination-custom';
 
 type FilterType = 'all' | 'featured' | 'bestseller' | 'price-high' | 'price-low';
 
@@ -10,6 +11,9 @@ interface ServicesGridProps {
 
 export function ServicesGrid({ services, title }: ServicesGridProps) {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12; // Số dịch vụ mỗi trang
+  
   const dataToUse = services && services.length > 0 ? services : [];
 
   const getFilteredServices = () => {
@@ -39,6 +43,24 @@ export function ServicesGrid({ services, title }: ServicesGridProps) {
 
   const filteredServices = getFilteredServices();
 
+  // Tính toán phân trang
+  const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentServices = filteredServices.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Hàm chuyển trang
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Reset về trang 1 khi thay đổi filter
+  const handleFilterChange = (filter: FilterType) => {
+    setActiveFilter(filter);
+    setCurrentPage(1);
+  };
+
   return (
     <section className="py-12 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,7 +84,7 @@ export function ServicesGrid({ services, title }: ServicesGridProps) {
         {/* Filter Tabs */}
         <div className="mb-8 flex flex-wrap gap-4">
           <button
-            onClick={() => setActiveFilter('all')}
+            onClick={() => handleFilterChange('all')}
             className={`px-6 py-2 rounded-lg transition-all ${
               activeFilter === 'all'
                 ? 'bg-blue-600 text-white'
@@ -72,7 +94,7 @@ export function ServicesGrid({ services, title }: ServicesGridProps) {
             Tất cả
           </button>
           <button
-            onClick={() => setActiveFilter('price-high')}
+            onClick={() => handleFilterChange('price-high')}
             className={`px-6 py-2 rounded-lg transition-all ${
               activeFilter === 'price-high'
                 ? 'bg-blue-600 text-white'
@@ -82,7 +104,7 @@ export function ServicesGrid({ services, title }: ServicesGridProps) {
             Giá từ cao xuống thấp
           </button>
           <button
-            onClick={() => setActiveFilter('price-low')}
+            onClick={() => handleFilterChange('price-low')}
             className={`px-6 py-2 rounded-lg transition-all ${
               activeFilter === 'price-low'
                 ? 'bg-blue-600 text-white'
@@ -95,7 +117,7 @@ export function ServicesGrid({ services, title }: ServicesGridProps) {
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredServices.map((service) => (
+          {currentServices.map((service) => (
             <div
               key={service.MaDichVu || service.id}
               className="bg-white rounded-xl shadow-sm transition-shadow duration-300 overflow-hidden border border-gray-100"
@@ -150,10 +172,14 @@ export function ServicesGrid({ services, title }: ServicesGridProps) {
           ))}
         </div>
 
-        {/* Results Count */}
-        <div className="mt-8 text-center text-gray-600">
-          Hiển thị {filteredServices.length} dịch vụ
-        </div>
+        {/* Pagination */}
+        <PaginationCustom
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          totalItems={filteredServices.length}
+        />
       </div>
     </section>
   );

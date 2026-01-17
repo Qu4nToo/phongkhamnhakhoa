@@ -175,7 +175,8 @@ export default function phieuKhamView() {
             const hoaDonResponse = await axios.get("http://localhost:5000/api/hoa-don/get");
             const existingInvoice = hoaDonResponse.data.find((hd: any) => hd.MaPhieuKham === phieuKham.MaPhieuKham);
             
-            if (existingInvoice) {
+            // Chỉ chặn nếu có hóa đơn và trạng thái không phải "Đã hủy"
+            if (existingInvoice && existingInvoice.TrangThai !== "Đã hủy") {
                 toast.error("Phiếu khám này đã có hóa đơn!", {
                     style: {
                         background: "#fef2f2",
